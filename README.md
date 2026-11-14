@@ -42,3 +42,12 @@ A sidecar is a `.json` file with the same name as the deck, sitting next to it
 ```
 
 The `decks/` folder currently holds six **sample** decks — delete them once you add your own.
+
+## Publishing online
+
+Live site: https://drhafizdzulkafli.github.io/teaching-decks/
+
+After adding or changing decks, double-click **Publish Decks.command** in Finder.
+It rebuilds the list and uploads everything; the site refreshes within about a minute.
+The `References/` folder is never uploaded. The site is public — remove patient-identifiable
+material before publishing.
