@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teaching Deck Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3ee;
+    --surface: #ffffff;
+    --surface-2: #faf8f4;
+    --ink: #17201f;
+    --ink-2: #4b5654;
+    --ink-3: #7c8684;
+    --line: #e4e0d7;
+    --brand: #0d5c56;
+    --brand-ink: #ffffff;
+    --accent: #c8452c;
+    --focus: #0d5c5655;
+    --shadow: 0 1px 2px rgba(23,32,31,.05), 0 8px 24px -12px rgba(23,32,31,.18);
+    --shadow-hover: 0 2px 4px rgba(23,32,31,.06), 0 18px 40px -16px rgba(23,32,31,.28);
+    --radius: 14px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1514; --surface: #172020; --surface-2: #1c2626; --ink: #eef2f0; --ink-2: #b5c0bd;
+      --ink-3: #85918e; --line: #2a3533; --brand: #4fb3a8; --brand-ink: #0b1312; --accent: #ff8a6f;
+      --focus: #4fb3a866; --shadow: 0 1px 2px rgba(0,0,0,.3); --shadow-hover: 0 18px 40px -16px rgba(0,0,0,.6);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1514; --surface: #172020; --surface-2: #1c2626; --ink: #eef2f0; --ink-2: #b5c0bd;
+    --ink-3: #85918e; --line: #2a3533; --brand: #4fb3a8; --brand-ink: #0b1312; --accent: #ff8a6f;
+    --focus: #4fb3a866; --shadow: 0 1px 2px rgba(0,0,0,.3); --shadow-hover: 0 18px 40px -16px rgba(0,0,0,.6);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 15px/1.5 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+  /* Header */
+  header { padding: 48px 0 28px; }
+  .eyebrow {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--brand);
+  }
+  .pulse { width: 22px; height: 12px; color: var(--accent); }
+  h1 {
+    font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: clamp(32px, 5vw, 48px);
+    line-height: 1.05; letter-spacing: -.02em; margin: 12px 0 10px;
+  }
+  .lede { color: var(--ink-2); max-width: 60ch; margin: 0; }
+  .stats { display: flex; gap: 28px; margin-top: 24px; flex-wrap: wrap; }
+  .stat b { display: block; font-family: Fraunces, Georgia, serif; font-size: 26px; font-weight: 600; line-height: 1.1; }
+  .stat span { font-size: 12px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .08em; }
+
+  /* Toolbar */
+  .toolbar {
+    position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    padding: 14px 0; border-bottom: 1px solid var(--line);
+  }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .search { position: relative; flex: 1 1 320px; }
+  .search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--ink-3); }
+  .search input {
+    width: 100%; height: 46px; padding: 0 44px 0 42px; font: inherit; font-size: 16px; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px; outline: none;
+    box-shadow: var(--shadow); transition: border-color .15s, box-shadow .15s;
+  }
+  .search input:focus { border-color: var(--brand); box-shadow: 0 0 0 4px var(--focus); }
+  .search kbd {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    font: 600 11px/1 Inter, sans-serif; color: var(--ink-3); border: 1px solid var(--line);
+    border-radius: 6px; padding: 4px 7px; background: var(--surface-2);
+  }
+  select {
+    height: 46px; padding: 0 34px 0 14px; font: inherit; color: var(--ink); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 12px; outline: none; cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237c8684' stroke-width='1.6' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 13px center;
+  }
+  select:focus { border-color: var(--brand); box-shadow: 0 0 0 4px var(--focus); }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .chip {
+    font: 500 13px/1 Inter, sans-serif; padding: 8px 13px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); transition: all .15s;
+  }
+  .chip:hover { border-color: var(--ink-3); color: var(--ink); }
+  .chip[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
+  .chip .n { opacity: .6; margin-left: 4px; }
+
+  /* Grid */
+  main { padding: 24px 0 64px; }
+  .meta-line { display: flex; justify-content: space-between; align-items: center; color: var(--ink-3); font-size: 13px; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+  .card {
+    position: relative; display: flex; flex-direction: column; gap: 10px; padding: 20px 20px 18px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); color: inherit; text-decoration: none; overflow: hidden;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s;
+  }
+  .card::before {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--cat);
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); border-color: color-mix(in srgb, var(--cat) 45%, var(--line)); }
+  .card:focus-visible { outline: none; box-shadow: 0 0 0 4px var(--focus); }
+  .card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .tag {
+    font: 600 11px/1 Inter, sans-serif; letter-spacing: .06em; text-transform: uppercase;
+    padding: 6px 9px; border-radius: 6px; color: var(--cat);
+    background: color-mix(in srgb, var(--cat) 13%, transparent);
+  }
+  .type { font: 600 10px/1 Inter, sans-serif; letter-spacing: .08em; color: var(--ink-3); border: 1px solid var(--line); padding: 5px 7px; border-radius: 5px; }
+  .card h2 { font-family: Fraunces, Georgia, serif; font-size: 20px; font-weight: 600; line-height: 1.22; margin: 2px 0 0; letter-spacing: -.01em; }
+  .card p { margin: 0; color: var(--ink-2); font-size: 14px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .card p.empty { color: var(--ink-3); font-style: italic; }
+  .foot { margin-top: auto; padding-top: 12px; border-top: 1px dashed var(--line); display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--ink-3); }
+  .foot .aud { color: var(--ink-2); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kw { display: flex; gap: 6px; flex-wrap: wrap; }
+  .kw span { font-size: 11.5px; color: var(--ink-3); background: var(--surface-2); border: 1px solid var(--line); padding: 2px 7px; border-radius: 5px; }
+  mark { background: color-mix(in srgb, var(--accent) 22%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
+
+  .empty-state { text-align: center; padding: 72px 20px; color: var(--ink-3); border: 1px dashed var(--line); border-radius: var(--radius); }
+  .empty-state b { display: block; font-family: Fraunces, Georgia, serif; font-size: 22px; color: var(--ink); margin-bottom: 6px; }
+  footer { color: var(--ink-3); font-size: 12.5px; padding: 0 0 40px; }
+  footer code { background: var(--surface); border: 1px solid var(--line); padding: 1px 6px; border-radius: 5px; }
+  .theme-btn { background: none; border: 1px solid var(--line); color: var(--ink-2); border-radius: 8px; padding: 5px 9px; cursor: pointer; font: inherit; font-size: 12px; }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 0 16px; }
+    header { padding-top: 32px; }
+    .search { flex-basis: 100%; }
+    select { flex: 1 1 0; min-width: 0; }
+    .search kbd { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <div class="eyebrow">
+    <svg class="pulse" viewBox="0 0 44 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 13h10l3-7 5 15 5-19 4 11h15"/></svg>
+    Emergency Medicine · SASMEC @IIUM
+  </div>
+  <h1>Teaching Deck Hub</h1>
+  <p class="lede">Lectures, workshops and skills sessions for medical students, nurses, paramedics and postgraduate trainees, all in one place.</p>
+  <div class="stats" id="stats"></div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap">
+    <div class="row">
+      <label class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search topic, audience, tag…" autocomplete="off" aria-label="Search decks">
+        <kbd>/</kbd>
+      </label>
+      <select id="audience" aria-label="Filter by audience"><option value="">All audiences</option></select>
+      <select id="sort" aria-label="Sort">
+        <option value="new">Newest first</option>
+        <option value="old">Oldest first</option>
+        <option value="az">Title A–Z</option>
+      </select>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="meta-line">
+    <span id="count"></span>
+    <button class="theme-btn" id="theme" type="button">Toggle theme</button>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer class="wrap" id="footer"></footer>
+
+<!-- DECKS:START — this block is rewritten by build_index.py; edit decks, not this JSON -->
+<script id="deck-data" type="application/json">
+{
+ "generated": "14 Nov 2026, 13:13",
+ "decks": [
+  {
+   "title": "Paediatric Resuscitation Essentials",
+   "category": "Paediatrics",
+   "audience": "Nurses",
+   "date": "2026-11-02",
+   "summary": "Weight estimation, drug dosing aids, and paediatric BLS/ALS differences that matter in a busy ED.",
+   "tags": [
+    "paediatrics",
+    "PALS",
+    "Broselow"
+   ],
+   "type": "WEB",
+   "file": "Paediatrics/Paediatric-Resuscitation-Essentials.html",
+   "href": "decks/Paediatrics/Paediatric-Resuscitation-Essentials.html"
+  },
+  {
+   "title": "Rapid Sequence Intubation Masterclass",
+   "category": "Airway",
+   "audience": "Master of Emergency Medicine",
+   "date": "2026-10-28",
+   "summary": "Pre-oxygenation, apnoeic oxygenation, induction in shock, and failed-airway algorithms (DAS / Vortex). Includes simulation debrief.",
+   "tags": [
+    "RSI",
+    "airway",
+    "Vortex",
+    "simulation"
+   ],
+   "type": "WEB",
+   "file": "Airway/Rapid-Sequence-Intubation-Masterclass.html",
+   "href": "decks/Airway/Rapid-Sequence-Intubation-Masterclass.html"
+  },
+  {
+   "title": "Sepsis Early Recognition",
+   "category": "Resuscitation",
+   "audience": "Undergraduate (Year 5)",
+   "date": "2026-09-12",
+   "summary": "Spotting sepsis at triage: qSOFA vs NEWS2, lactate, and the first-hour bundle. Case-based with three ED scenarios.",
+   "tags": [
+    "sepsis",
+    "qSOFA",
+    "NEWS2",
+    "lactate"
+   ],
+   "type": "WEB",
+   "file": "Resuscitation/Sepsis-Early-Recognition.html",
+   "href": "decks/Resuscitation/Sepsis-Early-Recognition.html"
+  },
+  {
+   "title": "Malaysian Triage Category in Practice",
+   "category": "Triage",
+   "audience": "Nurses & Paramedics",
+   "date": "2026-08-03",
+   "summary": "Applying the MOH colour-coded triage system consistently, with under- and over-triage pitfalls.",
+   "tags": [
+    "triage",
+    "MTC",
+    "red zone"
+   ],
+   "type": "WEB",
+   "file": "Triage/Malaysian-Triage-Category-in-Practice.html",
+   "href": "decks/Triage/Malaysian-Triage-Category-in-Practice.html"
+  },
+  {
+   "title": "ECG: STEMI and Its Mimics",
+   "category": "Cardiology",
+   "audience": "Undergraduate (Year 4)",
+   "date": "2026-07-19",
+   "summary": "Systematic ECG reading for chest pain, STEMI equivalents, and the mimics that fool us.",
+   "tags": [
+    "ECG",
+    "STEMI",
+    "de Winter",
+    "Wellens"
+   ],
+   "type": "WEB",
+   "file": "Cardiology/ECG-STEMI-and-Its-Mimics.html",
+   "href": "decks/Cardiology/ECG-STEMI-and-Its-Mimics.html"
+  },
+  {
+   "title": "Primary Survey & Haemorrhage Control",
+   "category": "Trauma",
+   "audience": "Paramedics",
+   "date": "2026-06-05",
+   "summary": "<C>ABCDE in the field and resus bay: tourniquets, pelvic binders, and permissive hypotension.",
+   "tags": [
+    "trauma",
+    "ATLS",
+    "haemorrhage",
+    "pelvic binder"
+   ],
+   "type": "WEB",
+   "file": "Trauma/Primary-Survey-and-Haemorrhage-Control.html",
+   "href": "decks/Trauma/Primary-Survey-and-Haemorrhage-Control.html"
+  }
+ ]
+}
+</script>
+<!-- DECKS:END -->
+
+<script>
+(() => {
+  const DATA = JSON.parse(document.getElementById('deck-data').textContent);
+  const decks = DATA.decks || [];
+  const $ = (id) => document.getElementById(id);
+  const q = $('q'), audSel = $('audience'), sortSel = $('sort'), grid = $('grid'), chips = $('chips');
+
+  const PALETTE = ['#0d7a6f', '#c8452c', '#3b5bdb', '#b7791f', '#8e44ad', '#2f855a', '#c2255c', '#1c7ed6', '#6b7a2a', '#d9480f'];
+  const catColor = {};
+  [...new Set(decks.map(d => d.category))].sort().forEach((c, i) => catColor[c] = PALETTE[i % PALETTE.length]);
+
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const fmtDate = (iso) => {
+    if (!iso) return '';
+    const d = new Date(iso + 'T00:00:00');
+    return isNaN(d) ? iso : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+  const tokens = () => q.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  const highlight = (text, toks) => {
+    let out = esc(text);
+    if (!toks.length) return out;
+    const re = new RegExp('(' + toks.map(t => esc(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'gi');
+    return out.replace(re, '<mark>$1</mark>');
+  };
+
+  // Stats
+  const cats = [...new Set(decks.map(d => d.category))];
+  const auds = [...new Set(decks.map(d => d.audience).filter(Boolean))].sort();
+  $('stats').innerHTML = [
+    [decks.length, decks.length === 1 ? 'Deck' : 'Decks'],
+    [cats.length, cats.length === 1 ? 'Category' : 'Categories'],
+    [auds.length, auds.length === 1 ? 'Audience' : 'Audiences'],
+  ].map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('');
+
+  // Audience dropdown
+  auds.forEach(a => audSel.insertAdjacentHTML('beforeend', `<option value="${esc(a)}">${esc(a)}</option>`));
+
+  // Category chips
+  let activeCat = '';
+  const counts = decks.reduce((m, d) => (m[d.category] = (m[d.category] || 0) + 1, m), {});
+  const chipHtml = (val, label, n) =>
+    `<button class="chip" type="button" data-cat="${esc(val)}" aria-pressed="${val === activeCat}">${esc(label)}<span class="n">${n}</span></button>`;
+  const renderChips = () => {
+    chips.innerHTML = chipHtml('', 'All', decks.length) + cats.sort().map(c => chipHtml(c, c, counts[c])).join('');
+  };
+  chips.addEventListener('click', (e) => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    activeCat = b.dataset.cat; renderChips(); render();
+  });
+
+  function render() {
+    const toks = tokens();
+    const aud = audSel.value;
+    let list = decks.filter(d => {
+      if (activeCat && d.category !== activeCat) return false;
+      if (aud && d.audience !== aud) return false;
+      if (!toks.length) return true;
+      const hay = [d.title, d.summary, d.category, d.audience, (d.tags || []).join(' '), d.file].join(' ').toLowerCase();
+      return toks.every(t => hay.includes(t));
+    });
+    const s = sortSel.value;
+    list.sort((a, b) => s === 'az' ? a.title.localeCompare(b.title)
+      : s === 'old' ? (a.date || '').localeCompare(b.date || '')
+      : (b.date || '').localeCompare(a.date || ''));
+
+    $('count').textContent = list.length === decks.length
+      ? `Showing all ${decks.length} decks`
+      : `${list.length} of ${decks.length} decks`;
+
+    if (!decks.length) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><b>No decks yet</b>Drop presentations into the <code>decks/</code> folder, then run <code>python3 build_index.py</code>.</div>`;
+      return;
+    }
+    if (!list.length) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><b>Nothing matches</b>Try a different word, or clear the filters.</div>`;
+      return;
+    }
+    grid.innerHTML = list.map(d => `
+      <a class="card" href="${esc(d.href)}" target="_blank" rel="noopener" style="--cat:${catColor[d.category]}">
+        <div class="card-top">
+          <span class="tag">${highlight(d.category, toks)}</span>
+          <span class="type">${esc(d.type)}</span>
+        </div>
+        <h2>${highlight(d.title, toks)}</h2>
+        ${d.summary ? `<p>${highlight(d.summary, toks)}</p>` : `<p class="empty">No summary yet</p>`}
+        ${(d.tags || []).length ? `<div class="kw">${d.tags.slice(0, 5).map(t => `<span>${highlight(t, toks)}</span>`).join('')}</div>` : ''}
+        <div class="foot">
+          <span class="aud">${d.audience ? highlight(d.audience, toks) : '&nbsp;'}</span>
+          <time datetime="${esc(d.date)}">${fmtDate(d.date)}</time>
+        </div>
+      </a>`).join('');
+  }
+
+  q.addEventListener('input', render);
+  audSel.addEventListener('change', render);
+  sortSel.addEventListener('change', render);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && document.activeElement !== q) { e.preventDefault(); q.focus(); }
+    if (e.key === 'Escape' && document.activeElement === q) { q.value = ''; render(); }
+  });
+
+  // Theme toggle (remembered per browser)
+  const root = document.documentElement;
+  try { const t = localStorage.getItem('deckhub-theme'); if (t) root.dataset.theme = t; } catch (_) {}
+  $('theme').addEventListener('click', () => {
+    const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = dark ? 'light' : 'dark';
+    try { localStorage.setItem('deckhub-theme', root.dataset.theme); } catch (_) {}
+  });
+
+  if (DATA.generated) {
+    $('footer').innerHTML = `Index last built ${esc(DATA.generated)} · Add a deck to <code>decks/</code> and run <code>python3 build_index.py</code>`;
+  }
+
+  renderChips();
+  render();
+})();
+</script>
+</body>
+</html>
