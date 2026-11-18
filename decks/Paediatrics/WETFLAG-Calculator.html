@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WETFLAG Resus Calculator</title>
+<meta name="description" content="Interactive paediatric resuscitation calculator for the ED: WETFLAG (weight, energy, tube size and length, blade, fluid and blood, lorazepam, lidocaine, adrenaline, amiodarone, adenosine, glucose) plus hyperkalaemia drugs and sodium bicarbonate, with doses, volumes and preparation.">
+<meta name="deck:category" content="Paediatrics">
+<meta name="deck:audience" content="ED doctors &amp; nurses">
+<meta name="deck:date" content="2026-11-18">
+<meta name="deck:tags" content="WETFLAG, paediatric resuscitation, calculator, drug doses, APLS">
+<style>
+:root{
+  --bg:#eef2f5; --panel:#ffffff; --panel2:#f6f8fa; --ink:#14212b; --muted:#5a6a77; --line:#d8e0e6;
+  --accent:#0f766e; --accent-ink:#ffffff; --warn:#b45309; --danger:#b91c1c;
+  --wall1:#e3eef4; --wall2:#f4f8fb; --floor:#cfd9e0; --floorline:#b7c4cd;
+  --gA:#b91c1c; --gB:#7c3aed; --gC:#c2410c; --gD:#0369a1; --gE:#0f766e;
+  --shadow:0 1px 2px rgba(15,30,45,.06),0 6px 18px rgba(15,30,45,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e161d; --panel:#16212a; --panel2:#1b2832; --ink:#e6edf2; --muted:#93a4b1; --line:#2a3a46;
+    --accent:#2dd4bf; --accent-ink:#06231f; --warn:#fbbf24; --danger:#f87171;
+    --wall1:#15232d; --wall2:#1b2c38; --floor:#22313c; --floorline:#2e404d;
+    --gA:#f87171; --gB:#a78bfa; --gC:#fb923c; --gD:#38bdf8; --gE:#2dd4bf;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e161d; --panel:#16212a; --panel2:#1b2832; --ink:#e6edf2; --muted:#93a4b1; --line:#2a3a46;
+  --accent:#2dd4bf; --accent-ink:#06231f; --warn:#fbbf24; --danger:#f87171;
+  --wall1:#15232d; --wall2:#1b2c38; --floor:#22313c; --floorline:#2e404d;
+  --gA:#f87171; --gB:#a78bfa; --gC:#fb923c; --gD:#38bdf8; --gE:#2dd4bf;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+header.top{padding:18px 0 10px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{margin:0;font-size:clamp(20px,3.2vw,28px);letter-spacing:-.01em}
+h1 span{color:var(--accent)}
+.sub{color:var(--muted);font-size:13px;margin-top:2px}
+.tbtn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:7px 12px;font:600 13px inherit;cursor:pointer}
+.tbtn:hover{border-color:var(--accent)}
+
+/* inputs */
+.controls{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);padding:10px 0;border-bottom:1px solid var(--line)}
+.ctl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.field{display:flex;align-items:center;gap:8px}
+.field label{font-weight:700;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.num{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden}
+.num input{width:62px;border:0;background:transparent;color:var(--ink);font:700 20px/1 inherit;padding:8px 6px 8px 10px;text-align:right;outline:none;-moz-appearance:textfield}
+.num input::-webkit-inner-spin-button{opacity:1}
+.num span{padding:0 10px 0 2px;color:var(--muted);font-weight:600;font-size:13px}
+.num:focus-within{border-color:var(--accent)}
+.num.wt{border-color:var(--accent)}
+.num.wt input{width:78px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:99px;padding:5px 11px;font:600 13px inherit;cursor:pointer}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.badge{font-size:12px;font-weight:700;padding:3px 8px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
+.badge.meas{color:var(--accent);border-color:var(--accent)}
+.linkbtn{background:none;border:0;color:var(--accent);font:600 12px inherit;cursor:pointer;text-decoration:underline;padding:0}
+
+/* scene */
+.stage{margin:14px 0 8px;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;position:relative}
+.stage svg{display:block;width:100%;height:auto}
+.hot{cursor:pointer}
+.hot:hover .hl{stroke:var(--accent);stroke-width:3}
+.drawer:hover rect.df{filter:brightness(1.12)}
+#kid{transform-box:fill-box;transform-origin:50% 100%}
+#kid.pop{animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+.stage-cap{position:absolute;left:14px;top:12px;font-size:12px;color:var(--muted);font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:12px;color:var(--muted);padding:0 2px 6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* WETFLAG tiles */
+.tiles{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:12px 0 22px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 11px 11px;box-shadow:var(--shadow);cursor:pointer;text-align:left;color:inherit;font:inherit;position:relative;min-width:0}
+.tile:hover{border-color:var(--accent)}
+.tile .L{font:800 26px/1 inherit;color:var(--accent)}
+.tile .n{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:2px 0 6px}
+.tile .v{font:800 19px/1.15 inherit;word-break:break-word}
+.tile .s{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.3}
+@media (max-width:980px){.tiles{grid-template-columns:repeat(4,1fr)}}
+@media (max-width:560px){.tiles{grid-template-columns:repeat(2,1fr)}.tile .v{font-size:17px}.controls{position:static}.stage-cap{display:none}}
+
+/* groups & cards */
+.group{margin:0 0 26px;scroll-margin-top:90px}
+.group > h2{font-size:17px;margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.group > h2 .dot{width:26px;height:26px;border-radius:7px;background:var(--g);color:#fff;display:grid;place-items:center;font-size:13px}
+.group > h2 small{font-weight:500;color:var(--muted);font-size:13px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+@media (max-width:400px){.cards{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--g);border-radius:14px;padding:13px 14px 12px;box-shadow:var(--shadow);scroll-margin-top:90px;min-width:0}
+.card.flash{animation:flash 1.2s}
+@keyframes flash{0%,40%{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 45%,transparent)}100%{box-shadow:var(--shadow)}}
+.card h3{margin:0;font-size:16px}
+.card .ind{display:block;font-size:12.5px;color:var(--muted);margin:2px 0 8px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 0;border-top:1px dashed var(--line)}
+.row .lbl{font-size:13px;font-weight:600;min-width:0}
+.row .lbl small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.row .val{font:800 18px/1.15 inherit;text-align:right;white-space:nowrap}
+.row .val .u{font-size:13px;font-weight:700;color:var(--muted);margin-left:2px}
+.row .lbl{flex:1 1 50%}
+.row .val{max-width:55%}
+.row .val .draw{display:block;font-size:13px;font-weight:700;color:var(--g);white-space:normal}
+.cap{font-style:normal;font-size:10px;font-weight:800;color:#fff;background:var(--warn);border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:3px;text-transform:uppercase}
+.prep{margin-top:8px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px}
+.prep b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:2px}
+.note{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+.note strong{color:var(--ink)}
+.alert{color:var(--danger);font-weight:700}
+.hide{display:none!important}
+
+footer{border-top:1px solid var(--line);padding:16px 0 40px;color:var(--muted);font-size:12.5px}
+footer p{margin:6px 0}
+
+@media print{
+  .controls{position:static}
+  .stage,.tbtn,.chips,.linkbtn,.legend{display:none!important}
+  body{background:#fff;color:#000}
+  .card,.tile{box-shadow:none;break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1><span>WETFLAG</span> · Paediatric Resus Calculator</h1>
+      <div class="sub">Emergency Department · doses, volumes &amp; preparation — always confirm against local protocol</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="tbtn" id="themeBtn" type="button" aria-label="Toggle dark mode">◐ Theme</button>
+      <button class="tbtn" type="button" onclick="window.print()">⎙ Print</button>
+    </div>
+  </header>
+</div>
+
+<div class="controls">
+  <div class="wrap ctl">
+    <div class="field">
+      <label for="ageY">Age</label>
+      <div class="num"><input id="ageY" type="number" min="0" max="16" step="1" value="1" inputmode="numeric"><span>yr</span></div>
+      <div class="num"><input id="ageM" type="number" min="0" max="11" step="1" value="0" inputmode="numeric"><span>mo</span></div>
+    </div>
+    <div class="field">
+      <label for="wt">Weight</label>
+      <div class="num wt"><input id="wt" type="number" min="0.5" max="120" step="0.1" value="10" inputmode="decimal"><span>kg</span></div>
+      <span class="badge" id="wtBadge">Estimated</span>
+      <button class="linkbtn hide" id="wtReset" type="button">use estimate</button>
+    </div>
+    <div class="chips" id="chips"></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <section class="stage" aria-label="Resuscitation bay">
+    <div class="stage-cap">Tap the trolley drawers, defibrillator or drip stand</div>
+    <svg viewBox="0 0 960 470" role="img" aria-labelledby="sceneT">
+      <title id="sceneT">Resuscitation bay with crash trolley, patient and IV drip stand</title>
+      <defs>
+        <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--wall2)"/><stop offset="1" stop-color="var(--wall1)"/></linearGradient>
+        <clipPath id="bagClip"><rect x="772" y="92" width="76" height="112" rx="16"/></clipPath>
+      </defs>
+      <rect width="960" height="470" fill="url(#wall)"/>
+      <rect y="430" width="960" height="40" fill="var(--floor)"/>
+      <line x1="0" y1="430" x2="960" y2="430" stroke="var(--floorline)" stroke-width="2"/>
+      <!-- soft spotlight -->
+      <ellipse cx="480" cy="432" rx="190" ry="16" fill="#000" opacity=".07"/>
+
+      <!-- ===== Crash trolley ===== -->
+      <g id="cart">
+        <g class="hot" data-go="card-energy">
+          <rect class="hl" x="74" y="112" width="172" height="96" rx="12" fill="#2b3440" stroke="#1d242c" stroke-width="2"/>
+          <rect x="86" y="124" width="108" height="70" rx="5" fill="#0a1912"/>
+          <polyline points="90,150 104,150 108,140 112,160 116,150 130,150 134,136 138,164 142,150 190,150" fill="none" stroke="#4ade80" stroke-width="2"/>
+          <text id="defibTxt" x="140" y="184" fill="#facc15" font-size="17" font-weight="800" text-anchor="middle" font-family="system-ui,sans-serif">40 J</text>
+          <circle cx="220" cy="140" r="12" fill="#e11d48"/>
+          <path d="M222 131 l-7 11 h6 l-3 9 l8 -12 h-6z" fill="#fff"/>
+          <rect x="206" y="160" width="28" height="8" rx="3" fill="#64748b"/>
+          <rect x="206" y="174" width="28" height="8" rx="3" fill="#64748b"/>
+          <text x="160" y="104" fill="var(--muted)" font-size="13" font-weight="700" text-anchor="middle" font-family="system-ui,sans-serif">DEFIB · tap</text>
+        </g>
+        <rect x="52" y="208" width="216" height="14" rx="5" fill="#9f2a20"/>
+        <rect x="62" y="220" width="196" height="200" rx="10" fill="#c0392b"/>
+        <rect x="262" y="236" width="10" height="70" rx="5" fill="#9aa5b1"/>
+        <g class="hot drawer" data-go="grp-arrest">
+          <rect class="df hl" x="74" y="232" width="172" height="40" rx="6" fill="#e2574a" stroke="#a93226"/>
+          <rect x="140" y="258" width="40" height="6" rx="3" fill="#f6d5d1"/>
+          <text x="84" y="252" fill="#fff" font-size="13" font-weight="800" font-family="system-ui,sans-serif">A · Arrest drugs</text>
+        </g>
+        <g class="hot drawer" data-go="grp-arrhythmia">
+          <rect class="df hl" x="74" y="278" width="172" height="40" rx="6" fill="#e2574a" stroke="#a93226"/>
+          <rect x="140" y="304" width="40" height="6" rx="3" fill="#f6d5d1"/>
+          <text x="84" y="298" fill="#fff" font-size="13" font-weight="800" font-family="system-ui,sans-serif">B · Arrhythmia</text>
+        </g>
+        <g class="hot drawer" data-go="grp-neuro">
+          <rect class="df hl" x="74" y="324" width="172" height="40" rx="6" fill="#e2574a" stroke="#a93226"/>
+          <rect x="140" y="350" width="40" height="6" rx="3" fill="#f6d5d1"/>
+          <text x="84" y="344" fill="#fff" font-size="13" font-weight="800" font-family="system-ui,sans-serif">C · Seizure · Glucose</text>
+        </g>
+        <g class="hot drawer" data-go="grp-hyperk">
+          <rect class="df hl" x="74" y="370" width="172" height="40" rx="6" fill="#e2574a" stroke="#a93226"/>
+          <rect x="140" y="396" width="40" height="6" rx="3" fill="#f6d5d1"/>
+          <text x="84" y="390" fill="#fff" font-size="13" font-weight="800" font-family="system-ui,sans-serif">D · Hyperkalaemia</text>
+        </g>
+        <circle cx="86" cy="428" r="10" fill="#2b3440"/><circle cx="234" cy="428" r="10" fill="#2b3440"/>
+        <circle cx="86" cy="428" r="4" fill="#9aa5b1"/><circle cx="234" cy="428" r="4" fill="#9aa5b1"/>
+        <!-- airway tray on top-right of trolley -->
+        <g class="hot" data-go="card-airway">
+          <rect class="hl" x="282" y="350" width="70" height="70" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+          <path d="M296 404 q8 -40 34 -40" stroke="#38bdf8" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <circle cx="300" cy="400" r="5" fill="none" stroke="#38bdf8" stroke-width="2"/>
+          <text id="ettTxt" x="317" y="414" fill="var(--ink)" font-size="11" font-weight="800" text-anchor="middle" font-family="system-ui,sans-serif">ETT 4.0</text>
+        </g>
+      </g>
+
+      <!-- ===== Patient ===== -->
+      <g id="kidWrap" transform="translate(480 430)"><g id="kid"></g></g>
+      <g id="tag">
+        <rect id="tagBox" x="400" y="40" width="160" height="34" rx="17" fill="var(--accent)"/>
+        <text id="tagTxt" x="480" y="62" fill="var(--accent-ink)" font-size="15" font-weight="800" text-anchor="middle" font-family="system-ui,sans-serif">10 kg</text>
+      </g>
+
+      <!-- ===== IV drip stand ===== -->
+      <g id="iv" class="hot" data-go="card-fluid">
+        <line x1="860" y1="60" x2="860" y2="416" stroke="#9aa5b1" stroke-width="7" stroke-linecap="round"/>
+        <line x1="800" y1="70" x2="904" y2="70" stroke="#9aa5b1" stroke-width="5" stroke-linecap="round"/>
+        <path d="M810 70 v10 M904 70 v10" stroke="#9aa5b1" stroke-width="3" fill="none"/>
+        <path d="M860 412 L808 428 M860 412 L912 428 M860 412 L860 430" stroke="#9aa5b1" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="806" cy="430" r="6" fill="#2b3440"/><circle cx="914" cy="430" r="6" fill="#2b3440"/><circle cx="860" cy="432" r="6" fill="#2b3440"/>
+        <rect class="hl" x="772" y="92" width="76" height="112" rx="16" fill="#ffffff" fill-opacity=".85" stroke="#8fb3c9" stroke-width="2"/>
+        <rect id="bagFluid" x="772" y="150" width="76" height="54" fill="#7dd3fc" fill-opacity=".55" clip-path="url(#bagClip)"/>
+        <rect x="806" y="80" width="8" height="14" rx="2" fill="#8fb3c9"/>
+        <text x="810" y="118" fill="#0c4a6e" font-size="11" font-weight="800" text-anchor="middle" font-family="system-ui,sans-serif">0.9% NaCl</text>
+        <text id="bagTxt" x="810" y="138" fill="#0c4a6e" font-size="15" font-weight="800" text-anchor="middle" font-family="system-ui,sans-serif">100 mL</text>
+        <rect x="803" y="204" width="14" height="28" rx="4" fill="#e0f2fe" stroke="#8fb3c9" stroke-width="2"/>
+        <circle cx="810" cy="222" r="2.5" fill="#38bdf8"><animate attributeName="cy" values="210;228" dur="1.1s" repeatCount="indefinite"/></circle>
+        <path id="tube" d="M810 232 C 810 330, 700 300, 610 330" stroke="#8fb3c9" stroke-width="3" fill="none"/>
+        <text x="810" y="258" fill="var(--muted)" font-size="12" font-weight="700" text-anchor="middle" font-family="system-ui,sans-serif" transform="translate(70 0)">FLUIDS · tap</text>
+      </g>
+    </svg>
+  </section>
+  <div class="legend">
+    <span><i style="background:var(--gE)"></i>Airway · energy · fluids</span>
+    <span><i style="background:var(--gA)"></i>A · Arrest</span>
+    <span><i style="background:var(--gB)"></i>B · Arrhythmia</span>
+    <span><i style="background:var(--gC)"></i>C · Seizure &amp; glucose</span>
+    <span><i style="background:var(--gD)"></i>D · Hyperkalaemia</span>
+  </div>
+
+  <section class="tiles" id="tiles" aria-label="WETFLAG summary"></section>
+  <div id="groups"></div>
+</main>
+
+<footer class="wrap">
+  <p><strong>Weight estimate (APLS):</strong> term neonate 3.5 kg · 1–12 months (0.5 × age in months) + 4 · 1–5 years (2 × age) + 8 · 6–12 years (3 × age) + 7. Use a measured or Broselow weight whenever available.</p>
+  <p><strong>Sources:</strong> APLS (ALSG) 6th ed., Resuscitation Council UK Paediatric &amp; Newborn Life Support 2021, BNF for Children. Maximum doses are capped at the usual adult dose and flagged <span class="cap" style="margin:0">max</span>.</p>
+  <p class="alert">Decision support only. Doses must be independently checked by a second clinician against local guidelines and the product label before administration.</p>
+</footer>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const ageY = $('#ageY'), ageM = $('#ageM'), wtIn = $('#wt');
+  const state = { y:1, m:0, wt:10, manual:false };
+
+  /* ---------- helpers ---------- */
+  function r(n){
+    if(!isFinite(n)) return '–';
+    const d = n < 10 ? 2 : n < 100 ? 1 : 0;
+    return String(+n.toFixed(d));
+  }
+  function capped(v, max){ return { v: Math.min(v, max), cap: v > max }; }
+  const half = x => Math.round(x*2)/2, halfDown = x => Math.floor(x*2)/2;
+  const fx = n => n.toFixed(1);
+
+  function estWeight(am){
+    if(am < 1) return 3.5;
+    if(am < 12) return 0.5*am + 4;
+    const Y = Math.floor(am/12);
+    if(Y <= 5) return 2*Y + 8;
+    return 3*Y + 7;
+  }
+  function stageOf(am){
+    if(am < 1) return 'neonate';
+    if(am < 12) return 'infant';
+    if(am < 48) return 'toddler';
+    if(am < 144) return 'child';
+    return 'adolescent';
+  }
+  const stageLabel = {neonate:'Neonate', infant:'Baby (infant)', toddler:'Toddler', child:'Child', adolescent:'Adolescent'};
+
+  /* ---------- characters ---------- */
+  const SKIN = '#e5b08a', SKIN_D = '#c98f68', HAIR = '#2a1d17', CHEEK = '#f08f8f';
+  function face(cx, cy, rr, closed){
+    const ex = rr*0.36, ey = cy + rr*0.06;
+    const eyes = closed
+      ? `<path d="M${cx-ex-rr*.13} ${ey} q${rr*.13} ${rr*.12} ${rr*.26} 0 M${cx+ex-rr*.13} ${ey} q${rr*.13} ${rr*.12} ${rr*.26} 0" stroke="#3b2a22" stroke-width="${rr*.05}" fill="none" stroke-linecap="round"/>`
+      : `<ellipse cx="${cx-ex}" cy="${ey}" rx="${rr*.11}" ry="${rr*.14}" fill="#1f2937"/><ellipse cx="${cx+ex}" cy="${ey}" rx="${rr*.11}" ry="${rr*.14}" fill="#1f2937"/>
+         <circle cx="${cx-ex+rr*.04}" cy="${ey-rr*.05}" r="${rr*.04}" fill="#fff"/><circle cx="${cx+ex+rr*.04}" cy="${ey-rr*.05}" r="${rr*.04}" fill="#fff"/>`;
+    return `<circle cx="${cx-rr*.97}" cy="${cy+rr*.08}" r="${rr*.17}" fill="${SKIN_D}"/><circle cx="${cx+rr*.97}" cy="${cy+rr*.08}" r="${rr*.17}" fill="${SKIN_D}"/>
+      <circle cx="${cx}" cy="${cy}" r="${rr}" fill="${SKIN}"/>
+      ${eyes}
+      <circle cx="${cx-rr*.56}" cy="${cy+rr*.36}" r="${rr*.14}" fill="${CHEEK}" opacity=".55"/><circle cx="${cx+rr*.56}" cy="${cy+rr*.36}" r="${rr*.14}" fill="${CHEEK}" opacity=".55"/>
+      <path d="M${cx-rr*.22} ${cy+rr*.4} Q${cx} ${cy+rr*.6} ${cx+rr*.22} ${cy+rr*.4}" stroke="#8a3b2e" stroke-width="${rr*.06}" fill="none" stroke-linecap="round"/>`;
+  }
+  function hair(cx, cy, rr, style){
+    if(style === 'tuft') return `<path d="M${cx-6} ${cy-rr+2} q-4 -18 10 -20 q-8 8 2 18 z" fill="${HAIR}"/>`;
+    if(style === 'curl') return `<path d="M${cx-3} ${cy-rr+3} q-2 -14 12 -12 q-8 2 -4 12" stroke="${HAIR}" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+    if(style === 'short') return `<path d="M${cx-rr*1.02} ${cy+rr*.05} Q${cx-rr*1.1} ${cy-rr*1.15} ${cx} ${cy-rr*1.08} Q${cx+rr*1.1} ${cy-rr*1.15} ${cx+rr*1.02} ${cy+rr*.05} Q${cx+rr*.8} ${cy-rr*.45} ${cx+rr*.1} ${cy-rr*.55} Q${cx-rr*.7} ${cy-rr*.4} ${cx-rr*1.02} ${cy+rr*.05}Z" fill="${HAIR}"/>`;
+    if(style === 'teen') return `<path d="M${cx-rr*1.04} ${cy+rr*.15} Q${cx-rr*1.15} ${cy-rr*1.2} ${cx+rr*.1} ${cy-rr*1.12} Q${cx+rr*1.15} ${cy-rr*1.05} ${cx+rr*1.04} ${cy+rr*.1} Q${cx+rr*.85} ${cy-rr*.5} ${cx+rr*.35} ${cy-rr*.4} Q${cx-rr*.4} ${cy-rr*.2} ${cx-rr*.6} ${cy-rr*.55} Q${cx-rr*.85} ${cy-rr*.2} ${cx-rr*1.04} ${cy+rr*.15}Z" fill="${HAIR}"/>`;
+    return '';
+  }
+  function standing(o){
+    const top = -(o.leg + o.torso), w = o.w;
+    const hy = top - o.hr*0.92;
+    const legW = w*0.34;
+    const legs = o.shorts
+      ? `<rect x="${-w*.36}" y="${-o.leg}" width="${legW}" height="${o.leg}" rx="8" fill="${SKIN}"/><rect x="${w*.02}" y="${-o.leg}" width="${legW}" height="${o.leg}" rx="8" fill="${SKIN}"/>
+         <rect x="${-w*.42}" y="${-o.leg-4}" width="${w*.84}" height="${o.leg*.5}" rx="10" fill="${o.pants}"/>`
+      : `<rect x="${-w*.38}" y="${-o.leg-6}" width="${legW}" height="${o.leg+2}" rx="9" fill="${o.pants}"/><rect x="${w*.04}" y="${-o.leg-6}" width="${legW}" height="${o.leg+2}" rx="9" fill="${o.pants}"/>`;
+    const shoes = `<ellipse cx="${-w*.22}" cy="-5" rx="${w*.24}" ry="8" fill="${o.shoes}"/><ellipse cx="${w*.22}" cy="-5" rx="${w*.24}" ry="8" fill="${o.shoes}"/>`;
+    const armW = w*0.22, armH = o.torso*0.86;
+    const arms = `<rect x="${-w/2-armW+6}" y="${top+8}" width="${armW}" height="${armH}" rx="${armW/2}" fill="${o.shirt}" transform="rotate(8 ${-w/2} ${top+8})"/>
+      <rect x="${w/2-6}" y="${top+8}" width="${armW}" height="${armH}" rx="${armW/2}" fill="${o.shirt}" transform="rotate(-8 ${w/2} ${top+8})"/>
+      <circle cx="${-w/2-armW/2+14}" cy="${top+armH+10}" r="${armW*.48}" fill="${SKIN}"/><circle cx="${w/2+armW/2-14}" cy="${top+armH+10}" r="${armW*.48}" fill="${SKIN}"/>`;
+    const torso = `<rect x="${-w/2}" y="${top}" width="${w}" height="${o.torso+12}" rx="${w*.28}" fill="${o.shirt}"/>`;
+    const neck = `<rect x="-${o.hr*.25}" y="${top-o.hr*.3}" width="${o.hr*.5}" height="${o.hr*.4}" fill="${SKIN_D}"/>`;
+    return legs + shoes + arms + torso + (o.extra||'') + neck + face(0, hy, o.hr) + hair(0, hy, o.hr, o.hair) + (o.extraTop ? o.extraTop(hy) : '');
+  }
+  const KIDS = {
+    neonate(){ // swaddled, lying on a resuscitaire mattress
+      return `<rect x="-150" y="-84" width="300" height="20" rx="8" fill="#94a3b8"/>
+        <rect x="-140" y="-64" width="12" height="64" fill="#94a3b8"/><rect x="128" y="-64" width="12" height="64" fill="#94a3b8"/>
+        <rect x="-140" y="-112" width="280" height="30" rx="12" fill="#cfe8f3"/>
+        <rect x="-40" y="-238" width="80" height="16" rx="6" fill="#64748b"/><rect x="-4" y="-222" width="8" height="40" fill="#64748b"/>
+        <path d="M-60 -182 h120 l-12 14 h-96z" fill="#f59e0b" opacity=".35"/>
+        <ellipse cx="25" cy="-138" rx="88" ry="36" fill="#f9c6d3"/>
+        <path d="M-30 -160 q50 22 110 -6 M-20 -118 q50 14 100 -8" stroke="#e79db0" stroke-width="4" fill="none" stroke-linecap="round"/>
+        ${face(-78, -142, 32, true)}
+        <path d="M-112 -146 Q-110 -186 -74 -180 Q-46 -176 -48 -152 Q-80 -168 -112 -146Z" fill="#7dd3fc"/>
+        <path d="M-104 -160 q26 -10 50 -2" stroke="#e0f2fe" stroke-width="4" fill="none"/>
+        <circle cx="-106" cy="-176" r="7" fill="#7dd3fc"/>`;
+    },
+    infant(){ // sitting baby in onesie
+      return `<ellipse cx="0" cy="-6" rx="110" ry="12" fill="#bae6fd" opacity=".7"/>
+        <ellipse cx="-34" cy="-26" rx="30" ry="18" fill="#fcd34d"/><ellipse cx="34" cy="-26" rx="30" ry="18" fill="#fcd34d"/>
+        <circle cx="-62" cy="-24" r="12" fill="${SKIN}"/><circle cx="62" cy="-24" r="12" fill="${SKIN}"/>
+        <ellipse cx="-50" cy="-82" rx="14" ry="30" fill="#fcd34d" transform="rotate(22 -50 -82)"/><ellipse cx="50" cy="-82" rx="14" ry="30" fill="#fcd34d" transform="rotate(-22 50 -82)"/>
+        <circle cx="-62" cy="-56" r="12" fill="${SKIN}"/><circle cx="62" cy="-56" r="12" fill="${SKIN}"/>
+        <ellipse cx="0" cy="-74" rx="46" ry="52" fill="#fcd34d"/>
+        <circle cx="0" cy="-78" r="12" fill="#fde68a"/><path d="M-8 -78 h16 M0 -86 v16" stroke="#f59e0b" stroke-width="3"/>
+        ${face(0, -160, 50)}${hair(0, -160, 50, 'curl')}
+        <ellipse cx="0" cy="-130" rx="9" ry="7" fill="#f472b6"/><circle cx="0" cy="-130" r="3" fill="#fff"/>`;
+    },
+    toddler(){
+      return standing({leg:70, torso:66, w:74, hr:46, shirt:'#34d399', pants:'#2563eb', shoes:'#ef4444', shorts:true, hair:'tuft',
+        extra:`<g transform="translate(58 -84)"><circle cx="0" cy="0" r="16" fill="#b45309"/><circle cx="-12" cy="-12" r="7" fill="#b45309"/><circle cx="12" cy="-12" r="7" fill="#b45309"/><circle cx="0" cy="-20" r="13" fill="#b45309"/><circle cx="-4" cy="-22" r="2" fill="#1f2937"/><circle cx="4" cy="-22" r="2" fill="#1f2937"/><ellipse cx="0" cy="-16" rx="5" ry="3.5" fill="#fcd34d"/></g>`});
+    },
+    child(){
+      return standing({leg:112, torso:86, w:84, hr:44, shirt:'#f97316', pants:'#334155', shoes:'#1f2937', hair:'short',
+        extra:`<path d="M-26 -194 l-8 70 M26 -194 l8 70" stroke="#1e3a8a" stroke-width="7" stroke-linecap="round"/><rect x="-14" y="-170" width="28" height="18" rx="4" fill="#fff" opacity=".85"/><text x="0" y="-157" font-size="11" font-weight="800" text-anchor="middle" fill="#f97316" font-family="system-ui,sans-serif">ABC</text>`});
+    },
+    adolescent(){
+      return standing({leg:146, torso:104, w:94, hr:42, shirt:'#6366f1', pants:'#1e3a8a', shoes:'#f1f5f9', hair:'teen',
+        extra:`<path d="M-30 -250 q30 26 60 0" stroke="#4f46e5" stroke-width="10" fill="none"/><path d="M-10 -240 v34 M10 -240 v34" stroke="#e0e7ff" stroke-width="3" stroke-linecap="round"/><rect x="-30" y="-196" width="60" height="30" rx="8" fill="#4f46e5"/>`});
+    }
+  };
+  const KID_TOP = {neonate:-250, infant:-222, toddler:-238, child:-288, adolescent:-338};
+
+  /* ---------- calculation ---------- */
+  function calc(){
+    const am = state.y*12 + state.m;
+    const Y = Math.floor(am/12);
+    const wt = state.wt;
+    const st = stageOf(am);
+    const o = {am, Y, wt, st};
+
+    // Energy
+    o.J = capped(Math.round(4*wt), 150);
+    o.sync1 = Math.max(1, Math.round(wt)); o.sync2 = Math.round(2*wt);
+
+    // Tube
+    if(st === 'neonate'){
+      o.unc = wt < 1 ? '2.5' : wt < 2 ? '3.0' : wt < 3 ? '3.0–3.5' : '3.5';
+      o.cuf = wt >= 3 ? '3.0' : '— (use uncuffed)';
+      o.oral = `${r(wt+6)} cm`; o.oralSub = 'Weight (kg) + 6 cm (at lips)'; o.nasal = `${r(wt+7)} cm`;
+      o.blade = wt < 2.5 ? 'Miller 0 (straight)' : 'Miller 0–1 (straight)';
+    } else if(st === 'infant'){
+      o.unc = am < 6 ? '3.5' : '4.0'; o.cuf = am < 6 ? '3.0' : '3.5';
+      const L = 3 * parseFloat(o.unc);
+      o.oral = `${r(L)} cm`; o.oralSub = '3 × ETT internal diameter'; o.nasal = `${r(L+2)} cm`;
+      o.blade = 'Miller 1 (straight) / Mac 1';
+    } else {
+      o.unc = fx(Math.min(half(Y/4 + 4), 8)); o.cuf = fx(Math.min(halfDown(Y/4 + 3.5), 8));
+      o.oral = `${r(half(Y/2 + 12))} cm`; o.oralSub = '(Age ÷ 2) + 12 cm at lips'; o.nasal = `${r(half(Y/2 + 15))} cm`;
+      o.blade = Y < 2 ? 'Miller 1 / Mac 1' : Y < 8 ? 'Mac 2' : Y < 12 ? 'Mac 2–3' : 'Mac 3';
+    }
+    o.sga = wt < 5 ? '1' : wt < 12 ? '1.5' : wt < 25 ? '2' : wt < 35 ? '2.5' : wt < 60 ? '3' : '4';
+    const etNum = parseFloat(st==='neonate' || st==='infant' ? o.unc : o.cuf) || 3;
+    o.suction = Math.round(etNum*2);
+
+    // Fluids
+    o.bolus = capped(10*wt, 500);
+    o.blood = capped(10*wt, 500);
+
+    // Drugs
+    o.adr = capped(10*wt, 1000);                 // mcg
+    o.adrNeo = 20*wt;                            // mcg (NLS)
+    o.adrIM = capped(10*wt, 500);                // mcg
+    o.adrInf = 0.3*wt;                           // mg in 50 mL
+    o.amio = capped(5*wt, 300);                  // mg
+    o.lido = capped(1*wt, 100);                  // mg
+    o.bic = capped(1*wt, 50);                    // mmol
+    o.bicDilute = am < 3;
+    const a1 = am < 12 ? 0.15 : 0.1;
+    o.aden1 = capped(a1*wt, 6); o.a1 = a1;
+    o.aden2 = capped(0.2*wt, 12);
+    o.aden3 = capped(0.3*wt, 12);
+    o.lzp = capped(0.1*wt, 4);
+    o.dzIV = capped(0.3*wt, 10);                 // mg IV/IO
+    o.dzPR = capped(0.5*wt, 10);                 // mg rectal
+    o.dzIM = capped(0.3*wt, 10);                 // mg IM (erratic absorption)
+    o.mdzIM = capped(0.2*wt, 10);                // mg IM midazolam (preferred IM)
+    o.dzTube = o.dzPR.v < 7.5 ? '5 mg' : '10 mg';
+    o.glu = capped(2*wt, 250);                   // mL D10
+    o.cag = capped(0.5*wt, 20);                  // mL 10% Ca gluconate
+    o.cacl = capped(0.2*wt, 10);                 // mL 10% CaCl
+    o.ins = capped(0.1*wt, 10);                  // units
+    o.insDex = capped(5*wt, 250);                // mL D10
+    o.salb = wt < 25 ? 2.5 : 5;
+    return o;
+  }
+
+  /* ---------- rendering ---------- */
+  const v = (num, unit, draw, cap) => `${num}<span class="u">${unit}</span>${cap ? '<em class="cap">max</em>' : ''}${draw ? `<span class="draw">${draw}</span>` : ''}`;
+  const row = (l, d, val) => `<div class="row"><div class="lbl">${l}${d ? `<small>${d}</small>` : ''}</div><div class="val">${val}</div></div>`;
+  function card(id, name, ind, rows, prep, note){
+    return `<article class="card" id="${id}"><h3>${name}</h3><span class="ind">${ind}</span>${rows.join('')}${prep ? `<div class="prep"><b>Preparation</b>${prep}</div>` : ''}${note ? `<p class="note">${note}</p>` : ''}</article>`;
+  }
+  function group(id, letter, color, title, sub, cards){
+    return `<section class="group" id="${id}" style="--g:var(${color})"><h2><span class="dot">${letter}</span>${title} <small>${sub}</small></h2><div class="cards">${cards.join('')}</div></section>`;
+  }
+
+  function render(){
+    const o = calc(); const wt = o.wt, neo = o.st === 'neonate';
+    const ageTxt = o.am < 1 ? 'newborn' : o.am < 24 ? `${o.am} mo` : `${o.Y} yr${state.m ? ' ' + state.m + ' mo' : ''}`;
+
+    /* scene */
+    const kid = $('#kid');
+    if(kid.dataset.st !== o.st){
+      kid.innerHTML = KIDS[o.st]();
+      kid.dataset.st = o.st;
+      kid.classList.remove('pop'); void kid.getBBox; void kid.offsetWidth; kid.classList.add('pop');
+    }
+    const ty = 430 + KID_TOP[o.st] - 22;
+    const tagTxt = `${stageLabel[o.st]} · ${ageTxt} · ${r(wt)} kg`;
+    $('#tagTxt').textContent = tagTxt;
+    $('#tagTxt').setAttribute('y', ty);
+    const tw = Math.max(170, tagTxt.length * 8.4 + 30);
+    const box = $('#tagBox'); box.setAttribute('width', tw); box.setAttribute('x', 480 - tw/2); box.setAttribute('y', ty - 22);
+    $('#defibTxt').textContent = `${o.J.v} J`;
+    $('#bagTxt').textContent = `${r(o.bolus.v)} mL`;
+    const lvl = Math.max(8, Math.min(1, o.bolus.v/500) * 104);
+    $('#bagFluid').setAttribute('y', 204 - lvl); $('#bagFluid').setAttribute('height', lvl);
+    $('#ettTxt').textContent = `ETT ${neo || o.st==='infant' ? o.unc.split('–')[0] : o.cuf}`;
+    $('#tube').setAttribute('d', neo ? 'M810 232 C 810 330, 700 300, 560 300' : o.st==='infant' ? 'M810 232 C 810 330, 680 330, 540 360' : 'M810 232 C 810 330, 680 300, 545 ' + (430 + KID_TOP[o.st]*0.45));
+
+    /* tiles */
+    const tiles = [
+      ['W','Weight', `${r(wt)} kg`, state.manual ? 'Measured / entered' : 'APLS estimate', 'card-airway'],
+      ['E','Energy', `${o.J.v} J`, `4 J/kg${o.J.cap ? ' (capped)' : ''} · sync ${o.sync1}→${o.sync2} J`, 'card-energy'],
+      ['T','Tube', `C ${o.cuf.split(' ')[0]} · U ${o.unc}`, `Oral ${o.oral} · ${o.blade}`, 'card-airway'],
+      ['F','Fluid', `${r(o.bolus.v)} mL`, `10 mL/kg crystalloid · blood ${r(o.blood.v)} mL`, 'card-fluid'],
+      ['L','Lorazepam', `${r(o.lzp.v)} mg`, `${r(o.lzp.v)} mL of 1 mg/mL · diazepam PR ${r(o.dzPR.v)} mg · lidocaine ${r(o.lido.v)} mg`, 'card-lzp'],
+      ['A','Adrenaline', neo ? `${r(o.adrNeo)} mcg` : `${r(o.adr.v)} mcg`, neo ? `${r(o.adrNeo/100)} mL 1:10,000 · amio ${r(o.amio.v)} mg` : `${r(o.adr.v/100)} mL 1:10,000 · amio ${r(o.amio.v)} mg · adenosine ${r(o.aden1.v)} mg`, 'card-adr'],
+      ['G','Glucose', `${r(o.glu.v)} mL`, `10% dextrose · 2 mL/kg`, 'card-glu']
+    ];
+    $('#tiles').innerHTML = tiles.map(t => `<button class="tile" type="button" data-go="${t[4]}"><div class="L">${t[0]}</div><div class="n">${t[1]}</div><div class="v">${t[2]}</div><div class="s">${t[3]}</div></button>`).join('');
+
+    /* groups */
+    const G = [];
+
+    G.push(group('grp-core','✚','--gE','Airway · Energy · Fluids','W · E · T · F', [
+      card('card-airway','Airway — tube, length &amp; blade', `${stageLabel[o.st]} · ${r(wt)} kg`, [
+        row('ETT cuffed (ID)', neo ? 'Uncuffed preferred in neonates' : o.st==='infant' ? 'Infant: 3.0–3.5' : '(Age ÷ 4) + 3.5', v(o.cuf.split(' ')[0], 'mm')),
+        row('ETT uncuffed (ID)', neo ? 'By weight: <1 kg 2.5 · 1–3 kg 3.0 · >3 kg 3.5' : o.st==='infant' ? 'Infant: 3.5–4.0' : '(Age ÷ 4) + 4', v(o.unc, 'mm')),
+        row('Length — oral', o.oralSub, v(o.oral.replace(' cm',''), 'cm')),
+        row('Length — nasal', neo ? 'Weight + 7 cm' : o.st==='infant' ? 'Oral + 2 cm' : '(Age ÷ 2) + 15 cm', v(o.nasal.replace(' cm',''), 'cm')),
+        row('Laryngoscope blade', 'Have one size up &amp; down ready', `<span style="font-size:15px">${o.blade}</span>`),
+        row('Supraglottic (i-gel / LMA)', 'By weight', v(o.sga, 'size')),
+        row('Suction catheter', '2 × ETT size', v(o.suction, 'Fr'))
+      ], null, 'Prepare tubes 0.5 mm above and below. Confirm with waveform capnography; re-check depth on CXR.'),
+
+      card('card-energy','Energy — defibrillation', 'VF / pulseless VT · SVT / VT with pulse', [
+        row('Defibrillation', '4 J/kg, every shock', v(o.J.v, 'J', null, o.J.cap)),
+        row('Synchronised cardioversion', '1st 1 J/kg → 2nd 2 J/kg', v(`${o.sync1} → ${o.sync2}`, 'J'))
+      ], null, `Select the nearest setting at or just above the calculated energy, not exceeding the adult dose (120–150 J biphasic). ${wt < 10 ? '<strong>Use infant/paediatric pads</strong> (front–back placement if pads would touch).' : 'Use adult pads if child is large enough (front–back if they would touch).'}`),
+
+      card('card-fluid','Fluid &amp; blood', 'Shock · haemorrhage', [
+        row('Crystalloid bolus', '10 mL/kg 0.9% NaCl or balanced crystalloid', v(r(o.bolus.v), 'mL', null, o.bolus.cap)),
+        row('Running total 40 mL/kg', 'Senior review / consider inotropes', v(r(40*wt), 'mL')),
+        row('Blood (PRBC / whole blood)', '10 mL/kg, warmed — haemorrhagic shock', v(r(o.blood.v), 'mL', o.blood.v > 150 ? `≈ ${r(o.blood.v/300)} unit(s)` : null, o.blood.cap))
+      ], 'Give bolus over 5–10 min (push–pull with 50 mL syringe or pressure bag). Reassess after each bolus — HR, CRT, BP, liver edge, crepitations.', 'Trauma: give blood early; activate major haemorrhage protocol if &gt;40 mL/kg needed. Consider TXA per trauma protocol.')
+    ]));
+
+    G.push(group('grp-arrest','A','--gA','Arrest drugs','Adrenaline · Amiodarone · Lidocaine · Sodium bicarbonate', [
+      card('card-adr','Adrenaline (epinephrine)', 'Cardiac arrest · anaphylaxis · post-ROSC', [
+        neo
+          ? row('Newborn arrest (NLS)', '20 mcg/kg IV/IO (10–30 mcg/kg)', v(r(o.adrNeo), 'mcg', `${r(o.adrNeo/100)} mL of 1:10,000`))
+          : row('Cardiac arrest IV/IO', '10 mcg/kg every 3–5 min', v(r(o.adr.v), 'mcg', `${r(o.adr.v/100)} mL of 1:10,000`, o.adr.cap)),
+        row('Anaphylaxis IM', '10 mcg/kg = 0.01 mL/kg of 1:1000, thigh', v(r(o.adrIM.v), 'mcg', `${r(o.adrIM.v/1000)} mL of 1:1000`, o.adrIM.cap)),
+        row('Infusion (post-ROSC / shock)', '0.05–1 mcg/kg/min', v(`${r(o.adrInf)}`, 'mg', 'in 50 mL → 1 mL/h = 0.1 mcg/kg/min'))
+      ], `<strong>1:10,000 (100 mcg/mL):</strong> 1 mL of 1:1000 (1 mg/mL) + 9 mL 0.9% NaCl in a 10 mL syringe.<br><strong>Infusion:</strong> ${r(o.adrInf)} mg (= ${r(o.adrInf)} mL of 1:1000) made up to 50 mL with 0.9% NaCl or 5% glucose.`,
+        'Never give 1:1000 IV. Flush each IV/IO dose with 2–5 mL NaCl (neonate) or 5–10 mL (child).'),
+
+      card('card-amio','Amiodarone', 'Shock-refractory VF / pVT — after 3rd and 5th shocks', [
+        row('Arrest dose IV/IO', '5 mg/kg (max 300 mg)', v(r(o.amio.v), 'mg', `${r(o.amio.v/10)} mL of 10 mg/mL`, o.amio.cap)),
+        row('Undiluted volume', '50 mg/mL ampoule', v(r(o.amio.v/50), 'mL'))
+      ], 'Ampoule 150 mg in 3 mL (50 mg/mL). Dilute <strong>3 mL + 12 mL 5% glucose = 10 mg/mL</strong> (0.5 mL/kg). Use 5% glucose only — not saline.',
+        'Rapid bolus in arrest. With a pulse (VT/SVT): 5 mg/kg over 20–60 min with expert advice. Flush well; phlebitic peripherally.'),
+
+      card('card-lido','Lidocaine (lignocaine)', 'Alternative to amiodarone in VF / pVT', [
+        row('Bolus IV/IO', '1 mg/kg (max 100 mg)', v(r(o.lido.v), 'mg', `${r(o.lido.v/10)} mL of 1% · or ${r(o.lido.v/20)} mL of 2%`, o.lido.cap)),
+        row('Infusion after ROSC', '20–50 mcg/kg/min', v(`${r(20*wt*60/1000)}–${r(50*wt*60/1000)}`, 'mg/h'))
+      ], '1% = 10 mg/mL (0.1 mL/kg) · 2% = 20 mg/mL (0.05 mL/kg). Use preservative-free, adrenaline-free ampoules only.', null),
+
+      card('card-bic','Sodium bicarbonate', 'Prolonged arrest with severe acidosis · hyperkalaemia · TCA toxicity', [
+        row('Dose IV/IO', '1 mmol/kg (max 50 mmol)', v(r(o.bic.v), 'mmol', o.bicDilute ? `${r(o.bic.v*2)} mL of 4.2%` : `${r(o.bic.v)} mL of 8.4%`, o.bic.cap)),
+        row(o.bicDilute ? 'Alternative' : 'Infant < 3 months', o.bicDilute ? '8.4% undiluted — avoid in young infants' : '4.2% (0.5 mmol/mL)', v(o.bicDilute ? r(o.bic.v) : r(o.bic.v*2), 'mL', o.bicDilute ? '8.4% (not preferred)' : '2 mL/kg of 4.2%'))
+      ], `8.4% = 1 mmol/mL. <strong>4.2%</strong>: dilute 8.4% 1:1 with water for injection (e.g. ${r(o.bic.v)} mL 8.4% + ${r(o.bic.v)} mL WFI)${o.bicDilute ? ' — <strong>use 4.2% for this patient</strong>' : ' for infants &lt; 3 months'}.`,
+        'Slow IV push (over 2–3 min in arrest). Flush before &amp; after: <strong>inactivates adrenaline and precipitates with calcium</strong>. Not routine in arrest.')
+    ]));
+
+    G.push(group('grp-arrhythmia','B','--gB','Arrhythmia','Adenosine · (synchronised cardioversion above)', [
+      card('card-aden','Adenosine', 'SVT — stable or with IV access ready', [
+        row('1st dose', `${o.a1*1000} mcg/kg (max 6 mg)`, v(r(o.aden1.v), 'mg', `${r(o.aden1.v)} mL of 1 mg/mL`, o.aden1.cap)),
+        row('2nd dose', '200 mcg/kg (max 12 mg)', v(r(o.aden2.v), 'mg', `${r(o.aden2.v)} mL of 1 mg/mL`, o.aden2.cap)),
+        row('3rd dose', '300 mcg/kg (max 12 mg)', v(r(o.aden3.v), 'mg', `${r(o.aden3.v)} mL of 1 mg/mL`, o.aden3.cap))
+      ], 'Vial 6 mg/2 mL (3 mg/mL). Dilute <strong>2 mL + 4 mL 0.9% NaCl = 1 mg/mL</strong> (dose in mg = volume in mL). Doses ≥ 6 mg may be given undiluted.',
+        'Rapid push via large, proximal (antecubital) vein with 3-way tap and immediate 5–10 mL NaCl flush. Record ECG strip throughout. Try vagal manoeuvres first if stable. Unstable → synchronised cardioversion.')
+    ]));
+
+    G.push(group('grp-neuro','C','--gC','Seizure &amp; glucose','Lorazepam · Diazepam · Dextrose', [
+      card('card-lzp','Lorazepam', 'Convulsive status epilepticus — 1st line with IV/IO access', [
+        row('Dose IV/IO', '0.1 mg/kg (max 4 mg)', v(r(o.lzp.v), 'mg', `${r(o.lzp.v)} mL of 1 mg/mL`, o.lzp.cap)),
+        row('Repeat once', 'After 5 min if still seizing', v(r(o.lzp.v), 'mg'))
+      ], 'Ampoule 4 mg/mL (refrigerated). Dilute <strong>1 mL + 3 mL 0.9% NaCl or WFI = 1 mg/mL</strong> (0.1 mL/kg). Give over 30–60 s.',
+        `${neo ? '<strong>Neonate:</strong> phenobarbital 20 mg/kg is usually first-line — follow neonatal protocol. ' : ''}No IV access: rectal diazepam (below) or buccal midazolam 0.3 mg/kg (max 10 mg). Max 2 benzodiazepine doses in total (incl. pre-hospital), then 2nd-line agent. Watch for respiratory depression.`),
+
+      card('card-dzp','Diazepam', 'Convulsive seizure ≥ 5 min — alternative benzodiazepine', [
+        row('<span class="alert">No IV/IO</span> — Rectal (PR)', '0.5 mg/kg (max 10 mg)', v(r(o.dzPR.v), 'mg', `≈ ${o.dzTube} rectal tube · or ${r(o.dzPR.v/5)} mL of 5 mg/mL`, o.dzPR.cap)),
+        row('<span class="alert">No IV/IO</span> — IM', '0.3 mg/kg (max 10 mg) — slow, erratic absorption', v(r(o.dzIM.v), 'mg', `${r(o.dzIM.v/5)} mL of 5 mg/mL`, o.dzIM.cap)),
+        row('IV/IO achieved', '0.3 mg/kg (max 10 mg) over 3–5 min', v(r(o.dzIV.v), 'mg', `${r(o.dzIV.v/5)} mL of 5 mg/mL`, o.dzIV.cap)),
+        row('Repeat once', 'After 5–10 min if still seizing', v(r(o.dzIV.v), 'mg', 'IV/IO dose'))
+      ], `Injection 10 mg/2 mL (5 mg/mL) — give IV/IO <strong>undiluted</strong> (precipitates if diluted) into a large vein, then flush. Rectal tubes (Stesolid) 5 mg or 10 mg: insert full nozzle length (half in infants), hold buttocks together 1 min. No rectal tube: draw ${r(o.dzPR.v/5)} mL of the injection into a 1 mL syringe, attach a cut feeding tube and give PR.`,
+        `<strong>IM diazepam is unreliable</strong> — if IM is the only route, IM midazolam 0.2 mg/kg (${r(o.mdzIM.v)} mg${o.mdzIM.cap ? ', max' : ''}) works faster. ${neo ? 'Neonates: diazepam not recommended — follow neonatal protocol. ' : ''}Counts toward the 2-dose benzodiazepine limit; have bag-valve-mask ready.`),
+
+      card('card-glu','Glucose (dextrose 10%)', 'Hypoglycaemia (BG &lt; 3 mmol/L) — the "G" in WETFLAG', [
+        row('Bolus IV/IO', '2 mL/kg of 10% dextrose (0.2 g/kg)', v(r(o.glu.v), 'mL', `= ${r(o.glu.v*0.1)} g glucose`, o.glu.cap)),
+        row('If only 50% available', '1 part D50 : 4 parts WFI', v(`${r(o.glu.v/5)} + ${r(o.glu.v*4/5)}`, 'mL', 'D50 + water for injection'))
+      ], 'Use 10% dextrose bag/ampoules where possible. Make D10 from D50: 1 mL D50 + 4 mL water for injection.',
+        'Re-check BG in 15 min, then start maintenance fluid containing glucose. Avoid D50 peripherally in children (tissue injury).')
+    ]));
+
+    G.push(group('grp-hyperk','D','--gD','Hyperkalaemia','Calcium gluconate · Insulin + dextrose · Bicarbonate · Salbutamol', [
+      card('card-ca','Calcium gluconate 10%', 'K⁺ with ECG changes / arrhythmia — cardiac membrane stabilisation', [
+        row('Dose IV/IO', '0.5 mL/kg (0.11 mmol/kg), max 20 mL', v(r(o.cag.v), 'mL', `= ${r(o.cag.v*0.225)} mmol Ca²⁺`, o.cag.cap)),
+        row('Or calcium chloride 10%', '0.2 mL/kg, max 10 mL — central/IO preferred', v(r(o.cacl.v), 'mL', null, o.cacl.cap))
+      ], 'Calcium gluconate 10% = 0.225 mmol/mL. May dilute with equal volume 0.9% NaCl or 5% glucose. Give over 5–10 min with ECG monitoring.',
+        'Effect in minutes, lasts 30–60 min — repeat if ECG changes persist. Do not mix with bicarbonate. Extravasation causes tissue necrosis.'),
+
+      card('card-ins','Insulin + dextrose', 'Shift K⁺ into cells', [
+        row('Soluble insulin (Actrapid)', '0.1 unit/kg (max 10 units)', v(r(o.ins.v), 'units', `${r(o.ins.v)} mL of 1 unit/mL`, o.ins.cap)),
+        row('With 10% dextrose', '5 mL/kg (0.5 g/kg), max 250 mL', v(r(o.insDex.v), 'mL', 'run over 30 min', o.insDex.cap))
+      ], 'Insulin 100 units/mL: draw <strong>0.1 mL (10 units) with an insulin syringe + 9.9 mL 0.9% NaCl = 1 unit/mL</strong>. Give with or add to the dextrose over 30 min.',
+        'Onset 15–30 min. Check BG every 15–30 min for 4–6 h — hypoglycaemia risk. Omit dextrose only if BG &gt; 15 mmol/L (senior decision).'),
+
+      card('card-hk-other','Other K⁺ measures', 'Adjuncts', [
+        row('Salbutamol nebulised', wt < 25 ? '< 25 kg: 2.5 mg' : '≥ 25 kg: 5 mg', v(o.salb, 'mg')),
+        row('Sodium bicarbonate', 'If acidotic — see drawer A', v(r(o.bic.v), 'mmol', o.bicDilute ? `${r(o.bic.v*2)} mL of 4.2%` : `${r(o.bic.v)} mL of 8.4%`))
+      ], null, 'Remove K⁺: stop K⁺-containing fluids, calcium resonium, early renal/PICU discussion for dialysis.')
+    ]));
+
+    $('#groups').innerHTML = G.join('');
+
+    /* chips */
+    document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', +c.dataset.am === o.am));
+  }
+
+  /* ---------- interaction ---------- */
+  const PRESETS = [['Newborn',0],['3 mo',3],['6 mo',6],['1 yr',12],['2 yr',24],['4 yr',48],['6 yr',72],['8 yr',96],['10 yr',120],['12 yr',144],['14 yr',168]];
+  $('#chips').innerHTML = PRESETS.map(p => `<button class="chip" type="button" data-am="${p[1]}">${p[0]}</button>`).join('');
+
+  function setAgeFromMonths(am){
+    state.y = Math.floor(am/12); state.m = am % 12;
+    ageY.value = state.y; ageM.value = state.m;
+  }
+  function syncWeight(){
+    if(!state.manual){
+      state.wt = +estWeight(state.y*12 + state.m).toFixed(1);
+      wtIn.value = state.wt;
+    }
+    $('#wtBadge').textContent = state.manual ? 'Measured' : 'Estimated';
+    $('#wtBadge').classList.toggle('meas', state.manual);
+    $('#wtReset').classList.toggle('hide', !state.manual);
+  }
+  function clampInt(el, lo, hi){ let n = Math.round(+el.value); if(!isFinite(n)) n = lo; return Math.max(lo, Math.min(hi, n)); }
+
+  ageY.addEventListener('input', () => { state.y = clampInt(ageY, 0, 16); syncWeight(); render(); });
+  ageM.addEventListener('input', () => {
+    let m = clampInt(ageM, -1, 12);
+    if(m === 12 && state.y < 16){ state.y++; m = 0; ageY.value = state.y; ageM.value = 0; }
+    if(m === -1){ if(state.y > 0){ state.y--; m = 11; ageY.value = state.y; } else m = 0; ageM.value = m; }
+    state.m = Math.min(11, m); syncWeight(); render();
+  });
+  wtIn.addEventListener('input', () => {
+    const w = parseFloat(wtIn.value);
+    if(!(w >= 0.5 && w <= 120)) return;
+    state.wt = w; state.manual = true; syncWeight(); render();
+  });
+  $('#wtReset').addEventListener('click', () => { state.manual = false; syncWeight(); render(); });
+  $('#chips').addEventListener('click', e => {
+    const c = e.target.closest('.chip'); if(!c) return;
+    setAgeFromMonths(+c.dataset.am); state.manual = false; syncWeight(); render();
+  });
+
+  function go(id){
+    const el = document.getElementById(id); if(!el) return;
+    el.scrollIntoView({behavior:'smooth', block:'start'});
+    const target = el.classList.contains('card') ? el : el.querySelector('.card');
+    if(target){ target.classList.remove('flash'); void target.offsetWidth; target.classList.add('flash'); }
+  }
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-go]'); if(t) go(t.dataset.go);
+  });
+
+  /* theme toggle (per-viewer convenience) */
+  const root = document.documentElement;
+  try { const saved = localStorage.getItem('wetflag-theme'); if(saved) root.dataset.theme = saved; } catch(e){}
+  $('#themeBtn').addEventListener('click', () => {
+    const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = dark ? 'light' : 'dark';
+    try { localStorage.setItem('wetflag-theme', root.dataset.theme); } catch(e){}
+  });
+
+  syncWeight();
+  render();
+})();
+</script>
+</body>
+</html>
