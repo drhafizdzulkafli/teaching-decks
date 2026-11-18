@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sharp Safety Awareness</title>
+<meta name="description" content="ETD staff orientation on preventing needlestick and sharp injuries: recent ED incidents, risks in ETD and PHC ambulance, one-hand technique, one-arm-reach set-up, step-by-step procedures and what to do after an NSI.">
+<meta name="deck:category" content="Safety">
+<meta name="deck:audience" content="ETD staff orientation">
+<meta name="deck:date" content="2026-11-18">
+<meta name="deck:tags" content="sharp injury, NSI, needlestick, orientation, PHC">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: 1600x900 stage scaled to fit; clinical paper ground, deep teal ink, sharps-bin yellow as the one loud colour */
+:root{
+  --ink:#10262b; --ink-2:#284249; --paper:#eef3f1; --card:#ffffff; --line:#d3ddd9; --muted:#56686c;
+  --bin:#f5b700; --bin-l:#fff3cc; --bin-d:#7a5a00;
+  --danger:#c2372b; --danger-l:#fbe6e3; --safe:#16795a; --safe-l:#dff2ea; --teal:#0e6a74; --teal-l:#dcefef;
+  --display:"Archivo", "Arial Narrow", Arial, sans-serif;
+  --body:"Inter", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0b1a1d;color:var(--ink);font-family:var(--body);overflow:hidden}
+#viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#stage{width:1600px;height:900px;position:relative;flex:none;transform-origin:center center}
+.slide{position:absolute;inset:0;background:var(--paper);padding:58px 76px 64px;display:none;flex-direction:column;overflow:hidden}
+.slide.active{display:flex;animation:in .35s ease}
+@keyframes in{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.slide.active{animation:none}*{transition:none!important}}
+.foot{position:absolute;left:76px;right:76px;bottom:22px;display:flex;justify-content:space-between;font:500 13px var(--mono);color:#8a9a9d;letter-spacing:.04em}
+.dark .foot{color:#6f8b90}
+
+/* type */
+.eyebrow{font:700 15px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+h1{font-family:var(--display);font-stretch:80%;font-weight:800;font-size:96px;line-height:.95;letter-spacing:-.01em;text-wrap:balance}
+h2{font-family:var(--display);font-stretch:85%;font-weight:800;font-size:52px;line-height:1.02;letter-spacing:-.005em;margin-bottom:26px;text-wrap:balance}
+h3{font-family:var(--display);font-stretch:90%;font-weight:700;font-size:25px;line-height:1.15;margin-bottom:8px}
+p,li{font-size:20px;line-height:1.45}
+ul{padding-left:22px} li{margin-bottom:6px} li::marker{color:var(--teal)}
+b{font-weight:600}
+.muted{color:var(--muted)}
+.lead{font-size:23px;line-height:1.45;color:var(--ink-2);max-width:1100px}
+
+/* dark slides */
+.dark{background:var(--ink);color:#fff}
+.dark .eyebrow{color:var(--bin)}
+.dark p{color:#c5d4d6}
+.hazard{position:absolute;left:0;right:0;height:26px;background:repeating-linear-gradient(-45deg,var(--bin) 0 22px,var(--ink) 22px 44px)}
+.section h1{font-size:110px}
+.section .num-big{font:800 260px/0.8 var(--display);font-stretch:62%;color:rgba(245,183,0,.14);position:absolute;right:70px;bottom:40px}
+
+/* generic */
+.grid{display:grid;gap:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px}
+.pill{display:inline-flex;align-items:center;gap:6px;font:700 13px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:99px}
+.pill.bad{background:var(--danger-l);color:var(--danger)}.pill.ok{background:var(--safe-l);color:var(--safe)}.pill.y{background:var(--bin-l);color:var(--bin-d)}.pill.t{background:var(--teal-l);color:var(--teal)}
+button{font-family:var(--body);cursor:pointer}
+button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--bin);outline-offset:3px}
+.hint{font:500 14px var(--mono);color:var(--muted);letter-spacing:.03em}
+.hint::before{content:"▸ ";color:var(--teal)}
+
+/* title */
+.title{background:var(--ink);color:#fff;justify-content:center;padding-left:110px}
+.title .hazard{top:0}
+.title h1{font-size:132px;max-width:1200px}
+.title h1 em{font-style:normal;color:var(--bin)}
+.title .sub{font-size:27px;color:#c5d4d6;margin-top:28px;max-width:980px;line-height:1.4}
+.title .meta{margin-top:56px;display:flex;gap:14px;flex-wrap:wrap}
+.title .meta span{font:600 15px var(--mono);letter-spacing:.06em;color:#dbe7e8;border:1px solid #33555c;border-radius:99px;padding:8px 16px}
+.needle-art{position:absolute;right:90px;top:170px;width:330px;opacity:.95}
+
+/* incident flip cards */
+.flips{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;flex:1;min-height:0}
+.flip{perspective:1400px;cursor:pointer;border:0;background:none;text-align:left;padding:0;height:100%}
+.flip-in{position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.2,.7,.2,1);transform-style:preserve-3d}
+.flip.on .flip-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:16px;padding:22px 20px;display:flex;flex-direction:column;gap:10px}
+.front{background:var(--card);border:1px solid var(--line)}
+.back{background:var(--ink);color:#fff;transform:rotateY(180deg)}
+.face .no{font:800 64px/1 var(--display);font-stretch:70%;color:var(--danger)}
+.back .no{color:var(--bin)}
+.face .when{font:600 13px var(--mono);color:var(--muted);letter-spacing:.04em}
+.back .when{color:#9fb6b9}
+.face h3{font-size:23px}
+.face p{font-size:17px;line-height:1.42}
+.back p{color:#d7e3e4}
+.face .tap{margin-top:auto;font:600 13px var(--mono);color:var(--teal);letter-spacing:.05em}
+.back .tap{color:var(--bin)}
+.strip{margin-top:18px;display:flex;gap:14px;align-items:center;background:var(--bin-l);border:1px solid #f0d985;border-radius:12px;padding:14px 20px}
+.strip p{font-size:19px;color:#4a3a00}
+
+/* rule of 3 */
+.r3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-bottom:26px}
+.r3 .card{padding:28px}
+.r3 .v{font:800 108px/0.9 var(--display);font-stretch:70%;color:var(--danger)}
+.r3 .v small{font-size:50px}
+.r3 .k{font:700 22px var(--display);margin-top:10px}
+.r3 .d{font-size:17px;color:var(--muted);margin-top:6px}
+
+/* lifecycle */
+.life{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:6px}
+.stage-l{position:relative;padding:0 14px}
+.stage-l .bar{height:12px;background:var(--teal);margin:0 -14px 18px;position:relative}
+.stage-l:nth-child(3) .bar,.stage-l:nth-child(2) .bar{background:var(--danger)}
+.stage-l .bar::after{content:"";position:absolute;right:-1px;top:-8px;border:14px solid transparent;border-left:14px solid var(--paper);border-right:0}
+.stage-l .ix{font:700 14px var(--mono);color:var(--muted)}
+.stage-l h3{font-size:25px;margin:4px 0 12px}
+.stage-l li{font-size:17px;line-height:1.38}
+.stage-l .inc{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+
+/* tabs */
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:600;font-size:17px;padding:11px 18px;border-radius:99px;transition:.2s}
+.tab:hover{border-color:var(--teal)}
+.tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabpane{display:none;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+.tabpane.on{display:grid;animation:in .3s ease}
+.tabpane .card h3{display:flex;align-items:center;gap:10px}
+.risk h3{color:var(--danger)} .ctrl h3{color:var(--safe)}
+.risk{border-top:6px solid var(--danger)} .ctrl{border-top:6px solid var(--safe)}
+
+/* two column risk/control */
+.rc{display:grid;grid-template-columns:1fr 1fr;gap:22px;flex:1;min-height:0}
+.rc li{font-size:19px}
+
+/* golden rules */
+.rules{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;gap:18px;flex:1;min-height:0}
+.rule{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:8px;position:relative;overflow:hidden}
+.rule .n{font:800 70px/0.9 var(--display);font-stretch:62%;color:var(--bin)}
+.rule h3{font-size:28px}
+.rule p{font-size:18px;color:var(--muted)}
+
+/* one hand */
+.oh{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;flex:1;min-height:0}
+.oh .card{display:flex;flex-direction:column;gap:12px}
+.oh svg{width:100%;height:170px;background:var(--paper);border-radius:12px}
+.oh ol{padding-left:22px}.oh li{font-size:17.5px;line-height:1.38;margin-bottom:5px}
+.oh .card.y{border-top:6px solid var(--bin)}
+
+/* bedside */
+.bed-wrap{display:grid;grid-template-columns:1fr 470px;gap:26px;flex:1;min-height:0}
+.bedsvg{background:var(--card);border:1px solid var(--line);border-radius:16px;position:relative;overflow:hidden}
+.bedsvg svg{width:100%;height:100%;display:block}
+.it{transition:transform .8s cubic-bezier(.2,.7,.2,1)}
+.toggle{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:4px;margin-bottom:16px}
+.toggle button{border:0;background:none;font-weight:600;font-size:17px;padding:10px 20px;border-radius:99px;color:var(--muted)}
+.toggle button.on[data-m="unsafe"]{background:var(--danger);color:#fff}
+.toggle button.on[data-m="safe"]{background:var(--safe);color:#fff}
+.checks{display:flex;flex-direction:column;gap:12px}
+.chk{display:grid;grid-template-columns:38px 1fr;gap:12px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.chk .ic{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:19px;background:var(--danger);transition:background .4s}
+.safe-mode .chk .ic{background:var(--safe)}
+.chk h4{font-size:18px;font-weight:700;margin-bottom:3px}
+.chk p{font-size:16px;line-height:1.38;color:var(--muted)}
+.chk .s{display:none}.safe-mode .chk .s{display:block}.safe-mode .chk .u{display:none}
+.reach{transition:opacity .6s}
+
+/* bin rules */
+.binlay{display:grid;grid-template-columns:330px 1fr;gap:36px;flex:1;min-height:0;align-items:start}
+.binlist{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.binlist .card{padding:16px 18px}
+.binlist h3{font-size:21px}
+.binlist p{font-size:16.5px;color:var(--muted);line-height:1.38}
+
+/* ppe */
+.ppe{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.ppe .card{display:flex;flex-direction:column;gap:10px}
+.ppe .ic{width:58px;height:58px;border-radius:14px;background:var(--teal-l);display:flex;align-items:center;justify-content:center}
+.ppe p{font-size:17px;line-height:1.42}
+
+/* stepper */
+.stepper{display:grid;grid-template-columns:420px 1fr;gap:24px;flex:1;min-height:0}
+.st-list{list-style:none;padding:0;display:flex;flex-direction:column;gap:6px;counter-reset:st}
+.st-list li{counter-increment:st;display:flex;align-items:center;gap:12px;padding:9px 14px;border-radius:11px;font-size:17.5px;font-weight:500;line-height:1.25;margin:0;cursor:pointer;color:var(--muted);border:1px solid transparent;transition:.2s}
+.st-list li::before{content:counter(st);flex:none;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 14px var(--mono);background:#dfe7e4;color:var(--ink-2);transition:.2s}
+.st-list li:hover{background:var(--card)}
+.st-list li.done{color:var(--ink)}
+.st-list li.done::before{background:var(--teal);color:#fff}
+.st-list li.on{background:var(--card);border-color:var(--line);color:var(--ink);font-weight:700}
+.st-list li.on::before{background:var(--bin);color:var(--ink)}
+.st-panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:34px 38px;position:relative;display:flex;flex-direction:column;min-height:0}
+.st-d{display:none;flex-direction:column;gap:16px;flex:1}
+.st-d.on{display:flex;animation:in .3s ease}
+.st-n{font:700 15px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
+.st-d h4{font:800 44px/1.05 var(--display);font-stretch:85%}
+.st-d p{font-size:22px;line-height:1.5;max-width:900px}
+.st-d .sp{margin-top:auto;background:var(--bin-l);border-left:6px solid var(--bin);border-radius:0 12px 12px 0;padding:14px 18px;font-size:19px;line-height:1.42;color:#3d2f00}
+.st-d .sp b{color:#000}
+.st-d .sp.red{background:var(--danger-l);border-color:var(--danger);color:#5a1710}
+.st-prog{height:6px;background:#e3eae7;border-radius:6px;margin-top:22px;overflow:hidden}
+.st-prog i{display:block;height:100%;background:var(--teal);width:0;transition:width .3s}
+.st-nav{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.st-nav button{border:1px solid var(--line);background:var(--paper);border-radius:99px;padding:8px 16px;font-weight:600;font-size:15px;color:var(--ink)}
+.draw{display:flex;gap:6px;flex-wrap:wrap}
+.draw span{font:600 14px var(--body);padding:7px 12px;border-radius:8px;border:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.draw i{width:14px;height:14px;border-radius:50%;display:inline-block}
+
+/* quiz */
+.quiz{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:1fr 1fr;gap:16px;flex:1;min-height:0}
+.q{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:left;display:flex;flex-direction:column;gap:10px;transition:.25s;color:var(--ink)}
+.q:hover{border-color:var(--teal);transform:translateY(-2px)}
+.q p{font-size:17.5px;line-height:1.42}
+.q .a{display:none;margin-top:auto;font-size:16px;line-height:1.38}
+.q.on .a{display:block;animation:in .3s ease}
+.q .tapq{margin-top:auto;font:600 13px var(--mono);color:var(--teal)}
+.q.on .tapq{display:none}
+.q.on.s{background:var(--safe-l);border-color:#9fd4bf}
+.q.on.u{background:var(--danger-l);border-color:#efb5ad}
+.q .qn{font:700 13px var(--mono);color:var(--muted)}
+
+/* SHARP checklist */
+.sharp{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;flex:1;min-height:0}
+.sh{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 20px;text-align:left;display:flex;flex-direction:column;gap:12px;color:var(--ink);transition:.25s}
+.sh .L{font:900 120px/0.85 var(--display);font-stretch:70%;color:var(--ink)}
+.sh h3{font-size:24px}
+.sh p{font-size:17px;line-height:1.42;color:var(--muted)}
+.sh .box{margin-top:auto;display:flex;align-items:center;gap:10px;font:600 14px var(--mono);color:var(--muted)}
+.sh .box i{width:26px;height:26px;border-radius:7px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-style:normal;color:#fff}
+.sh.on{background:var(--ink);border-color:var(--ink)}
+.sh.on .L{color:var(--bin)} .sh.on h3{color:#fff} .sh.on p{color:#c5d4d6}
+.sh.on .box{color:var(--bin)} .sh.on .box i{background:var(--bin);border-color:var(--bin);color:var(--ink)}
+.allset{margin-top:18px;text-align:center;font:700 22px var(--display);color:var(--safe);opacity:0;transition:opacity .4s}
+.allset.on{opacity:1}
+
+/* NSI flow */
+.nsi{display:grid;grid-template-columns:1fr 430px;gap:26px;flex:1;min-height:0}
+.flow{display:flex;flex-direction:column;gap:10px}
+.fs{display:grid;grid-template-columns:64px 1fr;gap:16px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 18px;position:relative}
+.fs .k{width:64px;height:64px;border-radius:14px;background:var(--danger);color:#fff;display:flex;align-items:center;justify-content:center;font:800 30px var(--display);font-stretch:75%}
+.fs h3{font-size:23px;margin-bottom:2px}
+.fs p{font-size:17px;line-height:1.38;color:var(--ink-2)}
+.fs.alt .k{background:var(--teal)}
+.hours{display:inline-flex;background:var(--paper);border:1px solid var(--line);border-radius:99px;padding:3px;margin-left:8px;vertical-align:middle}
+.hours button{border:0;background:none;font:600 13px var(--mono);padding:5px 12px;border-radius:99px;color:var(--muted)}
+.hours button.on{background:var(--teal);color:#fff}
+.hrs{display:none}.hrs.on{display:inline}
+.side{display:flex;flex-direction:column;gap:16px}
+.clock{background:var(--ink);color:#fff;border-radius:18px;padding:26px}
+.clock .big{font:800 86px/0.9 var(--display);font-stretch:70%;color:var(--bin)}
+.clock p{color:#c5d4d6;font-size:18px;margin-top:10px}
+.dont{background:var(--danger-l);border-radius:16px;padding:20px 22px}
+.dont h3{color:var(--danger);font-size:21px}
+.dont li{font-size:17px;margin-bottom:3px}
+
+/* video */
+.vid{display:grid;grid-template-columns:420px 1fr;gap:60px;align-items:center;flex:1}
+.qr{background:#fff;border-radius:24px;padding:26px;box-shadow:0 0 0 10px var(--bin)}
+.qr svg{display:block;width:100%;height:auto}
+.vid a.btn{display:inline-flex;align-items:center;gap:12px;background:var(--bin);color:var(--ink);font:700 22px var(--body);padding:16px 26px;border-radius:99px;text-decoration:none;margin-top:28px}
+.vid a.btn:hover{background:#ffd23f}
+.vid .url{font:500 17px var(--mono);color:#9fb6b9;margin-top:16px;user-select:all;word-break:break-all}
+
+/* overview */
+#overview{position:fixed;inset:0;background:rgba(8,20,23,.96);z-index:20;display:none;overflow:auto;padding:40px}
+#overview.on{display:block}
+#overview h4{color:#fff;font:700 22px var(--display);margin-bottom:20px}
+#ovgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+#ovgrid button{background:#163238;border:1px solid #2a4c53;color:#e3eeee;text-align:left;padding:14px 16px;border-radius:12px;font-size:15px;line-height:1.3;min-height:84px}
+#ovgrid button b{display:block;font:700 13px var(--mono);color:var(--bin);margin-bottom:4px}
+#ovgrid button.cur{border-color:var(--bin)}
+
+/* controls */
+#bar{position:fixed;left:0;top:0;height:4px;background:var(--bin);z-index:10;transition:width .3s}
+#nav{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:4px;align-items:center;background:rgba(10,24,27,.86);padding:5px 6px;border-radius:99px;z-index:10;opacity:0;transition:opacity .25s}
+body:hover #nav,#nav:focus-within{opacity:1}
+#nav button{background:none;border:0;color:#fff;font:600 14px var(--body);padding:8px 14px;border-radius:99px}
+#nav button:hover{background:rgba(255,255,255,.12)}
+#nav span{color:#b9c9cb;font:500 13px var(--mono);min-width:62px;text-align:center}
+
+@media print{
+  @page{size:1600px 900px;margin:0}
+  html,body{overflow:visible;height:auto;background:#fff}
+  #viewport{position:static;display:block}#stage{transform:none!important;height:auto}
+  .slide{display:flex!important;position:relative;height:900px;break-after:page;animation:none}
+  #nav,#bar,#overview{display:none!important}
+  .st-d{display:flex!important;margin-bottom:10px}.st-d .sp{margin-top:6px}
+}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<div id="viewport"><div id="stage">
+
+<!-- 1 TITLE -->
+<section class="slide title" data-t="Title">
+  <div class="hazard"></div>
+  <svg class="needle-art" viewBox="0 0 330 330" aria-hidden="true">
+    <rect x="40" y="70" width="190" height="230" rx="18" fill="#f5b700"/>
+    <rect x="30" y="52" width="210" height="34" rx="10" fill="#d99f00"/>
+    <rect x="95" y="58" width="80" height="12" rx="6" fill="#10262b"/>
+    <path d="M70 140h130M70 175h130" stroke="#10262b" stroke-width="6" opacity=".25"/>
+    <text x="135" y="245" text-anchor="middle" font-family="Archivo, Arial" font-weight="800" font-size="34" fill="#10262b">SHARPS</text>
+    <g transform="rotate(-38 250 70)"><rect x="200" y="58" width="90" height="22" rx="4" fill="#ffffff"/><rect x="290" y="64" width="16" height="10" fill="#cfd9db"/><path d="M306 69 L340 69" stroke="#cfd9db" stroke-width="3"/><rect x="185" y="62" width="15" height="14" fill="#cfd9db"/></g>
+  </svg>
+  <div class="eyebrow">ETD Staff Orientation · SASMEC @IIUM</div>
+  <h1>Sharp Safety <em>Awareness</em></h1>
+  <p class="sub">Preventing needlestick and sharp injuries in the Emergency &amp; Trauma Department and during pre-hospital care.</p>
+  <div class="meta"><span>Blood taking</span><span>IV cannulation</span><span>Toilet &amp; suturing</span><span>PHC ambulance</span><span>NSI management</span></div>
+</section>
+
+<!-- 2 HOOK: incidents -->
+<section class="slide" data-t="It happened here">
+  <div class="eyebrow">It happened here · January to July 2026</div>
+  <h2>Five of our colleagues were injured by sharps in seven months</h2>
+  <div class="flips">
+    <button class="flip" aria-label="Incident 1"><div class="flip-in">
+      <div class="face front"><div class="no">01</div><div class="when">YELLOW ZONE · 1815H · MEDICAL STUDENT</div><h3>Blood transfer, two hands</h3><p>Held a tube in one hand and the syringe with its needle in the other. Adjusted the tube and the needle went into the finger.</p><div class="tap">Tap: how to avoid →</div></div>
+      <div class="face back"><div class="no">01</div><div class="when">HOW TO AVOID</div><h3>Tube stays in the rack</h3><p>Use a closed vacuum system or a blood transfer device. Tubes stand in a rack and are never held in your hand.</p></div>
+    </div></button>
+    <button class="flip" aria-label="Incident 2"><div class="flip-in">
+      <div class="face front"><div class="no">02</div><div class="when">AMBULANCE · 1350H · AMO</div><h3>Cannula in a moving ambulance</h3><p>Assisting with cannulation of a patient in pain. The patient jerked as the branula was withdrawn, and the exposed needle struck the assistant.</p><div class="tap">Tap: how to avoid →</div></div>
+      <div class="face back"><div class="no">02</div><div class="when">HOW TO AVOID</div><h3>Patient and vehicle first</h3><p>Give analgesia. Cannulate before moving or with the vehicle stopped. The assistant holds above the site, behind the needle tip.</p></div>
+    </div></button>
+    <button class="flip" aria-label="Incident 3"><div class="flip-in">
+      <div class="face front"><div class="no">03</div><div class="when">YELLOW ZONE · 0500H · MEDICAL STUDENT</div><h3>Through the glove, reported 9 h late</h3><p>Pushed a green needle into a specimen bottle. It went through the glove. Reported only at 1400H.</p><div class="tap">Tap: how to avoid →</div></div>
+      <div class="face back"><div class="no">03</div><div class="when">HOW TO AVOID</div><h3>Gloves are not armour</h3><p>Technique protects you, not the glove. If injured: wash, then report to the sister on duty immediately.</p></div>
+    </div></button>
+    <button class="flip" aria-label="Incident 4"><div class="flip-in">
+      <div class="face front"><div class="no">04</div><div class="when">YELLOW ZONE · 0425H · MEDICAL OFFICER</div><h3>Struggling child, no gloves</h3><p>18G needle on a branula, ‘drop method’. The child moved suddenly and the needle pricked the doctor’s ungloved finger.</p><div class="tap">Tap: how to avoid →</div></div>
+      <div class="face back"><div class="no">04</div><div class="when">HOW TO AVOID</div><h3>Two people, always gloved</h3><p>One holds, one performs. Use a safety device. If the child struggles, take the needle out and regroup.</p></div>
+    </div></button>
+    <button class="flip" aria-label="Incident 5"><div class="flip-in">
+      <div class="face front"><div class="no">05</div><div class="when">YELLOW ZONE · 1400H · STAFF NURSE</div><h3>Two hands, one tray</h3><p>Two staff reached for the same T-connector in the kidney dish. It flicked from one hand into the other nurse’s finger.</p><div class="tap">Tap: how to avoid →</div></div>
+      <div class="face back"><div class="no">05</div><div class="when">HOW TO AVOID</div><h3>One tray, one owner</h3><p>Prepare everything before the skin is punctured. Ask before you reach. Say “passing” before you pass.</p></div>
+    </div></button>
+  </div>
+  <div class="strip"><span class="pill y">Pattern</span><p>In 4 of 5 cases the injured person was <b>assisting or handling the sharp after use</b>, not performing the main procedure. Every one was preventable.</p></div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 3 WHY IT MATTERS -->
+<section class="slide" data-t="Why it matters">
+  <div class="eyebrow">Why it matters</div>
+  <h2>One needlestick from an infected source: the “rule of threes”</h2>
+  <div class="r3">
+    <div class="card"><div class="v">30<small>%</small></div><div class="k">Hepatitis B</div><div class="d">Up to about 30% if the source is HBeAg positive and you are not immune. Preventable by vaccination.</div></div>
+    <div class="card"><div class="v">3<small>%</small></div><div class="k">Hepatitis C</div><div class="d">Roughly 1.8–3%. No vaccine and no post-exposure prophylaxis.</div></div>
+    <div class="card"><div class="v">0.3<small>%</small></div><div class="k">HIV</div><div class="d">About 0.3%. PEP reduces the risk further when started early.</div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="card"><h3>For you</h3><p class="muted">Months of follow-up blood tests, anxiety while waiting for results, and possible PEP side effects.</p></div>
+    <div class="card"><h3>For your family</h3><p class="muted">Precautions at home until follow-up results are clear.</p></div>
+    <div class="card"><h3>For the department</h3><p class="muted">Lost shifts, incident investigation, and a reminder that our system let someone get hurt.</p></div>
+  </div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 4 LIFECYCLE -->
+<section class="slide" data-t="When injuries happen">
+  <div class="eyebrow">When injuries happen</div>
+  <h2>Danger points in the life of a sharp</h2>
+  <div class="life">
+    <div class="stage-l"><div class="bar"></div><div class="ix">STAGE 1</div><h3>Preparation</h3><ul><li>Uncapped needles loose on a cluttered tray</li><li>No sharps bin at the bedside</li><li>Equipment not ready, so staff reach mid-procedure</li></ul><div class="inc"><span class="pill bad">Incident 5</span></div></div>
+    <div class="stage-l"><div class="bar"></div><div class="ix">STAGE 2</div><h3>During use</h3><ul><li>Patient moves suddenly (pain, agitation, children)</li><li>Assistant’s hand in the needle path</li><li>Anchoring the vein above the insertion site</li></ul><div class="inc"><span class="pill bad">Incident 2</span><span class="pill bad">Incident 4</span></div></div>
+    <div class="stage-l"><div class="bar"></div><div class="ix">STAGE 3</div><h3>After use, before disposal</h3><ul><li>Recapping with two hands</li><li>Syringe-to-tube transfer by hand</li><li>Passing sharps hand to hand</li><li>Putting the stylet down on the bed</li></ul><div class="inc"><span class="pill bad">Incident 1</span><span class="pill bad">Incident 3</span></div></div>
+    <div class="stage-l"><div class="bar"></div><div class="ix">STAGE 4</div><h3>Disposal</h3><ul><li>Bin out of reach, so you walk with the sharp</li><li>Overfilled bin, pushing contents down</li><li>Bin not stable or lid half closed</li></ul></div>
+    <div class="stage-l"><div class="bar"></div><div class="ix">STAGE 5</div><h3>Left behind</h3><ul><li>Needles in bed linen after resuscitation</li><li>Sharps on the floor or trolley</li><li>Patients’ own needles in pockets and bags</li></ul><div class="inc"><span class="pill y">Cleaners, porters &amp; laundry at risk</span></div></div>
+  </div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 5 RISK MAP -->
+<section class="slide" data-t="Risks across ETD">
+  <div class="eyebrow">Risk map · tap an area</div>
+  <h2>Every area of ETD has its own sharp risks</h2>
+  <div class="tabs" data-tabs>
+    <button class="tab on" data-k="triage">Triage &amp; Green Zone</button>
+    <button class="tab" data-k="yellow">Yellow Zone</button>
+    <button class="tab" data-k="red">Red Zone / Resus</button>
+    <button class="tab" data-k="proc">Procedure room</button>
+    <button class="tab" data-k="night">Night shift</button>
+    <button class="tab" data-k="phc">PHC ambulance</button>
+  </div>
+  <div class="tabpane on" data-k="triage">
+    <div class="card risk"><h3>Risks</h3><ul><li>Lancets from glucometer checks left on the counter</li><li>Patients’ own sharps: insulin pens, needles from people who inject drugs, blades in pockets</li><li>High turnover, quick procedures done standing up</li></ul></div>
+    <div class="card ctrl"><h3>Controls</h3><ul><li>Single-use safety lancets, discarded into a bin at the triage counter</li><li>Ask before searching belongings: <b>“Is there anything sharp in your pockets?”</b> Never put a hand in blindly. Empty bags onto a tray</li><li>Small sharps bin at every triage station</li></ul></div>
+  </div>
+  <div class="tabpane" data-k="yellow">
+    <div class="card risk"><h3>Risks</h3><ul><li>High volume of blood taking and cannulation</li><li>Crowded cubicles, several staff around one tray</li><li>Learners (medical students) handling sharps</li><li>Paediatric patients who struggle</li></ul></div>
+    <div class="card ctrl"><h3>Controls</h3><ul><li>One-arm-reach set-up with a bin at every procedure</li><li>Tube racks and transfer devices on every trolley</li><li>Students supervised from preparation to disposal</li><li>Two-person rule for children. Roles agreed before starting</li></ul></div>
+  </div>
+  <div class="tabpane" data-k="red">
+    <div class="card risk"><h3>Risks</h3><ul><li>Many hands around one patient and time pressure</li><li>Multiple sharps at once: IO needles, arterial and central lines, chest drains, scalpels</li><li>Sharps lost in linen, under the patient or on the floor after resuscitation</li></ul></div>
+    <div class="card ctrl"><h3>Controls</h3><ul><li>Bin on the resus trolley within reach of each operator</li><li>Each operator disposes of their own sharps and says <b>“sharp”</b> out loud</li><li>Sharps sweep after every resuscitation, before the patient is transferred and before linen is changed</li></ul></div>
+  </div>
+  <div class="tabpane" data-k="proc">
+    <div class="card risk"><h3>Risks</h3><ul><li>Suture needles, scalpels, local anaesthetic syringes</li><li>Glass or debris hidden in wounds</li><li>Splash during irrigation and incision &amp; drainage</li></ul></div>
+    <div class="card ctrl"><h3>Controls</h3><ul><li>Handle suture needles with instruments, never fingers</li><li>Neutral zone (kidney dish) for passing sharps</li><li>Blade remover or safety scalpel</li><li>Eye protection for irrigation. Count sharps before closing the set</li></ul></div>
+  </div>
+  <div class="tabpane" data-k="night">
+    <div class="card risk"><h3>Risks</h3><ul><li>Fatigue and slower reactions. Incidents 3 and 4 happened at <b>0500H</b> and <b>0425H</b></li><li>Fewer staff available to hold patients</li><li>Less supervision for learners</li><li>Delay in reporting: “I’ll tell someone in the morning”</li></ul></div>
+    <div class="card ctrl"><h3>Controls</h3><ul><li>Don’t take shortcuts when tired. Slow down for the sharp steps</li><li>Call for a holder rather than working alone</li><li>Report immediately to the sister on call</li><li>Defer non-urgent bloods if it is unsafe to take them now</li></ul></div>
+  </div>
+  <div class="tabpane" data-k="phc">
+    <div class="card risk"><h3>Risks</h3><ul><li>Moving vehicle, braking and bumps</li><li>Confined space and poor lighting</li><li>Patients in pain or agitated, few hands to help</li><li>Roadside scenes: broken glass and debris</li></ul></div>
+    <div class="card ctrl"><h3>Controls</h3><ul><li>Cannulate before departure or with the vehicle stopped</li><li>Sharps bin mounted within reach</li><li>Safety cannulas only</li><li>Details on the next slide →</li></ul></div>
+  </div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 6 PHC -->
+<section class="slide" data-t="Pre-hospital care">
+  <div class="eyebrow">Pre-hospital care (PHC) · ambulance</div>
+  <h2>The ambulance is the hardest place to handle a sharp safely</h2>
+  <div class="rc">
+    <div class="card risk"><h3>What makes it risky</h3><ul>
+      <li>Vehicle movement: braking, corners, potholes</li>
+      <li>Confined space. The assistant is often directly in the needle path</li>
+      <li>Poor lighting and noise</li>
+      <li>Patients in pain, confused, intoxicated or agitated</li>
+      <li>Only one or two crew to help</li>
+      <li>Sharps bin loose, full or out of reach</li>
+      <li>Scenes with broken glass, metal and debris</li>
+      <li>Long transfers and fatigue</li>
+    </ul></div>
+    <div class="card ctrl"><h3>How to minimise it</h3><ul>
+      <li><b>Cannulate before departure</b>, or ask the driver to stop if IV access is needed on the way</li>
+      <li>Brace yourself; seat belt where possible. <b>Secure the patient’s limb</b> before the needle goes in</li>
+      <li>Give <b>analgesia and explain</b> first, so the patient is less likely to jerk</li>
+      <li>Use <b>safety cannulas</b>. Stylet goes into the <b>mounted bin</b> straight away</li>
+      <li>Assistant holds above the site, <b>behind the needle tip</b></li>
+      <li>Gloves before patient contact; <b>heavy-duty gloves</b> at crash scenes</li>
+      <li>After handover: check stretcher, linen and floor for sharps. Restock the bin and cannulas</li>
+    </ul></div>
+  </div>
+  <div class="strip" style="background:var(--teal-l);border-color:#a9d3d3"><span class="pill t">Incident 2</span><p style="color:#0b3f45">Good practice: the paramedic recognised the exposure, told the crew, and irrigated the wound as soon as they reached hospital. Report it on arrival.</p></div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 7 SECTION -->
+<section class="slide dark section" data-t="Section: Safe technique">
+  <div class="hazard" style="bottom:0"></div>
+  <div class="eyebrow">Part 2</div>
+  <h1>Safe technique</h1>
+  <p class="lead" style="color:#c5d4d6;margin-top:20px">Golden rules, the one-hand technique, the one-arm-reach set-up, the sharps bin, and PPE.</p>
+  <div class="num-big">02</div>
+</section>
+
+<!-- 8 GOLDEN RULES -->
+<section class="slide" data-t="Six golden rules">
+  <div class="eyebrow">Golden rules</div>
+  <h2>Six rules for every sharp, every time</h2>
+  <div class="rules">
+    <div class="rule"><div class="n">1</div><h3>Never recap</h3><p>If recapping is unavoidable (for example, a second local anaesthetic infiltration), use the one-hand scoop technique only.</p></div>
+    <div class="rule"><div class="n">2</div><h3>You use it, you bin it</h3><p>The person who used the sharp disposes of it, straight away, never later and never by someone else.</p></div>
+    <div class="rule"><div class="n">3</div><h3>Bin within one arm’s reach</h3><p>Place the bin before you start. If it is not within reach, don’t start.</p></div>
+    <div class="rule"><div class="n">4</div><h3>Hands behind the tip</h3><p>Yours and your assistant’s. Nobody’s fingers in front of, or in line with, the needle.</p></div>
+    <div class="rule"><div class="n">5</div><h3>No hand-to-hand passing</h3><p>Use a neutral zone such as a kidney dish, and say “sharp” or “passing” out loud.</p></div>
+    <div class="rule"><div class="n">6</div><h3>Gloves on, injuries reported</h3><p>Gloves for every procedure. Every injury is reported immediately, however small.</p></div>
+  </div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 9 ONE HAND -->
+<section class="slide" data-t="One-hand technique">
+  <div class="eyebrow">One-hand technique</div>
+  <h2>Only one hand goes near the sharp. The other stays out of the way</h2>
+  <div class="oh">
+    <div class="card y">
+      <svg viewBox="0 0 400 170" aria-hidden="true">
+        <rect x="20" y="128" width="360" height="10" rx="3" fill="#c9d6d2"/>
+        <g><rect x="40" y="114" width="70" height="14" rx="4" fill="#0e6a74"/><text x="75" y="105" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#56686c">cap on surface</text></g>
+        <g transform="translate(150 112)"><rect x="60" y="0" width="120" height="20" rx="4" fill="#fff" stroke="#10262b" stroke-width="2"/><rect x="0" y="8" width="60" height="4" fill="#8a9a9d"/><rect x="180" y="4" width="20" height="12" fill="#10262b"/></g>
+        <path d="M130 120 L112 120" stroke="#c2372b" stroke-width="3" marker-end="url(#ar)"/>
+        <defs><marker id="ar" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#c2372b"/></marker></defs>
+        <text x="270" y="60" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="20" fill="#10262b">Scoop. Don’t reach.</text>
+      </svg>
+      <h3>A. One-hand scoop recap</h3>
+      <ol><li>Lay the cap flat on the tray</li><li>Holding the syringe in one hand, slide the needle into the cap</li><li>Tilt upright, then press the cap against the surface to secure it</li><li>Your free hand stays behind your back or flat on the table</li></ol>
+    </div>
+    <div class="card y">
+      <svg viewBox="0 0 400 170" aria-hidden="true">
+        <rect x="40" y="120" width="240" height="26" rx="5" fill="#0e6a74"/>
+        <g fill="#fff" stroke="#10262b" stroke-width="2"><rect x="60" y="70" width="24" height="56" rx="6"/><rect x="110" y="70" width="24" height="56" rx="6"/><rect x="160" y="70" width="24" height="56" rx="6"/><rect x="210" y="70" width="24" height="56" rx="6"/></g>
+        <g><rect x="60" y="64" width="24" height="10" rx="3" fill="#7aa7d8"/><rect x="110" y="64" width="24" height="10" rx="3" fill="#d84b4b"/><rect x="160" y="64" width="24" height="10" rx="3" fill="#a77bd1"/><rect x="210" y="64" width="24" height="10" rx="3" fill="#9aa3a6"/></g>
+        <rect x="112" y="10" width="20" height="44" rx="4" fill="#fff" stroke="#10262b" stroke-width="2"/><rect x="108" y="44" width="28" height="16" rx="3" fill="#f5b700"/>
+        <text x="320" y="90" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="20" fill="#10262b">Tubes</text><text x="320" y="114" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="20" fill="#10262b">stay put</text>
+      </svg>
+      <h3>B. One-hand blood transfer</h3>
+      <ol><li>Prefer a <b>closed vacuum system</b>, so no transfer is needed</li><li>Using a syringe? Attach a <b>blood transfer device</b></li><li>Tubes <b>stand in a rack</b>. Press the device onto each tube with one hand</li><li>Never hold a tube while a needle is near it</li></ol>
+    </div>
+    <div class="card y">
+      <svg viewBox="0 0 400 170" aria-hidden="true">
+        <rect x="20" y="70" width="360" height="44" rx="22" fill="#f1d3c2"/>
+        <path d="M30 92 H370" stroke="#6f8fb6" stroke-width="5" opacity=".6"/>
+        <g transform="translate(250 64) rotate(-15)"><rect x="0" y="0" width="90" height="14" rx="3" fill="#fff" stroke="#10262b" stroke-width="2"/><rect x="-40" y="5" width="40" height="3" fill="#8a9a9d"/></g>
+        <ellipse cx="320" cy="128" rx="34" ry="14" fill="#16795a" opacity=".85"/><text x="320" y="160" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#16795a">anchor below</text>
+        <rect x="70" y="40" width="90" height="100" rx="10" fill="none" stroke="#c2372b" stroke-width="3" stroke-dasharray="6 5"/><text x="115" y="30" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#c2372b">no-hand zone</text>
+      </svg>
+      <h3>C. Hands behind the tip</h3>
+      <ol><li>Anchor the vein with your thumb <b>below</b> the insertion site</li><li>Never anchor above the site or in line with the needle</li><li>The assistant stabilises <b>above the elbow</b>, not near the site</li><li>On withdrawal, the needle moves away from everyone</li></ol>
+    </div>
+  </div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 10 ONE ARM REACH -->
+<section class="slide" data-t="One-arm-reach set-up">
+  <div class="eyebrow">Local set-up · blood taking &amp; cannulation bay</div>
+  <h2>Set up within one arm’s reach before the needle comes out</h2>
+  <div class="bed-wrap" id="bedwrap">
+    <div class="bedsvg">
+      <svg viewBox="0 0 900 560" id="bedsvg" role="img" aria-label="Top-down view of a blood taking bay showing positions of operator, assistant, tray and sharps bin">
+        <rect width="900" height="560" fill="#f7faf9"/>
+        <g opacity=".5" stroke="#dbe4e1"><path d="M0 70H900M0 140H900M0 210H900M0 280H900M0 350H900M0 420H900M0 490H900M75 0V560M150 0V560M225 0V560M300 0V560M375 0V560M450 0V560M525 0V560M600 0V560M675 0V560M750 0V560M825 0V560"/></g>
+        <!-- bed -->
+        <rect x="90" y="50" width="250" height="460" rx="26" fill="#e3ecea" stroke="#b9c9c5" stroke-width="2"/>
+        <rect x="120" y="70" width="190" height="70" rx="20" fill="#fff" stroke="#b9c9c5"/>
+        <ellipse cx="215" cy="160" rx="48" ry="44" fill="#f1d3c2"/>
+        <rect x="140" y="200" width="150" height="250" rx="40" fill="#cfe0f0"/>
+        <!-- arm on armboard -->
+        <rect x="290" y="250" width="270" height="44" rx="10" fill="#d9e2df" stroke="#b9c9c5"/>
+        <rect x="280" y="256" width="270" height="30" rx="15" fill="#f1d3c2"/>
+        <circle cx="470" cy="271" r="9" fill="#c2372b"/><text x="470" y="240" text-anchor="middle" font-family="JetBrains Mono" font-size="14" fill="#c2372b">site</text>
+        <text x="215" y="530" text-anchor="middle" font-family="JetBrains Mono" font-size="15" fill="#56686c">PATIENT</text>
+        <!-- reach circle -->
+        <g class="reach" id="reach"><circle cx="620" cy="380" r="200" fill="rgba(22,121,90,.08)" stroke="#16795a" stroke-width="2.5" stroke-dasharray="10 8"/><text x="620" y="555" text-anchor="middle" font-family="JetBrains Mono" font-size="14" fill="#16795a">ONE ARM’S REACH</text></g>
+        <!-- operator -->
+        <g><circle cx="620" cy="380" r="34" fill="#10262b"/><text x="620" y="386" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="18" fill="#fff">OP</text></g>
+        <!-- assistant -->
+        <g class="it" id="it-asst"><circle r="30" fill="#0e6a74"/><text y="6" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="17" fill="#fff">AS</text></g>
+        <!-- tray -->
+        <g class="it" id="it-tray"><rect x="-70" y="-40" width="140" height="80" rx="12" fill="#fff" stroke="#10262b" stroke-width="2"/><g fill="#7aa7d8"><rect x="-55" y="-26" width="10" height="26" rx="3"/></g><rect x="-40" y="-26" width="10" height="26" rx="3" fill="#d84b4b"/><rect x="-25" y="-26" width="10" height="26" rx="3" fill="#a77bd1"/><rect x="0" y="-20" width="55" height="10" rx="3" fill="#cfd9db"/><text y="28" text-anchor="middle" font-family="JetBrains Mono" font-size="13" fill="#10262b">TRAY + RACK</text></g>
+        <!-- bin -->
+        <g class="it" id="it-bin"><rect x="-34" y="-40" width="68" height="80" rx="8" fill="#f5b700" stroke="#7a5a00" stroke-width="2"/><rect x="-38" y="-48" width="76" height="14" rx="4" fill="#d99f00"/><text y="10" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="15" fill="#10262b">BIN</text></g>
+      </svg>
+    </div>
+    <div>
+      <div class="toggle" role="tablist"><button data-m="unsafe" class="on">Typical set-up</button><button data-m="safe">Safe set-up</button></div>
+      <div class="checks">
+        <div class="chk"><div class="ic"><span class="u">✕</span><span class="s">✓</span></div><div><h4>Sharps bin</h4><p class="u">At the end of the bay or another cubicle, so you walk with a used needle.</p><p class="s">Within arm’s reach, on your dominant side, lid open, on a stable surface.</p></div></div>
+        <div class="chk"><div class="ic"><span class="u">✕</span><span class="s">✓</span></div><div><h4>Tray &amp; tubes</h4><p class="u">On the bed by the patient’s legs. Tubes loose, so they get picked up by hand.</p><p class="s">Next to you, inside your reach. Tubes standing in the rack, everything opened before you start.</p></div></div>
+        <div class="chk"><div class="ic"><span class="u">✕</span><span class="s">✓</span></div><div><h4>Assistant</h4><p class="u">Opposite you, across the arm, in line with the needle path.</p><p class="s">At the bedside holding the arm above the elbow, behind the needle tip.</p></div></div>
+        <div class="chk"><div class="ic"><span class="u">✕</span><span class="s">✓</span></div><div><h4>Your path</h4><p class="u">Needle travels across the patient and the assistant to reach the bin.</p><p class="s">Site → bin in one short, outward movement, away from everyone.</p></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 11 SHARPS BIN -->
+<section class="slide" data-t="Sharps bin rules">
+  <div class="eyebrow">The sharps bin</div>
+  <h2>Your last line of safe disposal: use it properly</h2>
+  <div class="binlay">
+    <svg viewBox="0 0 330 520" aria-hidden="true" style="width:100%">
+      <rect x="40" y="90" width="250" height="400" rx="22" fill="#f5b700"/>
+      <rect x="25" y="62" width="280" height="44" rx="12" fill="#d99f00"/>
+      <rect x="110" y="72" width="110" height="16" rx="8" fill="#10262b"/>
+      <path d="M40 205 H290" stroke="#c2372b" stroke-width="5" stroke-dasharray="14 8"/>
+      <text x="165" y="195" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="17" fill="#c2372b">FILL LINE · ¾ FULL</text>
+      <rect x="40" y="215" width="250" height="275" rx="0" fill="#d99f00" opacity=".35"/>
+      <text x="165" y="330" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="40" fill="#10262b">SHARPS</text>
+      <text x="165" y="370" text-anchor="middle" font-family="Archivo" font-weight="700" font-size="20" fill="#10262b">ONLY</text>
+      <rect x="40" y="476" width="250" height="14" fill="#7a5a00" opacity=".4"/>
+    </svg>
+    <div class="binlist">
+      <div class="card"><h3>At the point of use</h3><p>Within one arm’s reach, before you open the needle.</p></div>
+      <div class="card"><h3>Right size</h3><p>Long items (stylets, IO needles) go in fully without force.</p></div>
+      <div class="card"><h3>Close at the fill line</h3><p>Seal at ¾ full. Never press contents down or shake the bin.</p></div>
+      <div class="card"><h3>Never put a hand in</h3><p>Never retrieve anything from a bin, even something dropped by mistake.</p></div>
+      <div class="card"><h3>Stable and secured</h3><p>On a bracket or flat surface. Mounted securely in the ambulance.</p></div>
+      <div class="card"><h3>Temporary closure</h3><p>Use it when moving the bin between bays. Lock it fully when full.</p></div>
+      <div class="card"><h3>Sharps only</h3><p>Gauze, gloves and wrappers take up space and hide needles.</p></div>
+      <div class="card"><h3>Labelled</h3><p>Area and date on the label. Dispose of it through the clinical waste process.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 12 PPE -->
+<section class="slide" data-t="PPE & protection">
+  <div class="eyebrow">Personal protection</div>
+  <h2>PPE is the last barrier, so make sure it is there</h2>
+  <div class="ppe">
+    <div class="card"><div class="ic"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#0e6a74" stroke-width="2"><path d="M7 21v-8l-2-3V5a1.5 1.5 0 0 1 3 0v4M8 9V3.5a1.5 1.5 0 0 1 3 0V9M11 9V3a1.5 1.5 0 0 1 3 0v6M14 9V4.5a1.5 1.5 0 0 1 3 0V14c0 4-2 7-6 7"/></svg></div><h3>Gloves, every time</h3><p>For every blood taking, cannulation and suturing, including emergencies and children. A glove does not stop a needle, but it wipes off some of the blood as the needle passes through.</p></div>
+    <div class="card"><div class="ic"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#0e6a74" stroke-width="2"><rect x="3" y="7" width="12" height="13" rx="2"/><rect x="9" y="4" width="12" height="13" rx="2"/></svg></div><h3>Double gloves</h3><p>Consider for high-risk situations: agitated patients, trauma with glass or bone, known blood-borne virus, and procedures in the ambulance.</p></div>
+    <div class="card"><div class="ic"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#0e6a74" stroke-width="2"><path d="M2 12c2-4 6-6 10-6s8 2 10 6"/><circle cx="7" cy="13" r="3"/><circle cx="17" cy="13" r="3"/><path d="M10 13h4"/></svg></div><h3>Eyes &amp; face</h3><p>Goggles or a face shield for wound irrigation, incision &amp; drainage, arterial lines and patients who spit. Splash exposure counts as an injury too.</p></div>
+    <div class="card"><div class="ic"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#0e6a74" stroke-width="2"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div><h3>Hepatitis B immunity</h3><p>Complete the vaccination course and <b>know your anti-HBs level</b> (≥10 mIU/mL means protected). Check with Klinik Warga if unsure.</p></div>
+  </div>
+  <div class="strip" style="margin-top:22px"><span class="pill y">Remember</span><p>Incident 3: the needle went straight through the glove. <b>PPE reduces harm, but technique prevents the injury.</b></p></div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 13 SECTION -->
+<section class="slide dark section" data-t="Section: Procedures">
+  <div class="hazard" style="bottom:0"></div>
+  <div class="eyebrow">Part 3</div>
+  <h1>Procedures, step by step</h1>
+  <p class="lead" style="color:#c5d4d6;margin-top:20px">Blood taking, IV cannulation, toilet &amp; suturing, the aggressive adult, and the struggling child. Use → or tap each step.</p>
+  <div class="num-big">03</div>
+</section>
+
+<!-- 14 VENEPUNCTURE -->
+<section class="slide" data-t="Blood taking">
+  <div class="eyebrow">Procedure 1 · Venepuncture / blood taking</div>
+  <h2 style="margin-bottom:20px">Blood taking</h2>
+  <div class="stepper">
+    <ol class="st-list"><li>Check &amp; explain</li><li>Set up within one arm’s reach</li><li>Hand hygiene &amp; gloves</li><li>Position &amp; tourniquet</li><li>Clean &amp; dry</li><li>Anchor below, puncture</li><li>Fill tubes in order of draw</li><li>Tourniquet off, then withdraw</li><li>Activate safety &amp; dispose</li><li>Finish &amp; check</li></ol>
+    <div class="st-panel">
+      <div class="st-d"><div class="st-n"></div><h4>Check &amp; explain</h4><p>Confirm identity with two identifiers and check the request form. Explain the procedure and get consent. Ask about fainting or difficult veins.</p><div class="sp"><b>Sharp safety:</b> is the patient agitated, confused or a frightened child? Go to the special-situation steps before you open a needle.</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Set up within one arm’s reach</h4><p>Tray with a closed vacuum holder (or safety butterfly), tubes standing in a rack, tourniquet, swab, gauze and plaster. Open everything now.</p><div class="sp"><b>Sharp safety:</b> sharps bin on your dominant side, lid open, within reach. <b>No bin within reach means you don’t start.</b></div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Hand hygiene &amp; gloves</h4><p>Perform hand hygiene and put on well-fitting gloves. Ask a colleague to help if the patient may move.</p><div class="sp red"><b>Incident 4:</b> the needle went into an ungloved finger. Gloves are never optional, not even for “a quick one”.</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Position &amp; tourniquet</h4><p>Support the arm, extended, on a firm surface with good light. Apply the tourniquet 7.5–10 cm above the site and select the vein.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Clean &amp; dry</h4><p>Clean with 2% chlorhexidine in 70% alcohol for about 30 seconds and let it dry completely. Do not touch the site again.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Anchor below, puncture</h4><p>Your thumb pulls the skin taut 3–5 cm <b>below</b> the site. Insert bevel up at 15–30°.</p><div class="sp"><b>Sharp safety:</b> never anchor above the site or with a finger in line with the needle. Assistant holds above the elbow.</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Fill tubes in order of draw</h4><p>Steady the holder with one hand and push each tube in with the other.</p>
+        <div class="draw"><span><i style="background:#f4f4f4;border:1px solid #999"></i>Blood culture</span><span><i style="background:#7ec3e8"></i>Citrate</span><span><i style="background:#d84b4b"></i>Serum / gel</span><span><i style="background:#3f9a5a"></i>Heparin</span><span><i style="background:#a77bd1"></i>EDTA</span><span><i style="background:#9aa3a6"></i>Fluoride</span></div>
+        <div class="sp red"><b>Using a syringe?</b> Transfer with a blood transfer device, tubes standing in the rack. <b>Never hold a tube in your hand and never push a needle through the stopper</b> (Incidents 1 &amp; 3).</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Tourniquet off, then withdraw</h4><p>Release the tourniquet before removing the needle (within 1 minute of applying it). Place gauze over the site and withdraw smoothly.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Activate safety &amp; dispose</h4><p>Activate the safety mechanism with one hand and drop the <b>whole unit</b> (needle and holder) straight into the bin.</p><div class="sp"><b>You used it, you bin it.</b> Never recap, bend or unscrew the needle by hand, and never put it down on the tray.</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Finish &amp; check</h4><p>Ask the patient to press on the gauze. Label tubes at the bedside. Remove gloves and perform hand hygiene.</p><div class="sp"><b>Final sweep:</b> look at the bed, tray and floor. No sharp left behind.</div></div>
+      <div class="st-prog"><i></i></div>
+      <div class="st-nav"><button data-a="prev">‹ Previous step</button><span class="hint">→ key moves step by step</span><button data-a="next">Next step ›</button></div>
+    </div>
+  </div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 15 IV CANNULATION -->
+<section class="slide" data-t="IV cannulation">
+  <div class="eyebrow">Procedure 2 · Peripheral IV cannulation</div>
+  <h2 style="margin-bottom:20px">IV cannulation</h2>
+  <div class="stepper">
+    <ol class="st-list"><li>Indication &amp; device</li><li>Prepare everything first</li><li>Hand hygiene, gloves, position</li><li>Tourniquet, select, clean</li><li>Anchor &amp; insert</li><li>Advance catheter</li><li>Stylet straight to bin</li><li>Connect, flush, secure</li><li>If the attempt fails</li><li>Finish &amp; check</li></ol>
+    <div class="st-panel">
+      <div class="st-d"><div class="st-n"></div><h4>Indication &amp; device</h4><p>Confirm that IV access is needed now. Choose the smallest suitable gauge and a <b>safety (passive) cannula</b>. Identify the patient, explain and get consent.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Prepare everything first</h4><p>Cannula, primed T-connector, saline flush, dressing, label, gauze, tourniquet and swab, plus the sharps bin within arm’s reach.</p><div class="sp red"><b>Incident 5:</b> two staff reached into the same tray mid-procedure. Everything should be ready before the skin is punctured. <b>One tray, one owner.</b></div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Hand hygiene, gloves, position</h4><p>Arm on a firm surface with good light. Agree roles: the assistant stabilises the limb <b>above</b> the site, away from the needle.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Tourniquet, select, clean</h4><p>Apply the tourniquet, choose a straight vein away from joints, clean with chlorhexidine-alcohol and let it dry.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Anchor &amp; insert</h4><p>Anchor below the site. Insert bevel up at 10–30°. When you see flashback, lower the angle and advance a further 1–2 mm.</p><div class="sp"><b>Sharp safety:</b> your free hand stays behind the tip throughout.</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Advance catheter</h4><p>Advance the catheter off the needle into the vein. Release the tourniquet. Press on the vein beyond the catheter tip to limit backflow.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Stylet straight to bin</h4><p>Withdraw the stylet. The safety clip covers the tip. Drop it straight into the bin yourself.</p><div class="sp red"><b>Incident 2:</b> the exposed stylet struck the assistant during withdrawal. Never put the stylet on the bed or tray, and never hand it to anyone.</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Connect, flush, secure</h4><p>Attach the primed T-connector, flush to confirm patency, secure with a transparent dressing, and label with the date and time.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>If the attempt fails</h4><p><b>First, stylet into the bin.</b> Then press on the site and reassess. Use a new cannula for every attempt.</p><div class="sp"><b>Never reinsert the stylet</b> into the catheter (risk of catheter shear and injury). After two attempts, ask a more experienced colleague.</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Finish &amp; check</h4><p>Remove gloves and perform hand hygiene. Document the site, gauge and number of attempts.</p><div class="sp"><b>Final sweep:</b> wrappers, caps and stylets accounted for before you leave the bay.</div></div>
+      <div class="st-prog"><i></i></div>
+      <div class="st-nav"><button data-a="prev">‹ Previous step</button><span class="hint">→ key moves step by step</span><button data-a="next">Next step ›</button></div>
+    </div>
+  </div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 16 TOILET & SUTURING -->
+<section class="slide" data-t="Toilet & suturing">
+  <div class="eyebrow">Procedure 3 · Wound toilet &amp; suturing</div>
+  <h2 style="margin-bottom:20px">Toilet &amp; suturing</h2>
+  <div class="stepper">
+    <ol class="st-list"><li>Set up the field</li><li>Protect yourself</li><li>Local anaesthetic</li><li>Irrigate &amp; explore</li><li>Load the needle with instruments</li><li>Suture &amp; tie</li><li>Hands-free passing</li><li>Scalpel safety</li><li>Count &amp; clear</li></ol>
+    <div class="st-panel">
+      <div class="st-d"><div class="st-n"></div><h4>Set up the field</h4><p>Open the dressing set, then place the sharps bin at the point of use. Decide on a <b>neutral zone</b> (a kidney dish) where sharps are placed and picked up.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Protect yourself</h4><p>Sterile gloves, apron, and <b>eye protection or a face shield</b>, because irrigation splashes.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Local anaesthetic</h4><p>Draw up with a blunt fill needle if available, then change to the injection needle. Between infiltrations, put the syringe down in the neutral zone.</p><div class="sp"><b>Recapping</b> for a second infiltration? Use the <b>one-hand scoop</b> only.</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Irrigate &amp; explore</h4><p>Irrigate under splash protection. Explore the wound for glass or debris with instruments under good light.</p><div class="sp red"><b>Never sweep a wound with your finger.</b> Glass and bone fragments are sharps too.</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Load the needle with instruments</h4><p>Grasp the needle with the needle holder about two-thirds of the way back from the tip. Reposition it with toothed forceps.</p><div class="sp"><b>Never touch a suture needle with your fingers</b>, including when loading or retrieving it.</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Suture &amp; tie</h4><p>Use instrument ties. Between bites, keep the needle clamped in the holder, pointing away from you and your assistant.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Hands-free passing</h4><p>Pass needles, blades and syringes through the neutral zone only. Say <b>“sharp”</b> when you place one down.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Scalpel safety</h4><p>Use a safety scalpel or a blade remover. If you have neither, use a needle holder to remove the blade, and dispose of it immediately.</p><div class="sp"><b>Never remove or attach a blade with your fingers.</b></div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Count &amp; clear</h4><p>Count the needles and blades used. The operator disposes of every sharp before the set goes to the dirty utility.</p><div class="sp"><b>Final sweep:</b> drapes, linen, trolley and floor. Hidden needles injure cleaners and laundry staff.</div></div>
+      <div class="st-prog"><i></i></div>
+      <div class="st-nav"><button data-a="prev">‹ Previous step</button><span class="hint">→ key moves step by step</span><button data-a="next">Next step ›</button></div>
+    </div>
+  </div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 17 AGGRESSIVE ADULT -->
+<section class="slide" data-t="Aggressive adult">
+  <div class="eyebrow">Special situation · Aggressive or agitated adult</div>
+  <h2 style="margin-bottom:20px">Blood taking &amp; cannulation in an aggressive adult</h2>
+  <div class="stepper">
+    <ol class="st-list"><li>Pause: is it needed now?</li><li>Make the area safe</li><li>De-escalate</li><li>Sedation per ED protocol</li><li>Secure the limb</li><li>Shortest needle time</li><li>Stop rule</li><li>Sweep, report, document</li></ol>
+    <div class="st-panel">
+      <div class="st-d"><div class="st-n"></div><h4>Pause: is it needed now?</h4><p>If the sample or cannula is not urgent, <b>defer it</b> until the patient is calm. An unsafe procedure helps nobody.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Make the area safe</h4><p>Call for help: <b>security and enough trained staff</b>. Remove unneeded equipment and sharps from reach. Keep a clear exit for staff.</p><div class="sp"><b>PPE:</b> gloves (consider double) and eye protection; agitated patients may spit.</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>De-escalate</h4><p>One person talks. Use a calm voice and short sentences, explain what will happen, and offer choices. Involve family if it helps.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Sedation per ED protocol</h4><p>If the patient is dangerous and treatment is needed, follow the ED sedation protocol. Often IM first (use a safety needle), then IV access once the patient is calm.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Secure the limb</h4><p>Trained staff immobilise the limb <b>above and below the joint</b>. The operator starts only when the limb is still. Everyone else keeps hands away from the site.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Shortest needle time</h4><p>The most experienced operator, a safety device, and the bin right there. Say <b>“needle in”</b> and <b>“needle out”</b> so the team knows.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Stop rule</h4><p>If the patient moves suddenly: <b>withdraw, activate safety, discard</b>. Do not chase the vein with a needle in a moving limb.</p><div class="sp red">Most injuries in struggling patients happen when the operator tries to <b>finish</b> the procedure rather than stop.</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Sweep, report, document</h4><p>Check the bed and floor for dropped sharps. Report any exposure immediately. Document restraint and sedation per policy.</p></div>
+      <div class="st-prog"><i></i></div>
+      <div class="st-nav"><button data-a="prev">‹ Previous step</button><span class="hint">→ key moves step by step</span><button data-a="next">Next step ›</button></div>
+    </div>
+  </div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 18 PAEDS -->
+<section class="slide" data-t="Struggling child">
+  <div class="eyebrow">Special situation · Struggling paediatric patient</div>
+  <h2 style="margin-bottom:20px">Blood taking &amp; cannulation in a struggling child</h2>
+  <div class="stepper">
+    <ol class="st-list"><li>Prepare child &amp; parent</li><li>Plan roles: two-person rule</li><li>Everything ready</li><li>Comfort positioning</li><li>Gloves on, always</li><li>Avoid open-needle techniques</li><li>Stop rule</li><li>Praise &amp; sweep</li></ol>
+    <div class="st-panel">
+      <div class="st-d"><div class="st-n"></div><h4>Prepare child &amp; parent</h4><p>Explain in child-friendly words. Apply topical anaesthetic (e.g. EMLA) when time allows; consider sucrose for infants. Use distraction: a video, bubbles, toys.</p><div class="sp">For small volumes, consider whether <b>capillary sampling</b> is enough.</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Plan roles: two-person rule</h4><p>At least <b>one holder and one operator</b>, with a third person to fetch items. Brief everyone before starting.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Everything ready</h4><p>Smallest suitable safety butterfly or safety cannula, tubes standing in the rack, primed T-connector, and the bin within arm’s reach.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Comfort positioning</h4><p>Child on the parent’s lap chest-to-chest, or swaddle the infant. The trained holder stabilises the limb <b>above and below the joint</b>.</p><div class="sp">The parent comforts. Trained staff do the holding.</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Gloves on, always</h4><p>Even when you need to “feel” a small vein. Feel for the vein with gloves on.</p><div class="sp red"><b>Incident 4:</b> a struggling child and an ungloved hand at 0425H.</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Avoid open-needle techniques</h4><p>Prefer a safety device. The ‘drop method’ keeps a bare needle near your fingers for a long time.</p><div class="sp">If it cannot be avoided: fingers well clear, bin right beside you, and needle out and disposed of before anything else.</div></div>
+      <div class="st-d"><div class="st-n"></div><h4>Stop rule</h4><p>If the child moves unpredictably: <b>needle out, safety on, into the bin</b>. Reposition and try again. After two attempts by one operator, escalate.</p></div>
+      <div class="st-d"><div class="st-n"></div><h4>Praise &amp; sweep</h4><p>Comfort and praise the child. Check the bed, blanket and the parent’s lap for sharps and caps.</p></div>
+      <div class="st-prog"><i></i></div>
+      <div class="st-nav"><button data-a="prev">‹ Previous step</button><span class="hint">→ key moves step by step</span><button data-a="next">Next step ›</button></div>
+    </div>
+  </div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 19 QUIZ -->
+<section class="slide" data-t="Quick quiz">
+  <div class="eyebrow">Quick check · tap each card</div>
+  <h2>Safe or unsafe?</h2>
+  <div class="quiz">
+    <button class="q u"><span class="qn">01</span><p>After a failed cannula, you put the stylet on the bed while you look for another vein.</p><span class="tapq">Tap to reveal</span><span class="a"><span class="pill bad">Unsafe</span><br>Stylet into the bin first, every time.</span></button>
+    <button class="q s"><span class="qn">02</span><p>You transfer blood from a syringe with a transfer device, tubes standing in a rack.</p><span class="tapq">Tap to reveal</span><span class="a"><span class="pill ok">Safe</span><br>One hand, tubes never held.</span></button>
+    <button class="q u"><span class="qn">03</span><p>The sharps bin is at the fill line, so you press the contents down to fit one more needle.</p><span class="tapq">Tap to reveal</span><span class="a"><span class="pill bad">Unsafe</span><br>Close it and get a new bin.</span></button>
+    <button class="q s"><span class="qn">04</span><p>Your colleague offers you a suture needle; you ask them to place it in the kidney dish.</p><span class="tapq">Tap to reveal</span><span class="a"><span class="pill ok">Safe</span><br>Neutral zone, hands-free passing.</span></button>
+    <button class="q s"><span class="qn">05</span><p>In the ambulance the patient needs a cannula, so you ask the driver to stop briefly.</p><span class="tapq">Tap to reveal</span><span class="a"><span class="pill ok">Safe</span><br>Stationary vehicle, secured limb.</span></button>
+    <button class="q u"><span class="qn">06</span><p>You were pricked at 0500H. You plan to report it when your shift ends at 0800H.</p><span class="tapq">Tap to reveal</span><span class="a"><span class="pill bad">Unsafe</span><br>Wash, then report immediately. PEP is time-critical.</span></button>
+    <button class="q u"><span class="qn">07</span><p>You put your hand into an unconscious patient’s pocket to look for an IC.</p><span class="tapq">Tap to reveal</span><span class="a"><span class="pill bad">Unsafe</span><br>Pockets may hold needles. Empty them onto a tray or pat from outside.</span></button>
+    <button class="q s"><span class="qn">08</span><p>You need to recap a local anaesthetic needle for a second infiltration, and use the one-hand scoop.</p><span class="tapq">Tap to reveal</span><span class="a"><span class="pill ok">Safe</span><br>The only acceptable way to recap.</span></button>
+  </div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 20 SHARP -->
+<section class="slide" data-t="Before every sharp">
+  <div class="eyebrow">Before every sharp · tap to check off</div>
+  <h2>Run the S·H·A·R·P check</h2>
+  <div class="sharp">
+    <button class="sh"><span class="L">S</span><h3>Set up the bin</h3><p>Sharps bin within one arm’s reach, lid open, before the needle is opened.</p><span class="box"><i>✓</i>Checked</span></button>
+    <button class="sh"><span class="L">H</span><h3>Hands behind the tip</h3><p>One-hand technique. Tubes in the rack. Anchor below the site.</p><span class="box"><i>✓</i>Checked</span></button>
+    <button class="sh"><span class="L">A</span><h3>Assistance &amp; patient secure</h3><p>Roles agreed. Holder in place for children and agitated patients.</p><span class="box"><i>✓</i>Checked</span></button>
+    <button class="sh"><span class="L">R</span><h3>Recap never</h3><p>Activate the safety device and dispose of it yourself, straight away.</p><span class="box"><i>✓</i>Checked</span></button>
+    <button class="sh"><span class="L">P</span><h3>PPE on, plan for injury</h3><p>Gloves on. You know what to do if you get a sharp injury.</p><span class="box"><i>✓</i>Checked</span></button>
+  </div>
+  <div class="allset" id="allset">All five checked. You are ready to pick up the sharp.</div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 21 SECTION -->
+<section class="slide dark section" data-t="Section: If it happens">
+  <div class="hazard" style="bottom:0"></div>
+  <div class="eyebrow">Part 4</div>
+  <h1>If it happens</h1>
+  <p class="lead" style="color:#c5d4d6;margin-top:20px">What to do in the first minutes and hours after a needlestick, sharp or splash injury.</p>
+  <div class="num-big">04</div>
+</section>
+
+<!-- 22 NSI FLOW -->
+<section class="slide" data-t="NSI flow">
+  <div class="eyebrow">Needlestick / sharp / splash injury · SASMEC flow</div>
+  <h2 style="margin-bottom:20px">Wash. Report. Get assessed. Now.</h2>
+  <div class="nsi">
+    <div class="flow">
+      <div class="fs"><div class="k">1</div><div><h3>Wash immediately</h3><p>Under running tap water for about 10 minutes, with soap. Let it bleed freely. For a splash to the eyes or mouth, irrigate with water or saline.</p></div></div>
+      <div class="fs"><div class="k">2</div><div><h3>Report to the site supervisor</h3><p>Sister on duty or sister on call, <b>straight away</b>. Not at the end of the shift.</p></div></div>
+      <div class="fs"><div class="k">3</div><div><h3>Report in i-Aduan</h3><p>By you or the site supervisor.</p></div></div>
+      <div class="fs"><div class="k">4</div><div><h3>Identify the source</h3><p>Known: take the source’s blood (with consent) for <b>HIV Ag/Ab, anti-HCV, HBsAg</b>. Unknown: manage as an unknown source.</p></div></div>
+      <div class="fs alt"><div class="k">5</div><div><h3>Get assessed <span class="hours"><button class="on" data-h="office">Office hours</button><button data-h="after">After hours</button></span></h3><p><span class="hrs on" data-h="office">Go to <b>Klinik Warga SASMEC @IIUM</b> for assessment, incident investigation and immediate management.</span><span class="hrs" data-h="after">Go to <b>ETD</b> for immediate assessment, then to <b>Klinik Warga</b> on the next working day.</span></p></div></div>
+      <div class="fs alt"><div class="k">6</div><div><h3>Follow-up</h3><p>Infectious Disease Clinic (MOPD 2) by appointment. Complete every follow-up blood test.</p></div></div>
+    </div>
+    <div class="side">
+      <div class="clock"><div class="big">ASAP</div><p>HIV post-exposure prophylaxis works best when started early, ideally <b style="color:#fff">within 2 hours</b> and no later than 72 hours. Incident 3 was reported 9 hours late.</p></div>
+      <div class="dont"><h3>Don’t</h3><ul><li>Squeeze, scrub or suck the wound</li><li>Use bleach or strong antiseptics on the skin</li><li>Wait until the end of your shift</li><li>Feel embarrassed. Reporting protects you</li></ul></div>
+    </div>
+  </div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION · Source: Public Health Unit, SASMEC @IIUM (21 May 2026)</span><span class="pg"></span></div>
+</section>
+
+<!-- 23 VIDEO -->
+<section class="slide dark" data-t="Watch the video">
+  <div class="hazard" style="top:0"></div>
+  <div class="vid">
+    <div class="qr"><svg role="img" aria-label="QR code linking to the YouTube video" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" class="segno"><path class="qrline" stroke="#14201f" d="M2 2.5h7m1 0h3m1 0h1m1 0h1m1 0h2m1 0h1m2 0h7m-29 1h1m5 0h1m1 0h1m6 0h1m6 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m4 0h1m2 0h1m1 0h1m2 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m4 0h1m2 0h1m1 0h2m1 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m3 0h2m1 0h3m1 0h1m1 0h2m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-20 1h2m3 0h1m1 0h1m2 0h2m-20 1h1m4 0h3m1 0h1m3 0h1m3 0h4m5 0h2m-29 1h2m5 0h1m1 0h2m4 0h2m1 0h1m2 0h1m1 0h2m1 0h2m-27 1h1m1 0h1m2 0h1m1 0h2m1 0h1m1 0h2m6 0h4m1 0h1m-26 1h4m9 0h1m1 0h1m1 0h3m1 0h1m2 0h1m-26 1h2m2 0h1m1 0h1m3 0h1m4 0h1m3 0h4m3 0h2m-26 1h1m6 0h1m2 0h1m1 0h2m3 0h2m1 0h1m1 0h2m1 0h2m-27 1h1m1 0h6m1 0h2m2 0h2m1 0h1m1 0h4m3 0h1m-26 1h1m2 0h1m4 0h1m1 0h2m1 0h2m1 0h1m1 0h1m1 0h1m1 0h4m-28 1h2m1 0h4m1 0h1m2 0h3m4 0h3m2 0h1m1 0h2m1 0h1m-29 1h1m1 0h4m10 0h1m1 0h2m2 0h1m1 0h1m1 0h1m1 0h1m-29 1h2m1 0h2m1 0h3m3 0h2m2 0h2m1 0h1m4 0h2m2 0h1m-29 1h1m1 0h3m2 0h1m3 0h2m1 0h3m2 0h1m1 0h2m1 0h2m-26 1h1m2 0h6m5 0h1m2 0h2m1 0h5m1 0h1m1 0h1m-21 1h3m2 0h1m1 0h1m1 0h4m3 0h3m-27 1h7m1 0h1m3 0h2m1 0h1m1 0h1m1 0h2m1 0h1m1 0h1m2 0h1m-28 1h1m5 0h1m3 0h1m4 0h1m1 0h4m3 0h2m1 0h1m-28 1h1m1 0h3m1 0h1m5 0h1m1 0h2m1 0h1m1 0h6m3 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m1 0h3m3 0h4m2 0h1m1 0h3m-28 1h1m1 0h3m1 0h1m3 0h2m2 0h4m1 0h6m1 0h2m-28 1h1m5 0h1m1 0h6m2 0h1m1 0h1m3 0h1m1 0h1m1 0h1m1 0h1m-29 1h7m2 0h1m3 0h3m1 0h1m1 0h1m1 0h2m1 0h3"/></svg></div>
+    <div>
+      <div class="eyebrow">Watch · scan with your phone</div>
+      <h1 style="font-size:84px">Sharp &amp; splash injury awareness</h1>
+      <p style="font-size:24px;margin-top:20px;max-width:760px">Scan the QR code to watch the video on YouTube. Share it with new staff, students and anyone joining ETD.</p>
+      <a class="btn" href="https://youtu.be/2Zn19xbc6ZY?si=lo70OwJQef_SwHXd" target="_blank" rel="noopener">▶ Open on YouTube</a>
+      <div class="url">youtu.be/2Zn19xbc6ZY</div>
+    </div>
+  </div>
+  <div class="foot"><span>SHARP SAFETY · ETD ORIENTATION</span><span class="pg"></span></div>
+</section>
+
+<!-- 24 CLOSE -->
+<section class="slide title" data-t="Thank you">
+  <div class="hazard"></div>
+  <div class="eyebrow">Key message</div>
+  <h1>No sharp is <em>urgent</em> enough to get hurt for.</h1>
+  <p class="sub">Set up the bin within reach, use one hand, keep your hands behind the tip, and report every injury. Questions?</p>
+  <div class="meta"><span>Emergency &amp; Trauma Department</span><span>SASMEC @IIUM</span></div>
+</section>
+
+</div></div>
+
+<div id="overview" role="dialog" aria-label="Slide overview"><h4>All slides · press G or Esc to close</h4><div id="ovgrid"></div></div>
+<div id="nav">
+  <button id="prev" aria-label="Previous">‹</button>
+  <span id="count"></span>
+  <button id="next" aria-label="Next">›</button>
+  <button id="ov" aria-label="Slide overview">▦ Slides</button>
+  <button id="fs" aria-label="Fullscreen">⛶</button>
+</div>
+
+<script>
+(function(){
+  const slides=[...document.querySelectorAll('.slide')], N=slides.length, stage=document.getElementById('stage');
+  let cur=0;
+  slides.forEach((s,i)=>{const p=s.querySelector('.pg'); if(p) p.textContent=String(i+1).padStart(2,'0')+' / '+N;});
+
+  function fit(){const k=Math.min(innerWidth/1600,innerHeight/900);stage.style.transform='scale('+k+')';}
+  addEventListener('resize',fit);fit();
+
+  /* steppers */
+  const steppers=new Map();
+  document.querySelectorAll('.stepper').forEach(st=>{
+    const items=[...st.querySelectorAll('.st-list li')], panes=[...st.querySelectorAll('.st-d')], bar=st.querySelector('.st-prog i');
+    const o={i:0,n:panes.length,set(k){this.i=Math.max(0,Math.min(this.n-1,k));
+      items.forEach((li,j)=>{li.classList.toggle('on',j===this.i);li.classList.toggle('done',j<this.i);});
+      panes.forEach((p,j)=>p.classList.toggle('on',j===this.i));
+      bar.style.width=((this.i+1)/this.n*100)+'%';}};
+    panes.forEach((p,j)=>{p.querySelector('.st-n').textContent='Step '+(j+1)+' of '+panes.length;});
+    items.forEach((li,j)=>{li.tabIndex=0;li.addEventListener('click',()=>o.set(j));li.addEventListener('keydown',e=>{if(e.key==='Enter'){o.set(j);}});});
+    st.querySelector('[data-a="next"]').addEventListener('click',()=>o.set(o.i+1));
+    st.querySelector('[data-a="prev"]').addEventListener('click',()=>o.set(o.i-1));
+    o.set(0); steppers.set(st.closest('.slide'),o);
+  });
+
+  function show(n){
+    cur=Math.max(0,Math.min(N-1,n));
+    slides.forEach((s,i)=>s.classList.toggle('active',i===cur));
+    document.getElementById('count').textContent=(cur+1)+' / '+N;
+    document.getElementById('bar').style.width=((cur+1)/N*100)+'%';
+    try{history.replaceState(null,'','#'+(cur+1));}catch(e){}
+  }
+  function next(){const st=steppers.get(slides[cur]); if(st&&st.i<st.n-1){st.set(st.i+1);return;} show(cur+1);}
+  function prev(){const st=steppers.get(slides[cur]); if(st&&st.i>0){st.set(st.i-1);return;} show(cur-1);}
+
+  /* flips, quiz, sharp checklist */
+  document.querySelectorAll('.flip,.q').forEach(b=>b.addEventListener('click',()=>b.classList.toggle('on')));
+  const shs=[...document.querySelectorAll('.sh')];
+  shs.forEach(b=>b.addEventListener('click',()=>{b.classList.toggle('on');document.getElementById('allset').classList.toggle('on',shs.every(x=>x.classList.contains('on')));}));
+
+  /* tabs */
+  document.querySelectorAll('[data-tabs]').forEach(t=>{
+    const slide=t.closest('.slide');
+    t.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
+      t.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));
+      slide.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('on',p.dataset.k===b.dataset.k));
+    }));
+  });
+
+  /* office hours toggle */
+  document.querySelectorAll('.hours button').forEach(b=>b.addEventListener('click',()=>{
+    const fs=b.closest('.fs');
+    fs.querySelectorAll('.hours button').forEach(x=>x.classList.toggle('on',x===b));
+    fs.querySelectorAll('.hrs').forEach(x=>x.classList.toggle('on',x.dataset.h===b.dataset.h));
+  }));
+
+  /* bedside layout */
+  const pos={unsafe:{'it-asst':[470,175],'it-tray':[215,420],'it-bin':[820,60]},safe:{'it-asst':[330,215],'it-tray':[760,250],'it-bin':[770,430]}};
+  function layout(m){
+    Object.entries(pos[m]).forEach(([id,[x,y]])=>{document.getElementById(id).style.transform='translate('+x+'px,'+y+'px)';});
+    document.getElementById('bedwrap').classList.toggle('safe-mode',m==='safe');
+    document.querySelectorAll('.toggle button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  }
+  document.querySelectorAll('.toggle button').forEach(b=>b.addEventListener('click',()=>layout(b.dataset.m)));
+  layout('unsafe');
+
+  /* overview */
+  const ov=document.getElementById('overview'),grid=document.getElementById('ovgrid');
+  slides.forEach((s,i)=>{const b=document.createElement('button');b.innerHTML='<b>'+String(i+1).padStart(2,'0')+'</b>'+(s.dataset.t||'');b.addEventListener('click',()=>{show(i);toggleOv(false);});grid.appendChild(b);});
+  function toggleOv(on){ov.classList.toggle('on',on);[...grid.children].forEach((b,i)=>b.classList.toggle('cur',i===cur));}
+  document.getElementById('ov').onclick=()=>toggleOv(!ov.classList.contains('on'));
+
+  function fsToggle(){try{if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen();}catch(e){}}
+  document.getElementById('fs').onclick=fsToggle;
+  document.getElementById('prev').onclick=prev;
+  document.getElementById('next').onclick=next;
+
+  document.addEventListener('keydown',e=>{
+    if(ov.classList.contains('on')){if(e.key==='Escape'||e.key==='g'||e.key==='G')toggleOv(false);return;}
+    const tag=(e.target.tagName||'');
+    if(['ArrowRight','PageDown'].includes(e.key)||(e.key===' '&&tag!=='BUTTON')){e.preventDefault();next();}
+    else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();prev();}
+    else if(e.key==='Home')show(0); else if(e.key==='End')show(N-1);
+    else if(e.key==='f'||e.key==='F')fsToggle();
+    else if(e.key==='g'||e.key==='G')toggleOv(true);
+  });
+  let tx=null;
+  addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+  addEventListener('touchend',e=>{if(tx===null)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>60)(d<0?next:prev)();tx=null;});
+
+  const h=parseInt((location.hash||'').slice(1),10);
+  show(isNaN(h)?0:h-1);
+})();
+</script>
+</body>
+</html>
