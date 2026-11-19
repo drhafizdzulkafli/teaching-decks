@@ -1,0 +1,1295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ABG &amp; VBG Interpretation Simulator</title>
+<meta name="description" content="Interactive blood gas (ABG + VBG) learning simulator: step-by-step interpretation, expected-compensation acid–base map, Winter's and other compensation calculators, anion/osmolar/urine gaps, diagnostic pathways, 19 practice cases and an animated H+/HCO3- physiology diagram.">
+<meta name="deck:category" content="Respiratory &amp; Acid–Base">
+<meta name="deck:audience" content="Medical students &amp; ED doctors">
+<meta name="deck:date" content="2026-11-19">
+<meta name="deck:tags" content="ABG, VBG, acid-base, Winter's formula, anion gap, delta ratio, calculator, cases">
+<style>
+:root{
+  --bg:#eef2f5; --panel:#ffffff; --panel2:#f6f8fa; --ink:#14212b; --muted:#5a6a77; --line:#d8e0e6;
+  --accent:#0f766e; --accent-ink:#ffffff; --ok:#15803d; --warn:#b45309; --bad:#b91c1c;
+  --okbg:#e8f5ec; --warnbg:#fdf3e2; --badbg:#fdecec; --hl:#fff4c2;
+  --s-ra:#2a78d6; --s-ma:#eb6834; --s-malk:#1baf7a; --s-rl:#6250d6;
+  --hplus:#e34948; --hco3:#2a78d6; --co2:#8a8f96;
+  --grid:#e2e8ed; --axis:#8796a3;
+  --shadow:0 1px 2px rgba(15,30,45,.06),0 6px 18px rgba(15,30,45,.06);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e161d; --panel:#16212a; --panel2:#1b2832; --ink:#e6edf2; --muted:#93a4b1; --line:#2a3a46;
+    --accent:#2dd4bf; --accent-ink:#06231f; --ok:#4ade80; --warn:#fbbf24; --bad:#f87171;
+    --okbg:#11281b; --warnbg:#2b2210; --badbg:#2e1515; --hl:#3a3413;
+    --s-ra:#3987e5; --s-ma:#d95926; --s-malk:#199e70; --s-rl:#9085e9;
+    --hplus:#e66767; --hco3:#3987e5; --co2:#9aa3ad;
+    --grid:#24323d; --axis:#6d7f8c;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e161d; --panel:#16212a; --panel2:#1b2832; --ink:#e6edf2; --muted:#93a4b1; --line:#2a3a46;
+  --accent:#2dd4bf; --accent-ink:#06231f; --ok:#4ade80; --warn:#fbbf24; --bad:#f87171;
+  --okbg:#11281b; --warnbg:#2b2210; --badbg:#2e1515; --hl:#3a3413;
+  --s-ra:#3987e5; --s-ma:#d95926; --s-malk:#199e70; --s-rl:#9085e9;
+  --hplus:#e66767; --hco3:#3987e5; --co2:#9aa3ad;
+  --grid:#24323d; --axis:#6d7f8c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%}
+.wrap{max-width:1240px;margin:0 auto;padding:0 16px}
+header.top{padding:18px 0 8px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{margin:0;font-size:clamp(20px,3.2vw,28px);letter-spacing:-.01em}
+h1 span{color:var(--accent)}
+.sub{color:var(--muted);font-size:13px;margin-top:2px}
+h2{font-size:18px;margin:0 0 10px}
+h3{font-size:15px;margin:0 0 6px}
+.hdr-ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:transparent;color:var(--ink);padding:7px 12px;font:600 13px/1 inherit;font-family:inherit;cursor:pointer}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.tbtn,.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:7px 12px;font:600 13px/1.2 inherit;font-family:inherit;cursor:pointer}
+.tbtn:hover,.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+nav.tabs{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);margin-bottom:16px}
+nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.tabs button{border:0;background:transparent;color:var(--muted);padding:12px 14px;font:600 14px inherit;font-family:inherit;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+nav.tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+section.tab{display:none;padding-bottom:40px}
+section.tab.on{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.an-layout{display:grid;grid-template-columns:minmax(0,430px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:960px){.an-layout,.grid2{grid-template-columns:minmax(0,1fr)}}
+fieldset{border:1px solid var(--line);border-radius:10px;margin:0 0 12px;padding:10px 12px 12px}
+legend{font-weight:700;font-size:13px;padding:0 6px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px 10px}
+label.f{display:flex;flex-direction:column;font-size:12px;color:var(--muted);gap:3px}
+label.f b{color:var(--ink);font-weight:600;font-size:13px}
+input[type=number],select{width:100%;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:7px;padding:7px 8px;font:15px inherit;font-family:inherit}
+input[type=number]:focus,select:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+.unit{font-size:11px;color:var(--muted)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.note{font-size:12.5px;color:var(--muted)}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid currentColor;line-height:1.5;white-space:nowrap}
+.pill.ok{color:var(--ok);background:var(--okbg)} .pill.warn{color:var(--warn);background:var(--warnbg)} .pill.bad{color:var(--bad);background:var(--badbg)} .pill.n{color:var(--muted)}
+.summary{border-left:5px solid var(--accent);background:var(--panel2);padding:12px 14px;border-radius:8px;font-size:15.5px}
+.summary .big{font-size:19px;font-weight:750;margin:2px 0 4px}
+.steps{counter-reset:st;display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.step{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel)}
+.step h4{margin:0 0 4px;font-size:14px;display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.step h4::before{counter-increment:st;content:counter(st);display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:12px;margin-right:8px;flex:none}
+.step h4 .t{display:flex;align-items:center;flex:1 1 auto}
+.step p{margin:4px 0;font-size:14px}
+.step .calc{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--muted);background:var(--panel2);padding:4px 8px;border-radius:6px;display:block;margin-top:4px;overflow-x:auto}
+.next{margin-top:14px}
+.next ol{margin:6px 0 0;padding-left:20px}
+.next li{margin:4px 0}
+.causes{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.causes span{font-size:12.5px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+/* map */
+.mapbox{position:relative}
+svg text{font-family:inherit}
+#map{width:100%;height:auto;display:block;touch-action:none;cursor:crosshair}
+.tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:8px;padding:6px 9px;font-size:12.5px;display:none;z-index:5;max-width:240px}
+.legendrow{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legendrow i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-2px}
+/* comp calc */
+.cc-out{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:10px}
+.cc-out div{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13.5px}
+.cc-out b{display:block;font-size:16px}
+details.ref{margin-top:10px}
+details.ref summary{cursor:pointer;font-weight:600;font-size:14px}
+table.t{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:6px}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+table.t th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+.tscroll{overflow-x:auto}
+/* cases */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 12px;font:600 13px inherit;font-family:inherit;cursor:pointer}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.caselist{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.ccard{cursor:pointer;text-align:left;font:inherit;color:inherit;transition:border-color .15s}
+.ccard:hover{border-color:var(--accent)}
+.ccard .cat{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.ccard h3{margin:4px 0}
+.ccard .done{float:right}
+.vals{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.vals span{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:4px 8px;font-size:13.5px}
+.vals span b{font-variant-numeric:tabular-nums}
+.q{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+.q .opts{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.q .opts button{text-align:left;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:8px;padding:8px 10px;font:14px inherit;font-family:inherit;cursor:pointer}
+.q .opts button:hover:not(:disabled){border-color:var(--accent)}
+.q .opts button.right{background:var(--okbg);border-color:var(--ok);color:var(--ok);font-weight:600}
+.q .opts button.wrong{background:var(--badbg);border-color:var(--bad);color:var(--bad)}
+.q .why{margin-top:6px;font-size:13.5px;background:var(--panel2);border-radius:8px;padding:8px 10px;display:none}
+.q.answered .why{display:block}
+.score{font-weight:700}
+/* pathways */
+.pw{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,540px),1fr));gap:16px}
+ul.tree{list-style:none;margin:0;padding:0}
+ul.tree ul{list-style:none;margin:0 0 0 14px;padding:0 0 0 14px;border-left:2px solid var(--line)}
+ul.tree li{margin:7px 0;position:relative}
+ul.tree ul>li::before{content:"";position:absolute;left:-14px;top:15px;width:12px;border-top:2px solid var(--line)}
+.node{border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:6px 10px;font-size:13.5px}
+.node .d{color:var(--muted);font-size:12.5px;margin-top:2px}
+.node.act{background:var(--hl);border-color:var(--warn);box-shadow:0 0 0 2px color-mix(in srgb,var(--warn) 35%,transparent)}
+.node.act::after{content:"◀ your patient";font-size:11px;font-weight:700;color:var(--warn);margin-left:6px}
+/* physiology */
+#phys{width:100%;height:auto;display:block}
+.phys-ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.stagebar{display:flex;gap:6px;flex-wrap:wrap}
+.stagebar button{flex:1 1 160px}
+.stagebar button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.readout{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0}
+.readout div{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 8px;text-align:center;font-size:12px;color:var(--muted)}
+.readout b{display:block;font-size:19px;color:var(--ink);font-variant-numeric:tabular-nums}
+@media (max-width:520px){.readout{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.explain{background:var(--panel2);border-left:4px solid var(--accent);border-radius:8px;padding:10px 12px;font-size:14px}
+footer{color:var(--muted);font-size:12.5px;padding:20px 0 40px;border-top:1px solid var(--line);margin-top:10px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Blood Gas <span>(ABG + VBG)</span> Interpretation Simulator</h1>
+      <div class="sub">Step-by-step analyser · compensation map · calculators · diagnostic pathways · practice cases · physiology</div>
+    </div>
+    <div class="hdr-ctl">
+      <div class="seg" role="group" aria-label="Gas units"><button data-unit="kPa">kPa</button><button data-unit="mmHg">mmHg</button></div>
+      <button class="tbtn" id="themeBtn" title="Toggle light/dark">◐ Theme</button>
+    </div>
+  </header>
+</div>
+<nav class="tabs"><div class="wrap">
+  <button data-tab="analyser" class="on">1 · Analyser</button>
+  <button data-tab="calc">2 · Compensation calculators</button>
+  <button data-tab="cases">3 · Practice cases</button>
+  <button data-tab="paths">4 · Diagnostic pathways</button>
+  <button data-tab="physio">5 · Physiology diagram</button>
+</div></nav>
+
+<div class="wrap">
+<!-- ================= ANALYSER ================= -->
+<section class="tab on" id="tab-analyser">
+  <div class="an-layout">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">
+        <h2 style="margin:0">Enter the gas</h2>
+        <div class="seg" role="group" aria-label="Sample type"><button data-sample="ABG" class="on">ABG</button><button data-sample="VBG">VBG</button></div>
+      </div>
+      <div id="vbgNote" class="note" style="display:none;margin-bottom:10px;background:var(--warnbg);padding:8px 10px;border-radius:8px;color:var(--ink)">
+        <b>Venous sample.</b> Venous pH is ~0.03 lower, pCO₂ ~0.7 kPa (5 mmHg) higher and HCO₃⁻ ~1 mmol/L higher than arterial – but agreement for pCO₂ is poor, especially in shock. A normal venous pCO₂ reliably <i>excludes</i> arterial hypercapnia. pO₂ cannot assess oxygenation – use SpO₂.
+        <label class="row" style="margin-top:6px;gap:6px"><input type="checkbox" id="vbgConvert" checked> Interpret using estimated arterial values</label>
+      </div>
+      <fieldset><legend>Acid–base</legend>
+        <div class="fields">
+          <label class="f"><b>pH</b><input type="number" id="i-ph" step="0.01" min="6.5" max="8"><span class="unit">7.35–7.45</span></label>
+          <label class="f"><b>pCO₂</b><input type="number" id="i-pco2" step="0.1"><span class="unit" data-u="pco2"></span></label>
+          <label class="f"><b>HCO₃⁻</b><input type="number" id="i-hco3" step="0.1"><span class="unit">mmol/L · 22–26</span></label>
+          <label class="f"><b>Base excess</b><input type="number" id="i-be" step="0.1"><span class="unit">mmol/L · −2 to +2</span></label>
+        </div>
+      </fieldset>
+      <fieldset><legend>Oxygenation (ABG)</legend>
+        <div class="fields">
+          <label class="f"><b>pO₂</b><input type="number" id="i-po2" step="0.1"><span class="unit" data-u="po2"></span></label>
+          <label class="f"><b>FiO₂</b><input type="number" id="i-fio2" step="1" min="21" max="100"><span class="unit">% (room air 21)</span></label>
+          <label class="f"><b>Age</b><input type="number" id="i-age" step="1"><span class="unit">years</span></label>
+        </div>
+      </fieldset>
+      <fieldset><legend>Chemistry</legend>
+        <div class="fields">
+          <label class="f"><b>Na⁺</b><input type="number" id="i-na" step="1"><span class="unit">mmol/L</span></label>
+          <label class="f"><b>K⁺</b><input type="number" id="i-k" step="0.1"><span class="unit">mmol/L</span></label>
+          <label class="f"><b>Cl⁻</b><input type="number" id="i-cl" step="1"><span class="unit">mmol/L</span></label>
+          <label class="f"><b>Albumin</b><input type="number" id="i-alb" step="1"><span class="unit">g/L · 35–50</span></label>
+          <label class="f"><b>Lactate</b><input type="number" id="i-lac" step="0.1"><span class="unit">mmol/L · &lt;2</span></label>
+          <label class="f"><b>Glucose</b><input type="number" id="i-glu" step="0.1"><span class="unit">mmol/L</span></label>
+          <label class="f"><b>Urea</b><input type="number" id="i-urea" step="0.1"><span class="unit">mmol/L</span></label>
+          <label class="f"><b>Measured osm</b><input type="number" id="i-osm" step="1"><span class="unit">mOsm/kg</span></label>
+          <label class="f"><b>Ketones</b><input type="number" id="i-ket" step="0.1"><span class="unit">β-OHB mmol/L</span></label>
+        </div>
+      </fieldset>
+      <fieldset><legend>Urine &amp; bedside (optional)</legend>
+        <div class="fields">
+          <label class="f"><b>Urine Na⁺</b><input type="number" id="i-una" step="1"><span class="unit">mmol/L</span></label>
+          <label class="f"><b>Urine K⁺</b><input type="number" id="i-uk" step="1"><span class="unit">mmol/L</span></label>
+          <label class="f"><b>Urine Cl⁻</b><input type="number" id="i-ucl" step="1"><span class="unit">mmol/L</span></label>
+          <label class="f"><b>Blood pressure</b><select id="i-bp"><option value="">Unknown</option><option value="high">Hypertensive</option><option value="norm">Normal / low</option></select><span class="unit">for met. alkalosis</span></label>
+          <label class="f"><b>Normal AG</b><input type="number" id="i-agref" step="1" value="12"><span class="unit">lab reference (no K⁺)</span></label>
+        </div>
+      </fieldset>
+      <div class="row">
+        <button class="btn primary" id="btnExample">Load random example</button>
+        <button class="btn" id="btnClear">Clear</button>
+      </div>
+      <p class="note" style="margin-bottom:0">Tip: click or drag on the acid–base map to set pCO₂ and HCO₃⁻ (pH is then calculated with Henderson–Hasselbalch).</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <div class="card">
+        <h2>Acid–base map: expected compensation bands</h2>
+        <div class="mapbox"><svg id="map" viewBox="0 0 640 470" role="img" aria-label="Acid-base map: HCO3 versus pCO2 with pH isopleths and 95% confidence bands for simple disorders"></svg><div class="tip" id="mapTip"></div></div>
+        <div class="legendrow">
+          <span><i style="background:var(--s-ma)"></i>Metabolic acidosis</span>
+          <span><i style="background:var(--s-malk)"></i>Metabolic alkalosis</span>
+          <span><i style="background:var(--s-ra)"></i>Resp. acidosis (light = acute, dark = chronic)</span>
+          <span><i style="background:var(--s-rl)"></i>Resp. alkalosis (light = acute, dark = chronic)</span>
+          <span>Diagonal lines = pH isopleths</span>
+        </div>
+        <p class="note">A point lying <b>inside</b> a band is consistent with that simple disorder with appropriate compensation. A point <b>outside</b> every band implies a mixed disorder. Bands are clinical rules of thumb (not absolute limits).</p>
+      </div>
+      <div class="card" id="results">
+        <h2>Interpretation</h2>
+        <div id="out"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CALCULATORS ================= -->
+<section class="tab" id="tab-calc">
+  <div class="grid2">
+    <div class="card">
+      <h2>Metabolic disorders → expected pCO₂</h2>
+      <div class="fields" style="max-width:420px">
+        <label class="f"><b>Measured HCO₃⁻</b><input type="number" id="c-hco3" value="12" step="0.1"><span class="unit">mmol/L</span></label>
+        <label class="f"><b>Measured pCO₂</b><input type="number" id="c-pco2m" step="0.1"><span class="unit" data-u="pco2"></span></label>
+      </div>
+      <div class="cc-out" id="cc-met"></div>
+      <details class="ref" open><summary>Formulas</summary>
+        <ul class="note" style="color:var(--ink)">
+          <li><b>Winter's formula</b> (metabolic acidosis): expected pCO₂ (mmHg) = 1.5 × HCO₃⁻ + 8 ± 2. In kPa: (1.5 × HCO₃⁻ + 8) ÷ 7.5 ± 0.27.</li>
+          <li><b>Quick check</b> (metabolic acidosis): expected pCO₂ (mmHg) ≈ last two digits of pH (e.g. pH 7.25 → ~25 mmHg), valid for pH 7.10–7.60; or ≈ HCO₃⁻ + 15.</li>
+          <li><b>Metabolic alkalosis</b>: pCO₂ rises 0.7 mmHg per 1 mmol/L rise in HCO₃⁻ → expected = 40 + 0.7 × (HCO₃⁻ − 24) ± 5; alternative: 0.7 × HCO₃⁻ + 21 ± 2. Respiratory compensation rarely takes pCO₂ above ~7.3–8 kPa (55–60 mmHg).</li>
+          <li>Measured pCO₂ <b>higher</b> than expected → co-existing respiratory acidosis. <b>Lower</b> → co-existing respiratory alkalosis.</li>
+        </ul>
+      </details>
+    </div>
+    <div class="card">
+      <h2>Respiratory disorders → expected HCO₃⁻ and pH</h2>
+      <div class="fields" style="max-width:420px">
+        <label class="f"><b>Measured pCO₂</b><input type="number" id="c-pco2" step="0.1"><span class="unit" data-u="pco2"></span></label>
+        <label class="f"><b>Measured HCO₃⁻</b><input type="number" id="c-hco3m" step="0.1"><span class="unit">mmol/L</span></label>
+      </div>
+      <div class="cc-out" id="cc-resp"></div>
+      <details class="ref" open><summary>Rules (per 10 mmHg ≈ 1.33 kPa change in pCO₂ from 40 mmHg / 5.3 kPa)</summary>
+        <div class="tscroll"><table class="t">
+          <tr><th>Disorder</th><th>HCO₃⁻ change</th><th>pH change</th><th>Mechanism</th></tr>
+          <tr><td>Acute resp. acidosis</td><td>↑ 1</td><td>↓ 0.08</td><td>Intracellular / Hb buffering (minutes)</td></tr>
+          <tr><td>Chronic resp. acidosis</td><td>↑ 3.5 (3–4)</td><td>↓ 0.03</td><td>Renal HCO₃⁻ retention (3–5 days)</td></tr>
+          <tr><td>Acute resp. alkalosis</td><td>↓ 2</td><td>↑ 0.08</td><td>Buffering</td></tr>
+          <tr><td>Chronic resp. alkalosis</td><td>↓ 5 (4–5)</td><td>↑ 0.03</td><td>Renal HCO₃⁻ excretion (2–3 days); HCO₃⁻ rarely &lt;12–15</td></tr>
+        </table></div>
+      </details>
+    </div>
+    <div class="card">
+      <h2>Gaps &amp; ratios</h2>
+      <div class="fields">
+        <label class="f"><b>Na⁺</b><input type="number" id="g-na" value="138"></label>
+        <label class="f"><b>Cl⁻</b><input type="number" id="g-cl" value="100"></label>
+        <label class="f"><b>HCO₃⁻</b><input type="number" id="g-hco3" value="12"></label>
+        <label class="f"><b>Albumin g/L</b><input type="number" id="g-alb" value="40"></label>
+        <label class="f"><b>Glucose</b><input type="number" id="g-glu" value="6"></label>
+        <label class="f"><b>Urea</b><input type="number" id="g-urea" value="5"></label>
+        <label class="f"><b>Measured osm</b><input type="number" id="g-osm" value=""></label>
+        <label class="f"><b>Urine Na⁺</b><input type="number" id="g-una"></label>
+        <label class="f"><b>Urine K⁺</b><input type="number" id="g-uk"></label>
+        <label class="f"><b>Urine Cl⁻</b><input type="number" id="g-ucl"></label>
+      </div>
+      <div class="cc-out" id="cc-gap"></div>
+    </div>
+    <div class="card">
+      <h2>Oxygenation &amp; bicarbonate</h2>
+      <div class="fields">
+        <label class="f"><b>PaO₂</b><input type="number" id="o-po2" step="0.1"><span class="unit" data-u="po2"></span></label>
+        <label class="f"><b>PaCO₂</b><input type="number" id="o-pco2" step="0.1"><span class="unit" data-u="pco2"></span></label>
+        <label class="f"><b>FiO₂ %</b><input type="number" id="o-fio2" value="21"></label>
+        <label class="f"><b>Age</b><input type="number" id="o-age" value="40"></label>
+        <label class="f"><b>Weight kg</b><input type="number" id="o-wt" value="70"></label>
+        <label class="f"><b>HCO₃⁻</b><input type="number" id="o-hco3" value="10"></label>
+      </div>
+      <div class="cc-out" id="cc-oxy"></div>
+      <p class="note">Bicarbonate deficit is a teaching estimate only. Sodium bicarbonate is reserved for specific indications (e.g. severe NAGMA, hyperkalaemia, TCA/salicylate toxicity) — follow local protocols.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CASES ================= -->
+<section class="tab" id="tab-cases">
+  <div class="card" style="margin-bottom:12px">
+    <div class="row" style="justify-content:space-between">
+      <div><h2 style="margin:0">Practice cases</h2><div class="note">Read the vignette, interpret the gas, answer the questions, then load it into the analyser to see the full worked steps.</div></div>
+      <div class="score" id="score">Score: 0 / 0</div>
+    </div>
+  </div>
+  <div class="filters" id="caseFilters"></div>
+  <div id="caseView"></div>
+</section>
+
+<!-- ================= PATHWAYS ================= -->
+<section class="tab" id="tab-paths">
+  <div class="card" style="margin-bottom:12px">
+    <h2 style="margin:0 0 4px">Diagnostic pathways — establishing the cause</h2>
+    <div class="note">Boxes highlighted in yellow follow the patient currently in the analyser. Systematic order: (1) Is the gas valid? (2) Acidaemia or alkalaemia? (3) Primary process? (4) Is compensation appropriate? (5) Anion gap → delta ratio → osmolar gap / urine studies (6) Oxygenation (7) Clinical correlation.</div>
+  </div>
+  <div class="pw" id="pathView"></div>
+</section>
+
+<!-- ================= PHYSIOLOGY ================= -->
+<section class="tab" id="tab-physio">
+  <div class="card">
+    <h2>How lungs and kidneys move H⁺, HCO₃⁻ and CO₂</h2>
+    <div class="phys-ctl">
+      <div class="seg" id="scenSeg" role="group" aria-label="Scenario">
+        <button data-scen="normal" class="on">Normal</button>
+        <button data-scen="metAcid">Metabolic acidosis</button>
+        <button data-scen="metAlk">Metabolic alkalosis</button>
+        <button data-scen="respAcid">Respiratory acidosis</button>
+        <button data-scen="respAlk">Respiratory alkalosis</button>
+      </div>
+      <button class="btn" id="playBtn">❚❚ Pause</button>
+    </div>
+    <div class="stagebar" id="stageBar"></div>
+    <div class="readout" id="readout"></div>
+    <svg id="phys" viewBox="0 0 900 560" role="img" aria-label="Animated diagram of the circulation linking tissues, lungs and kidneys, showing hydrogen ions, bicarbonate and carbon dioxide"></svg>
+    <div class="legendrow" style="justify-content:center">
+      <span><i style="background:var(--hplus);border-radius:50%"></i>H⁺ (hydrogen ion)</span>
+      <span><i style="background:var(--hco3);border-radius:50%"></i>HCO₃⁻ (bicarbonate)</span>
+      <span><i style="background:var(--co2);border-radius:50%"></i>CO₂ (dissolved)</span>
+      <span>Dot density ∝ concentration</span>
+    </div>
+    <div class="explain" id="physExplain" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<footer>
+  For education and simulation only — interpret every gas in its clinical context and follow local guidelines. Formulas: Henderson–Hasselbalch (pH = 6.1 + log[HCO₃⁻ / (0.03 × pCO₂ mmHg)]), Winter's, Boston compensation rules, albumin-corrected anion gap (Figge), delta ratio, osmolar gap (2Na + glucose + urea), A–a gradient (sea level, RQ 0.8). 1 kPa = 7.5 mmHg.
+</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- helpers ---------- */
+const K = 7.50062;
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let UNIT = store.get('abg-unit') || 'kPa';
+let SAMPLE = 'ABG';
+const r1 = x => Math.round(x*10)/10, r2 = x => Math.round(x*100)/100;
+const toMM = v => UNIT==='kPa' ? v*K : v;
+const fromMM = v => UNIT==='kPa' ? v/K : v;
+const fmtP = mm => UNIT==='kPa' ? (mm/K).toFixed(1)+' kPa' : Math.round(mm)+' mmHg';
+const fmtPn = mm => UNIT==='kPa' ? (mm/K).toFixed(1) : String(Math.round(mm));
+const phOf = (p,h) => 6.1 + Math.log10(h/(0.03*p));
+const hOf = ph => Math.pow(10, 9-ph);
+const num = id => { const el=document.getElementById(id); if(!el||el.value==='') return NaN; return parseFloat(el.value); };
+const has = x => Number.isFinite(x);
+const esc = s => String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const NAMES = {respAcid:'Respiratory acidosis', respAlk:'Respiratory alkalosis', metAcid:'Metabolic acidosis', metAlk:'Metabolic alkalosis', normal:'Normal acid–base status'};
+
+/* ---------- theme ---------- */
+(function(){
+  const saved = store.get('abg-theme'); if(saved) document.documentElement.setAttribute('data-theme', saved);
+  $('#themeBtn').addEventListener('click', ()=>{
+    const cur = document.documentElement.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    const nx = cur==='dark'?'light':'dark';
+    document.documentElement.setAttribute('data-theme', nx); store.set('abg-theme', nx); drawMap(); });
+})();
+
+/* ---------- tabs ---------- */
+$$('nav.tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+function showTab(t){
+  $$('nav.tabs button').forEach(b=>b.classList.toggle('on', b.dataset.tab===t));
+  $$('section.tab').forEach(s=>s.classList.toggle('on', s.id==='tab-'+t));
+  physRunning = (t==='physio');
+  if(physRunning) startPhys();
+  window.scrollTo({top:0});
+}
+
+/* ---------- units ---------- */
+const P_FIELDS = ['i-pco2','i-po2','c-pco2','c-pco2m','o-po2','o-pco2'];
+function setUnit(u, convert){
+  if(convert && u!==UNIT){
+    P_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el && el.value!==''){ const mm = UNIT==='kPa'? +el.value*K : +el.value; el.value = u==='kPa'? r2(mm/K) : r1(mm);} });
+  }
+  UNIT = u; store.set('abg-unit',u);
+  $$('[data-unit]').forEach(b=>b.classList.toggle('on', b.dataset.unit===u));
+  $$('[data-u="pco2"]').forEach(s=>s.textContent = u==='kPa' ? 'kPa · 4.7–6.0' : 'mmHg · 35–45');
+  $$('[data-u="po2"]').forEach(s=>s.textContent = u==='kPa' ? 'kPa · 10.5–13.5' : 'mmHg · 80–100');
+  refreshAll();
+}
+$$('[data-unit]').forEach(b=>b.addEventListener('click',()=>setUnit(b.dataset.unit,true)));
+
+/* ---------- sample type ---------- */
+function setSample(s){
+  SAMPLE = s;
+  $$('[data-sample]').forEach(b=>b.classList.toggle('on', b.dataset.sample===s));
+  $('#vbgNote').style.display = s==='VBG'?'block':'none';
+  analyse();
+}
+$$('[data-sample]').forEach(b=>b.addEventListener('click',()=>setSample(b.dataset.sample)));
+$('#vbgConvert').addEventListener('change', analyse);
+
+/* =====================================================================
+   CORE INTERPRETATION
+   ===================================================================== */
+function classify(pH, p, h){
+  // returns {status, primary, extra:[], comp:{...}}
+  const status = pH<7.35?'acidaemia':pH>7.45?'alkalaemia':'normal pH';
+  const pHi=p>45, pLo=p<35, hHi=h>26, hLo=h<22;
+  let primary=null, extra=[], note='';
+  if(pH<7.35){
+    if(pHi && hLo){ primary='respAcid'; extra.push('metAcid'); note='Both pCO₂ ↑ and HCO₃⁻ ↓ push pH down — a combined (mixed) respiratory and metabolic acidosis.'; }
+    else if(pHi) primary='respAcid';
+    else if(hLo) primary='metAcid';
+    else note='pH is low but neither pCO₂ nor HCO₃⁻ explains it — recheck values / sample.';
+  } else if(pH>7.45){
+    if(pLo && hHi){ primary='respAlk'; extra.push('metAlk'); note='Both pCO₂ ↓ and HCO₃⁻ ↑ push pH up — a combined (mixed) respiratory and metabolic alkalosis.'; }
+    else if(pLo) primary='respAlk';
+    else if(hHi) primary='metAlk';
+    else note='pH is high but neither pCO₂ nor HCO₃⁻ explains it — recheck values / sample.';
+  } else {
+    if(pHi && hHi){ primary = pH<7.40?'respAcid':'metAlk'; note='pH normal with both values abnormal: the side of 7.40 suggests the primary process; full compensation is unusual, so consider a mixed disorder.'; }
+    else if(pLo && hLo){ primary = pH<7.40?'metAcid':'respAlk'; note='pH normal with both values abnormal: the side of 7.40 suggests the primary process; full compensation is unusual (except chronic respiratory alkalosis), so consider a mixed disorder.'; }
+    else if(pHi && hLo){ primary='respAcid'; extra.push('metAcid'); }
+    else if(pLo && hHi){ primary='respAlk'; extra.push('metAlk'); }
+    else if(pHi){ primary='respAcid'; }
+    else if(pLo){ primary='respAlk'; }
+    else if(hLo){ primary='metAcid'; }
+    else if(hHi){ primary='metAlk'; }
+    else primary='normal';
+  }
+  const comp = primary && primary!=='normal' && extra.length===0 ? compensation(primary,p,h) : null;
+  if(comp && comp.extra) extra.push(comp.extra);
+  return {status, primary, extra, comp, note};
+}
+
+function compensation(primary,p,h){
+  const c={primary};
+  if(primary==='metAcid'){
+    c.exp=1.5*h+8; c.lo=c.exp-2; c.hi=c.exp+2; c.var='pCO₂';
+    c.formula=`Winter's: expected pCO₂ = 1.5 × ${r1(h)} + 8 ± 2 = ${fmtP(c.lo)} – ${fmtP(c.hi)}`;
+    if(p>c.hi){c.verdict='Inadequate respiratory compensation → concomitant respiratory acidosis'; c.extra='respAcid'; c.cls='bad';}
+    else if(p<c.lo){c.verdict='pCO₂ lower than expected → concomitant respiratory alkalosis'; c.extra='respAlk'; c.cls='bad';}
+    else {c.verdict='Appropriate respiratory compensation'; c.cls='ok';}
+  } else if(primary==='metAlk'){
+    c.exp=40+0.7*(h-24); c.lo=c.exp-5; c.hi=c.exp+5; c.var='pCO₂';
+    c.formula=`Expected pCO₂ = 40 + 0.7 × (${r1(h)} − 24) ± 5 = ${fmtP(c.lo)} – ${fmtP(c.hi)}`;
+    if(p>c.hi){c.verdict='pCO₂ higher than expected → concomitant respiratory acidosis'; c.extra='respAcid'; c.cls='bad';}
+    else if(p<c.lo){c.verdict='pCO₂ lower than expected → concomitant respiratory alkalosis'; c.extra='respAlk'; c.cls='bad';}
+    else {c.verdict='Appropriate respiratory compensation (hypoventilation)'; c.cls='ok';}
+  } else if(primary==='respAcid'){
+    const d=(p-40)/10; const a=24+1*d, ch=24+3.5*d; c.var='HCO₃⁻';
+    c.acute=a; c.chronic=ch;
+    c.formula=`ΔpCO₂ = ${fmtP(p-40)}. Expected HCO₃⁻: acute ≈ ${r1(a)} (±2), chronic ≈ ${r1(ch)} (±2). Expected pH: acute ${r2(7.40-0.08*d)}, chronic ${r2(7.40-0.03*d)}`;
+    if(h<a-2){c.verdict='HCO₃⁻ lower than even acute compensation → concomitant metabolic acidosis'; c.extra='metAcid'; c.cls='bad';}
+    else if(h<=a+2){c.verdict='Acute (uncompensated) respiratory acidosis'; c.cls='warn'; c.phase='acute';}
+    else if(h<ch-2){c.verdict='Between acute and chronic → acute-on-chronic respiratory acidosis (or evolving compensation)'; c.cls='warn'; c.phase='aoc';}
+    else if(h<=ch+2){c.verdict='Chronic (renally compensated) respiratory acidosis'; c.cls='ok'; c.phase='chronic';}
+    else {c.verdict='HCO₃⁻ higher than chronic compensation → concomitant metabolic alkalosis'; c.extra='metAlk'; c.cls='bad';}
+  } else if(primary==='respAlk'){
+    const d=(40-p)/10; const a=24-2*d, ch=Math.max(24-5*d,12); c.var='HCO₃⁻';
+    c.acute=a; c.chronic=ch;
+    c.formula=`ΔpCO₂ = ${fmtP(40-p)} below normal. Expected HCO₃⁻: acute ≈ ${r1(a)} (±2), chronic ≈ ${r1(ch)} (±2). Expected pH: acute ${r2(7.40+0.08*d)}, chronic ${r2(7.40+0.03*d)}`;
+    if(h>a+2){c.verdict='HCO₃⁻ higher than expected → concomitant metabolic alkalosis'; c.extra='metAlk'; c.cls='bad';}
+    else if(h>=a-2){c.verdict='Acute respiratory alkalosis'; c.cls='warn'; c.phase='acute';}
+    else if(h>ch+2){c.verdict='Between acute and chronic → partially compensated (subacute) respiratory alkalosis'; c.cls='warn'; c.phase='aoc';}
+    else if(h>=ch-2){c.verdict='Chronic (renally compensated) respiratory alkalosis'; c.cls='ok'; c.phase='chronic';}
+    else {c.verdict='HCO₃⁻ lower than chronic compensation → concomitant metabolic acidosis'; c.extra='metAcid'; c.cls='bad';}
+  }
+  return c;
+}
+
+function getInputs(){
+  return {ph:num('i-ph'), p: has(num('i-pco2'))?toMM(num('i-pco2')):NaN, h:num('i-hco3'), be:num('i-be'),
+    po2: has(num('i-po2'))?toMM(num('i-po2')):NaN, fio2:num('i-fio2'), age:num('i-age'),
+    na:num('i-na'), k:num('i-k'), cl:num('i-cl'), alb:num('i-alb'), lac:num('i-lac'), glu:num('i-glu'), urea:num('i-urea'), osm:num('i-osm'), ket:num('i-ket'),
+    una:num('i-una'), uk:num('i-uk'), ucl:num('i-ucl'), bp:$('#i-bp').value, agref: has(num('i-agref'))?num('i-agref'):12};
+}
+
+let LAST = null; // last analysis for map/pathways
+function analyse(){
+  const I = getInputs();
+  const out = $('#out');
+  if(!has(I.ph) || !has(I.p) || !has(I.h)){
+    out.innerHTML = '<p class="note">Enter at least pH, pCO₂ and HCO₃⁻ — or load an example / practice case.</p>';
+    LAST=null; drawMap(); renderPaths(); return;
+  }
+  const venous = SAMPLE==='VBG';
+  let ph=I.ph, p=I.p, h=I.h;
+  const conv = venous && $('#vbgConvert').checked;
+  if(conv){ ph = I.ph+0.03; p = I.p-5; h = I.h-1; }
+  const A = classify(ph,p,h);
+  const steps=[]; const nodes=new Set(); const findings=[...(A.primary&&A.primary!=='normal'?[A.primary]:[]), ...A.extra];
+
+  // Step 0 VBG
+  if(venous){
+    steps.push({t:'Venous sample', pill:['n','VBG'], body: conv ? `<p>Estimated arterial values used below: pH <b>${r2(ph)}</b>, pCO₂ <b>${fmtP(p)}</b>, HCO₃⁻ <b>${r1(h)}</b>.</p><span class="calc">pHa ≈ pHv + 0.03 · pCO₂a ≈ pCO₂v − 0.7 kPa (5 mmHg) · HCO₃⁻a ≈ HCO₃⁻v − 1</span>${I.p<=46?'<p>Venous pCO₂ ≤ 6.1 kPa (46 mmHg): arterial hypercapnia is effectively excluded.</p>':''}` : '<p>Interpreting raw venous values (no correction).</p>'});
+  }
+  // Step 1 validity
+  const hMeas = hOf(I.ph), hCalc = 24*I.p/I.h, diff = Math.abs(hMeas-hCalc)/hMeas;
+  steps.push({t:'Internal consistency (is the gas believable?)', pill: diff<=0.1?['ok','Consistent']:['bad','Inconsistent'],
+    body:`<p>[H⁺] from pH = 10<sup>(9 − pH)</sup> = <b>${r1(hMeas)}</b> nmol/L; [H⁺] from Henderson = 24 × pCO₂(mmHg) ÷ HCO₃⁻ = <b>${r1(hCalc)}</b> nmol/L (${Math.round(diff*100)}% difference).</p>${diff>0.1?'<p><b>&gt;10% mismatch:</b> check transcription, sample type, delay or calculated vs measured HCO₃⁻.</p>':''}<span class="calc">Rule of thumb: pH 7.40 ↔ 40 nmol/L; each 0.01 pH ≈ 1 nmol/L near normal</span>`});
+  // Step 2 pH
+  steps.push({t:'pH: acidaemia or alkalaemia?', pill: A.status==='normal pH'?['ok','Normal pH']:['bad',A.status[0].toUpperCase()+A.status.slice(1)],
+    body:`<p>pH <b>${r2(ph)}</b> → ${A.status}${A.status==='normal pH'?' (a normal pH does not exclude a disorder — check pCO₂, HCO₃⁻ and the anion gap)':''}.</p>`});
+  // Step 3 primary
+  const pDesc = p>45?'high':p<35?'low':'normal', hDesc = h>26?'high':h<22?'low':'normal';
+  steps.push({t:'Primary process', pill: A.primary&&A.primary!=='normal'?['warn',NAMES[A.primary]]:['ok','None evident'],
+    body:`<p>pCO₂ ${fmtP(p)} (<b>${pDesc}</b>), HCO₃⁻ ${r1(h)} mmol/L (<b>${hDesc}</b>). ${A.primary&&A.primary!=='normal'?`The value moving in the direction of the pH change identifies the primary process: <b>${NAMES[A.primary]}</b>.`:''}</p>${A.note?`<p>${A.note}</p>`:''}<span class="calc">pH ↓ + pCO₂ ↑ = respiratory acidosis · pH ↓ + HCO₃⁻ ↓ = metabolic acidosis · pH ↑ + pCO₂ ↓ = respiratory alkalosis · pH ↑ + HCO₃⁻ ↑ = metabolic alkalosis</span>`});
+  // Step 4 compensation
+  if(A.comp){
+    steps.push({t:'Is compensation appropriate?', pill:[A.comp.cls, A.comp.cls==='ok'?'Appropriate':A.comp.cls==='warn'?(A.comp.phase==='acute'?'Acute':'Partial'):'Mixed disorder'],
+      body:`<span class="calc">${A.comp.formula}</span><p>Measured ${A.comp.var}: <b>${A.comp.var==='pCO₂'?fmtP(p):r1(h)+' mmol/L'}</b> → ${A.comp.verdict}.</p><p class="note">Compensation never fully normalises pH (chronic respiratory alkalosis is the occasional exception) and never over-corrects.</p>`});
+  } else if(A.primary && A.primary!=='normal' && A.extra.length){
+    steps.push({t:'Is compensation appropriate?', pill:['bad','Mixed disorder'], body:'<p>pCO₂ and HCO₃⁻ have moved in opposite (non-compensating) directions — no compensation formula applies; both processes are primary.</p>'});
+  }
+  if(A.primary==='metAcid'){ nodes.add('ma'); nodes.add('ma-comp'); }
+  if(A.primary==='metAlk'){ nodes.add('malk'); nodes.add('malk-comp'); }
+  if(A.primary==='respAcid'||A.extra.includes('respAcid')){ nodes.add('ra'); if(A.comp&&A.comp.phase) nodes.add('ra-'+A.comp.phase); }
+  if(A.primary==='respAlk'||A.extra.includes('respAlk')){ nodes.add('rl'); if(A.comp&&A.comp.phase) nodes.add('rl-'+A.comp.phase); }
+  if(A.extra.includes('metAcid')) nodes.add('ma');
+  if(A.extra.includes('metAlk')) nodes.add('malk');
+
+  // Step 5 anion gap
+  let AG=null, AGc=null, hagma=false, nagma=false, dr=null;
+  if(has(I.na)&&has(I.cl)){
+    AG = I.na-(I.cl+h);
+    AGc = has(I.alb) ? AG + 0.25*(40-I.alb) : AG;
+    hagma = AGc > I.agref+2;
+    const metAcidPresent = findings.includes('metAcid');
+    nagma = !hagma && metAcidPresent;
+    let body = `<span class="calc">AG = Na⁺ − (Cl⁻ + HCO₃⁻) = ${I.na} − (${I.cl} + ${r1(h)}) = ${r1(AG)}${has(I.alb)?` · albumin-corrected = AG + 0.25 × (40 − ${I.alb}) = ${r1(AGc)}`:''}</span>`;
+    if(hagma){
+      body += `<p><b>High anion gap</b> (> ${I.agref}): unmeasured anions present → HAGMA${!findings.includes('metAcid')?' — even though HCO₃⁻/pH do not obviously show it (a "hidden" metabolic acidosis)':''}.</p>`;
+      if(!findings.includes('metAcid')) findings.push('metAcid');
+      nodes.add('ma'); nodes.add('ma-ag'); nodes.add('ma-hagma'); nodes.add('ma-hagma-tests');
+      // delta ratio
+      if(h<24){
+        dr = (AGc-I.agref)/(24-h);
+        let dv, cls='ok';
+        if(dr<0.4){dv='&lt; 0.4 → hyperchloraemic NAGMA predominates'; nodes.add('ma-delta-low'); cls='warn';}
+        else if(dr<0.8){dv='0.4–0.8 → combined HAGMA + NAGMA (e.g. renal failure, DKA during saline resuscitation)'; nodes.add('ma-delta-mixed'); cls='warn'; findings.push('nagma');}
+        else if(dr<=2){dv='0.8–2 → pure HAGMA (DKA ≈ 1, lactic acidosis ≈ 1.6)'; nodes.add('ma-delta-pure');}
+        else {dv='&gt; 2 → HAGMA + concomitant metabolic alkalosis (or pre-existing compensated respiratory acidosis)'; nodes.add('ma-delta-high'); cls='bad'; if(!findings.includes('metAlk')) findings.push('metAlk');}
+        nodes.add('ma-delta');
+        body += `<p>Delta ratio = (AG − ${I.agref}) ÷ (24 − HCO₃⁻) = ${r1(AGc-I.agref)} ÷ ${r1(24-h)} = <b>${r2(dr)}</b> <span class="pill ${cls}">${dv}</span></p>`;
+      } else {
+        body += `<p>HCO₃⁻ is not reduced despite a high AG → a concomitant <b>metabolic alkalosis</b> is likely masking the acidosis.</p>`;
+        if(!findings.includes('metAlk')) findings.push('metAlk');
+        nodes.add('ma-delta'); nodes.add('ma-delta-high');
+      }
+    } else if(AGc < I.agref-6){
+      body += `<p><b>Low anion gap</b>: think hypoalbuminaemia (if uncorrected), paraproteinaemia (myeloma), lithium/bromide, or lab error.</p>`; nodes.add('ma-lowag');
+    } else {
+      body += `<p>Anion gap normal${nagma?' with a metabolic acidosis → <b>normal anion gap (hyperchloraemic) metabolic acidosis</b>':''}.</p>`;
+      if(nagma){ nodes.add('ma-ag'); nodes.add('ma-nagma'); findings.push('nagma'); }
+    }
+    steps.push({t:'Anion gap'+(hagma?' & delta ratio':''), pill: hagma?['bad','High AG '+r1(AGc)]:['ok','AG '+r1(AGc)], body});
+  } else if(findings.includes('metAcid')){
+    steps.push({t:'Anion gap', pill:['n','Need Na⁺, Cl⁻'], body:'<p>Enter Na⁺ and Cl⁻ (and albumin) — the anion gap is the key branch point for every metabolic acidosis.</p>'});
+    nodes.add('ma-ag');
+  }
+  // Step 6 osmolar gap
+  let OG=null;
+  if(has(I.osm)&&has(I.na)&&has(I.glu)&&has(I.urea)){
+    const calc = 2*I.na+I.glu+I.urea; OG = I.osm-calc;
+    steps.push({t:'Osmolar gap', pill: OG>10?['bad','Raised '+r1(OG)]:['ok','Normal '+r1(OG)],
+      body:`<span class="calc">Calculated osm = 2 × Na⁺ + glucose + urea = ${r1(calc)} · Gap = ${I.osm} − ${r1(calc)} = ${r1(OG)} (normal &lt; 10)</span><p>${OG>10?'<b>Raised osmolar gap</b>: toxic alcohol (methanol, ethylene glycol, isopropanol*), ethanol, mannitol, glycine; mildly raised in DKA, lactic acidosis, renal failure. *Isopropanol raises OG without acidosis.':'No unmeasured osmoles.'}</p>`});
+    if(hagma) nodes.add(OG>10?'ma-og-high':'ma-og-normal');
+    if(hagma) nodes.add('ma-og');
+  }
+  // Step 7 lactate / ketones / glucose
+  const metab=[];
+  if(has(I.lac)) metab.push(`Lactate <b>${I.lac}</b> mmol/L ${I.lac>=4?'<span class="pill bad">≥ 4: severe hyperlactataemia</span>':I.lac>2?'<span class="pill warn">raised</span>':'<span class="pill ok">normal</span>'}`);
+  if(has(I.ket)) metab.push(`Ketones <b>${I.ket}</b> mmol/L ${I.ket>=3?'<span class="pill bad">≥ 3: ketoacidosis</span>':I.ket>0.6?'<span class="pill warn">raised</span>':'<span class="pill ok">normal</span>'}`);
+  if(has(I.glu)) metab.push(`Glucose <b>${I.glu}</b> mmol/L ${I.glu>=11?'<span class="pill warn">hyperglycaemia</span>':I.glu<4?'<span class="pill bad">hypoglycaemia</span>':''}`);
+  if(has(I.urea)) metab.push(`Urea <b>${I.urea}</b> mmol/L ${I.urea>20?'<span class="pill warn">uraemia — renal failure contributes</span>':''}`);
+  if(has(I.k)) metab.push(`K⁺ <b>${I.k}</b> mmol/L ${I.k<3.5?'<span class="pill warn">hypokalaemia</span>':I.k>5.5?'<span class="pill bad">hyperkalaemia</span>':''}`);
+  if(metab.length) steps.push({t:'Supporting chemistry', pill:['n','Clues'], body:'<p>'+metab.join(' · ')+'</p>'});
+  if(has(I.lac)&&I.lac>2&&hagma) nodes.add('ma-lactate');
+  // Base excess
+  const sbe = 0.93*(h-24.4+14.8*(ph-7.4));
+  steps.push({t:'Base excess', pill: Math.abs(has(I.be)?I.be:sbe)<=2?['ok','Normal']:((has(I.be)?I.be:sbe)<-2?['warn','Base deficit']:['warn','Base excess']),
+    body:`<p>${has(I.be)?`Measured BE <b>${I.be}</b> mmol/L. `:''}Calculated standard BE ≈ <b>${r1(sbe)}</b> mmol/L. BE &lt; −2 indicates a metabolic acidosis component; &gt; +2 a metabolic alkalosis component (BE is unaffected by acute pCO₂ changes).</p>`});
+  // Step 8 urine
+  if(has(I.una)&&has(I.uk)&&has(I.ucl) && (nagma || findings.includes('nagma'))){
+    const uag = I.una+I.uk-I.ucl;
+    steps.push({t:'Urine anion gap (for NAGMA)', pill: uag<0?['ok','Negative '+uag]:['warn','Positive +'+uag],
+      body:`<span class="calc">UAG = uNa⁺ + uK⁺ − uCl⁻ = ${I.una} + ${I.uk} − ${I.ucl} = ${uag}</span><p>${uag<0?'<b>Negative</b> ("neG-UT"): kidneys are excreting NH₄⁺ appropriately → <b>GI bicarbonate loss</b> (diarrhoea, fistula, ileostomy, ureteric diversion) or exogenous acid/saline.':'<b>Positive</b>: impaired renal NH₄⁺ excretion → <b>renal tubular acidosis</b> (type 1 distal: low K⁺, urine pH &gt; 5.5; type 4: high K⁺) or renal failure.'}</p><p class="note">Unreliable if urine Na⁺ &lt; 20, or with ketonuria/other unmeasured urinary anions — then use urine osmolal gap.</p>`});
+    nodes.add('ma-uag'); nodes.add(uag<0?'ma-uag-neg':'ma-uag-pos'); if(uag>=0) nodes.add('ma-rta');
+  }
+  if(findings.includes('metAlk')){
+    if(has(I.ucl)){
+      const resp = I.ucl<20;
+      steps.push({t:'Urine chloride (for metabolic alkalosis)', pill: resp?['ok','< 20: Cl-responsive']:['warn','≥ 20: Cl-resistant'],
+        body:`<p>Urine Cl⁻ <b>${I.ucl}</b> mmol/L → ${resp?'<b>chloride (saline)-responsive</b>: vomiting/NG suction, remote diuretic use, post-hypercapnia, villous adenoma, chloride-losing diarrhoea. Treat with 0.9% saline + KCl.':'<b>chloride-resistant</b>: '+(I.bp==='high'?'with hypertension → mineralocorticoid excess (primary hyperaldosteronism, Cushing\'s, renal artery stenosis, liquorice, Liddle\'s). Check renin & aldosterone.':I.bp==='norm'?'with normal/low BP → current diuretics, Bartter/Gitelman syndrome, severe hypokalaemia or hypomagnesaemia.':'assess BP: hypertensive → mineralocorticoid excess; normotensive → diuretics, Bartter/Gitelman, severe hypoK.')}</p><p class="note">Urine Na⁺ is misleading in vomiting (bicarbonaturia drags Na⁺ out) — use urine Cl⁻.</p>`});
+      nodes.add('malk-ucl'); nodes.add(resp?'malk-clresp':'malk-clres');
+      if(!resp && I.bp==='high') nodes.add('malk-htn');
+      if(!resp && I.bp==='norm') nodes.add('malk-normo');
+    } else nodes.add('malk-ucl');
+  }
+  // Step 9 oxygenation
+  if(!venous && has(I.po2)){
+    const fio2 = has(I.fio2)? I.fio2/100 : 0.21;
+    const PAO2 = fio2*(760-47) - p/0.8;
+    const aa = PAO2 - I.po2;
+    const expAa = has(I.age)? I.age/4+4 : null;
+    const pf = I.po2/fio2;
+    const hypox = I.po2<60;
+    let rf = hypox ? (p>45?'Type 2 respiratory failure (hypoxaemia + hypercapnia)':'Type 1 respiratory failure (hypoxaemia, normal/low pCO₂)') : 'No hypoxaemia';
+    const pfStr = UNIT==='kPa' ? `${r1(pf/K)} kPa` : `${Math.round(pf)} mmHg`;
+    steps.push({t:'Oxygenation', pill: hypox?['bad',hypox&&p>45?'Type 2 RF':'Type 1 RF']:['ok','Adequate'],
+      body:`<p>PaO₂ <b>${fmtP(I.po2)}</b> on FiO₂ ${Math.round(fio2*100)}% → ${rf}. Expected PaO₂ ≈ FiO₂(%) − 10 kPa (or ×5 in mmHg) on supplemental O₂.</p>
+      <span class="calc">P/F ratio = ${pfStr} ${pf<=100?'(severe, &lt;13.3 kPa / 100 mmHg)':pf<=200?'(moderate, &lt;26.7 kPa / 200 mmHg)':pf<=300?'(mild, &lt;40 kPa / 300 mmHg)':'(&gt; 40 kPa / 300 mmHg)'}</span>
+      <span class="calc">PAO₂ = FiO₂ × (760 − 47) − PaCO₂/0.8 = ${fmtP(PAO2)} · A–a gradient = ${fmtP(aa)}${expAa!==null?` (expected ≤ ${fmtP(expAa)} = age/4 + 4 mmHg)`:''}</span>
+      ${expAa!==null?`<p>${aa>expAa+2?'<b>Raised A–a gradient</b> → V/Q mismatch, shunt or diffusion defect (lung disease).':'Normal A–a gradient → hypoxaemia/hypercapnia from <b>hypoventilation</b> (CNS, neuromuscular, chest wall) or low inspired O₂.'}</p>`:''}`});
+    if(expAa!==null){ const hi = aa>expAa+2; if(nodes.has('ra')) nodes.add(hi?'ra-aa-high':'ra-aa-normal'); if(nodes.has('rl')) nodes.add(hi?'rl-aa-high':'rl-aa-normal'); }
+  } else if(venous){
+    steps.push({t:'Oxygenation', pill:['n','Not assessable'], body:'<p>Venous pO₂ reflects tissue extraction, not lung function — use SpO₂ (and an ABG if precise PaO₂ or pCO₂ is needed).</p>'});
+  }
+
+  // Summary
+  const uniq = [...new Set(findings)];
+  let headline;
+  const parts=[];
+  if(A.primary==='normal' && !uniq.length) headline='Normal acid–base status';
+  else {
+    if(A.primary && A.primary!=='normal'){
+      let s=NAMES[A.primary];
+      if(A.comp && A.comp.phase && !(hagma && (A.primary==='respAcid'||A.primary==='respAlk'))){ s = (A.comp.phase==='acute'?'Acute ':A.comp.phase==='chronic'?'Chronic ':A.primary==='respAcid'?'Acute-on-chronic ':'Partially compensated ')+s.toLowerCase(); }
+      if(A.primary==='metAcid' && hagma) s='High anion gap metabolic acidosis';
+      if(A.primary==='metAcid' && nagma) s='Normal anion gap metabolic acidosis';
+      if(A.comp && !A.comp.extra && !A.comp.phase) s += ' with appropriate respiratory compensation';
+      parts.push(s);
+    }
+    uniq.filter(f=>f!==A.primary).forEach(f=>{
+      if(f==='nagma'){ if(!(A.primary==='metAcid'&&nagma)) parts.push('coexisting normal anion gap acidosis'); }
+      else if(f==='metAcid' && hagma && A.primary!=='metAcid') parts.push('high anion gap metabolic acidosis');
+      else parts.push(NAMES[f].toLowerCase());
+    });
+    headline = parts.length? parts[0] + (parts.length>1?' + '+parts.slice(1).join(' + '):'') : 'Indeterminate — recheck values';
+  }
+  const mixed = parts.length>1;
+  LAST = {ph,p,h, venous, raw:{ph:I.ph,p:I.p,h:I.h}, conv, primary:A.primary, findings:uniq, nodes, mixed};
+
+  let html = `<div class="summary"><div class="note">${venous?'VBG':'ABG'} summary</div><div class="big">${esc(headline)}</div>
+    <div>pH ${r2(ph)} · pCO₂ ${fmtP(p)} · HCO₃⁻ ${r1(h)}${AGc!==null?` · AG ${r1(AGc)}`:''}${mixed?' · <span class="pill bad">Mixed disorder</span>':''}</div></div>`;
+  html += '<div class="steps">'+steps.map(s=>`<div class="step"><h4><span class="t">${s.t}</span><span class="pill ${s.pill[0]}">${s.pill[1]}</span></h4>${s.body}</div>`).join('')+'</div>';
+  html += nextSteps(uniq, {hagma, nagma, OG, I, A});
+  out.innerHTML = html;
+  drawMap(); renderPaths();
+}
+
+/* ---------- next steps ---------- */
+function nextSteps(f, ctx){
+  const blocks=[];
+  const L = arr => '<div class="causes">'+arr.map(c=>`<span>${c}</span>`).join('')+'</div>';
+  if(f.includes('metAcid')||f.includes('nagma')){
+    if(ctx.hagma){
+      blocks.push(`<h3>High anion gap metabolic acidosis — find the anion</h3>
+      <ol><li>Check <b>lactate</b> (sepsis, shock, ischaemic gut, seizures, metformin), <b>ketones</b> &amp; glucose (DKA, alcoholic/starvation ketoacidosis), <b>urea/creatinine</b> (renal failure).</li>
+      <li>Send <b>salicylate &amp; paracetamol levels</b>; ask about ingestions. ${has(ctx.OG)?'':'Measure serum osmolality and calculate the <b>osmolar gap</b> for toxic alcohols.'}</li>
+      ${has(ctx.OG)&&ctx.OG>10?'<li><b>Osmolar gap raised</b> → methanol / ethylene glycol: urgent toxicology advice, fomepizole or ethanol, consider haemodialysis; look for visual symptoms (methanol), calcium oxalate crystals &amp; AKI (ethylene glycol).</li>':''}
+      <li>Use the <b>delta ratio</b> to uncover a second hidden process.</li><li>CK (rhabdomyolysis), pyroglutamic acid (chronic paracetamol + malnutrition/sepsis), D-lactate (short bowel).</li></ol>
+      <div class="note">GOLDMARK mnemonic:</div>${L(['Glycols (ethylene/propylene)','Oxoproline (pyroglutamic acid)','L-lactate','D-lactate','Methanol','Aspirin','Renal failure','Ketoacidosis'])}`);
+    } else if(ctx.nagma || f.includes('nagma')){
+      blocks.push(`<h3>Normal anion gap (hyperchloraemic) acidosis — gut or kidney?</h3>
+      <ol><li>History: diarrhoea, stomas/fistulae, ureteric diversion, large-volume 0.9% saline, acetazolamide/topiramate.</li>
+      <li>Calculate the <b>urine anion gap</b> (uNa⁺ + uK⁺ − uCl⁻): negative → GI loss; positive → renal (RTA).</li>
+      <li>Check <b>serum K⁺</b> and <b>urine pH</b>: type 1 (distal) RTA = low K⁺, urine pH &gt; 5.5; type 2 (proximal) = low K⁺, urine pH &lt; 5.5 once HCO₃⁻ low, glycosuria/phosphaturia (Fanconi); type 4 = high K⁺ (hypoaldosteronism, diabetic nephropathy, ACEi/spironolactone).</li>
+      <li>Consider early CKD, Addison's disease, recovery phase of DKA (ketones lost in urine).</li></ol>
+      <div class="note">Causes (ACCRUED / HARDASSES):</div>${L(['Acid load / Addison\'s','Chloride excess (saline)','Carbonic anhydrase inhibitors','Renal tubular acidosis','Ureteroenteric fistula','Early renal failure','Diarrhoea / pancreatic fistula'])}`);
+    } else {
+      blocks.push(`<h3>Metabolic acidosis — next step</h3><ol><li>Enter Na⁺, Cl⁻ and albumin to calculate the anion gap — it decides which pathway to follow.</li></ol>`);
+    }
+  }
+  if(f.includes('metAlk')){
+    blocks.push(`<h3>Metabolic alkalosis — what generates and what maintains it?</h3>
+    <ol><li>Assess <b>volume status</b> and <b>blood pressure</b>; history of vomiting, NG drainage, diuretics, alkali (antacids, bicarbonate, citrate from massive transfusion), liquorice.</li>
+    <li>Send <b>urine Cl⁻</b>: &lt; 20 mmol/L = chloride-responsive; ≥ 20 = chloride-resistant.</li>
+    <li>Check <b>K⁺ and Mg²⁺</b> (hypokalaemia both causes and maintains alkalosis).</li>
+    <li>Chloride-resistant + hypertension → <b>renin &amp; aldosterone</b> (Conn's, renovascular), cortisol (Cushing's). Normotensive → diuretic screen, Bartter/Gitelman.</li></ol>
+    ${L(['Vomiting / NG suction','Diuretics','Post-hypercapnia','Primary hyperaldosteronism','Cushing\'s','Liquorice','Bartter / Gitelman','Milk–alkali / bicarbonate load'])}`);
+  }
+  if(f.includes('respAcid')){
+    blocks.push(`<h3>Respiratory acidosis — why is the patient hypoventilating?</h3>
+    <ol><li>Immediate: airway, conscious level (GCS), RR, work of breathing; <b>review sedatives/opioids</b> (naloxone if opioid toxidrome); controlled O₂ (target SpO₂ 88–92% if CO₂ retainer).</li>
+    <li><b>A–a gradient</b>: normal → central / neuromuscular / chest wall hypoventilation; raised → lung disease (COPD, asthma, pneumonia, pulmonary oedema).</li>
+    <li>Investigations: CXR, spirometry/peak flow, FVC &amp; NIF serially if neuromuscular (GBS, myasthenia), CK, TFTs, drug screen, sleep study (obesity hypoventilation).</li>
+    <li>Acute vs chronic: use HCO₃⁻ (and history) — <b>NIV</b> in COPD if pH &lt; 7.35 and pCO₂ &gt; 6.5 kPa despite optimal treatment; consider intubation if worsening.</li></ol>
+    ${L(['CNS depression (drugs, stroke, trauma)','Spinal cord / phrenic injury','Neuromuscular (GBS, myasthenia, MND)','Chest wall (kyphoscoliosis, flail, obesity)','Airway obstruction','COPD / severe asthma','Pneumonia / pulmonary oedema'])}`);
+  }
+  if(f.includes('respAlk')){
+    blocks.push(`<h3>Respiratory alkalosis — why is the patient hyperventilating?</h3>
+    <ol><li>Is the patient <b>hypoxic</b>? Calculate the A–a gradient — raised → PE, pneumonia, pulmonary oedema, ILD, asthma (early).</li>
+    <li>Normal A–a gradient → pain, anxiety (diagnosis of exclusion), fever/<b>sepsis</b> (check lactate), <b>salicylate</b> toxicity (levels + AG), pregnancy (β-hCG), liver failure (LFTs, ammonia), CNS lesions, thyrotoxicosis, high altitude, over-ventilation on a ventilator.</li>
+    <li>Consider Wells score / D-dimer / CTPA if PE suspected.</li></ol>
+    ${L(['Hypoxaemia','Pulmonary embolism','Pneumonia / oedema','Sepsis','Salicylates','Pregnancy','Liver failure','CNS (stroke, SAH)','Pain / anxiety','Iatrogenic ventilation'])}`);
+  }
+  if(!blocks.length) return `<div class="next card" style="box-shadow:none"><h3>Next steps</h3><p>No acid–base disorder identified. Review oxygenation and the clinical picture; repeat if the patient deteriorates.</p></div>`;
+  return `<div class="next"><h2 style="margin-top:6px">Next steps to establish the cause</h2>${blocks.map(b=>`<div class="step" style="margin-bottom:10px">${b}</div>`).join('')}<button class="btn" onclick="document.querySelector('[data-tab=paths]').click()">Open diagnostic pathways →</button></div>`;
+}
+
+/* =====================================================================
+   ACID-BASE MAP
+   ===================================================================== */
+const MAP = {w:640,h:470, l:56, r:18, t:16, b:48, x0:10, x1:100, y0:0, y1:50};
+const mx = p => MAP.l + (p-MAP.x0)/(MAP.x1-MAP.x0)*(MAP.w-MAP.l-MAP.r);
+const my = h => MAP.h-MAP.b - (h-MAP.y0)/(MAP.y1-MAP.y0)*(MAP.h-MAP.t-MAP.b);
+const ix = X => MAP.x0 + (X-MAP.l)/(MAP.w-MAP.l-MAP.r)*(MAP.x1-MAP.x0);
+const iy = Y => MAP.y0 + (MAP.h-MAP.b-Y)/(MAP.h-MAP.t-MAP.b)*(MAP.y1-MAP.y0);
+function bandPolys(){
+  const B=[];
+  const poly=(pts)=>pts.map(([p,h])=>`${r1(mx(p))},${r1(my(h))}`).join(' ');
+  // metabolic acidosis: x = 1.5h+8 ±2, h 4..22
+  let L=[],R=[]; for(let h=4;h<=22;h+=1){L.push([1.5*h+8-2,h]);R.unshift([1.5*h+8+2,h]);}
+  B.push({id:'metAcid',name:'Metabolic acidosis',col:'--s-ma',op:.38,pts:poly(L.concat(R)),lab:[29,4,'start']});
+  L=[];R=[]; for(let h=26;h<=48;h+=1){const x=Math.min(40+0.7*(h-24),58);L.push([x-5,h]);R.unshift([x+5,h]);}
+  B.push({id:'metAlk',name:'Metabolic alkalosis',col:'--s-malk',op:.38,pts:poly(L.concat(R)),lab:[42,47]});
+  // resp acidosis acute & chronic
+  L=[];R=[]; for(let p=45;p<=100;p+=1){const h=24+0.1*(p-40);L.push([p,h+2]);R.unshift([p,h-2]);}
+  B.push({id:'raA',name:'Acute respiratory acidosis',col:'--s-ra',op:.28,pts:poly(L.concat(R)),lab:[84,25]});
+  L=[];R=[]; for(let p=45;p<=100;p+=1){const h=Math.min(24+0.35*(p-40),48);L.push([p,h+2.5]);R.unshift([p,h-2.5]);}
+  B.push({id:'raC',name:'Chronic respiratory acidosis',col:'--s-ra',op:.6,pts:poly(L.concat(R)),lab:[78,38.5]});
+  L=[];R=[]; for(let p=12;p<=35;p+=1){const h=Math.max(24-0.2*(40-p),18);L.push([p,h+2]);R.unshift([p,h-2]);}
+  B.push({id:'rlA',name:'Acute respiratory alkalosis',col:'--s-rl',op:.28,pts:poly(L.concat(R)),lab:[15,27.5,'start']});
+  L=[];R=[]; for(let p=14;p<=35;p+=1){const h=Math.max(24-0.5*(40-p),12);L.push([p,h+2]);R.unshift([p,h-2]);}
+  B.push({id:'rlC',name:'Chronic respiratory alkalosis',col:'--s-rl',op:.6,pts:poly(L.concat(R)),lab:[11,33,'start',[13,13.5]]});
+  return B;
+}
+function inBand(p,h){
+  const res=[];
+  if(h>=4&&h<=22&&Math.abs(p-(1.5*h+8))<=2) res.push('Metabolic acidosis (appropriate compensation)');
+  if(h>=26&&Math.abs(p-(40+0.7*(h-24)))<=5) res.push('Metabolic alkalosis (appropriate compensation)');
+  if(p>=45&&Math.abs(h-(24+0.1*(p-40)))<=2) res.push('Acute respiratory acidosis');
+  if(p>=45&&Math.abs(h-(24+0.35*(p-40)))<=2.5) res.push('Chronic respiratory acidosis');
+  if(p<=35&&Math.abs(h-Math.max(24-0.2*(40-p),18))<=2) res.push('Acute respiratory alkalosis');
+  if(p<=35&&Math.abs(h-Math.max(24-0.5*(40-p),12))<=2) res.push('Chronic respiratory alkalosis');
+  if(p>=35&&p<=45&&h>=22&&h<=26) res.push('Normal range');
+  return res;
+}
+function drawMap(){
+  const svg=$('#map'); if(!svg) return;
+  let s='';
+  // clip
+  s+=`<defs><clipPath id="plotclip"><rect x="${MAP.l}" y="${MAP.t}" width="${MAP.w-MAP.l-MAP.r}" height="${MAP.h-MAP.t-MAP.b}"/></clipPath></defs>`;
+  // grid
+  const xt = UNIT==='kPa' ? [2,4,6,8,10,12].map(k=>[k*K,k]) : [10,20,30,40,50,60,70,80,90,100].map(v=>[v,v]);
+  xt.forEach(([v,lab])=>{ s+=`<line x1="${mx(v)}" x2="${mx(v)}" y1="${MAP.t}" y2="${MAP.h-MAP.b}" stroke="var(--grid)" stroke-width="1"/><text x="${mx(v)}" y="${MAP.h-MAP.b+16}" text-anchor="middle" font-size="11" fill="var(--muted)">${lab}</text>`; });
+  for(let h=0;h<=50;h+=10){ s+=`<line x1="${MAP.l}" x2="${MAP.w-MAP.r}" y1="${my(h)}" y2="${my(h)}" stroke="var(--grid)" stroke-width="1"/><text x="${MAP.l-8}" y="${my(h)+4}" text-anchor="end" font-size="11" fill="var(--muted)">${h}</text>`; }
+  s+=`<text x="${(MAP.l+MAP.w-MAP.r)/2}" y="${MAP.h-10}" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">pCO₂ (${UNIT})</text>`;
+  s+=`<text transform="translate(16 ${(MAP.t+MAP.h-MAP.b)/2}) rotate(-90)" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">HCO₃⁻ (mmol/L)</text>`;
+  s+=`<g clip-path="url(#plotclip)">`;
+  // isopleths
+  [7.0,7.1,7.2,7.3,7.4,7.5,7.6,7.7].forEach(ph=>{
+    const k=0.03*Math.pow(10,ph-6.1); // h = k*p
+    const pEnd = Math.min(MAP.x1, MAP.y1/k);
+    s+=`<line x1="${mx(MAP.x0)}" y1="${my(k*MAP.x0)}" x2="${mx(pEnd)}" y2="${my(k*pEnd)}" stroke="var(--axis)" stroke-width="1" stroke-dasharray="${ph===7.4?'0':'3 4'}" opacity="${ph===7.4?.9:.7}"/>`;
+    const lx = pEnd<MAP.x1 ? pEnd : MAP.x1, ly=k*lx;
+    s+=`<text x="${mx(lx)-(pEnd<MAP.x1?4:4)}" y="${my(ly)+(pEnd<MAP.x1?12:-4)}" text-anchor="end" font-size="10.5" fill="var(--muted)">pH ${ph.toFixed(1)}</text>`;
+  });
+  // normal box
+  s+=`<rect x="${mx(35)}" y="${my(26)}" width="${mx(45)-mx(35)}" height="${my(22)-my(26)}" fill="none" stroke="var(--ink)" stroke-width="1.5" rx="3"/>`;
+  bandPolys().forEach(b=>{
+    s+=`<polygon points="${b.pts}" fill="var(${b.col})" fill-opacity="${b.op}" stroke="var(${b.col})" stroke-width="1.2" stroke-opacity=".9"><title>${b.name}</title></polygon>`;
+  });
+  s+=`</g>`;
+  // labels
+  bandPolys().forEach(b=>{ if(b.lab[3]) s+=`<line x1="${mx(b.lab[3][0])}" y1="${my(b.lab[1])+4}" x2="${mx(b.lab[3][0])}" y2="${my(b.lab[3][1])}" stroke="var(${b.col})" stroke-width="1.5"/>`; s+=`<text x="${mx(b.lab[0])}" y="${my(b.lab[1])}" font-size="11" font-weight="600" fill="var(--ink)" text-anchor="${b.lab[2]||'middle'}" paint-order="stroke" stroke="var(--panel)" stroke-width="3">${b.name.replace('respiratory','resp.').replace('Metabolic','Met.')}</text>`; });
+  s+=`<text x="${mx(40)}" y="${my(26)-5}" text-anchor="middle" font-size="10.5" fill="var(--ink)" font-weight="700" paint-order="stroke" stroke="var(--panel)" stroke-width="3">Normal</text>`;
+  // patient
+  if(LAST){
+    const P=[LAST.p,LAST.h];
+    if(LAST.venous && LAST.conv){
+      const V=[LAST.raw.p, LAST.raw.h];
+      s+=`<line x1="${mx(V[0])}" y1="${my(V[1])}" x2="${mx(P[0])}" y2="${my(P[1])}" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+      s+=`<circle cx="${mx(V[0])}" cy="${my(V[1])}" r="6" fill="var(--panel)" stroke="var(--ink)" stroke-width="2"/><text x="${mx(V[0])+9}" y="${my(V[1])+14}" font-size="11" fill="var(--muted)">venous</text>`;
+    }
+    s+=`<circle cx="${mx(P[0])}" cy="${my(P[1])}" r="9" fill="var(--bad)" fill-opacity=".25"/><circle cx="${mx(P[0])}" cy="${my(P[1])}" r="5.5" fill="var(--bad)" stroke="var(--panel)" stroke-width="2"/>`;
+    s+=`<text x="${mx(P[0])+11}" y="${my(P[1])-8}" font-size="12" font-weight="700" fill="var(--ink)" paint-order="stroke" stroke="var(--panel)" stroke-width="3">Patient (pH ${r2(LAST.ph)})</text>`;
+  }
+  s+=`<rect id="mapHit" x="${MAP.l}" y="${MAP.t}" width="${MAP.w-MAP.l-MAP.r}" height="${MAP.h-MAP.t-MAP.b}" fill="transparent"/>`;
+  svg.innerHTML=s;
+}
+(function mapEvents(){
+  const svg=$('#map'), tip=$('#mapTip'); let dragging=false;
+  const pt = e => { const r=svg.getBoundingClientRect(); const X=(e.clientX-r.left)/r.width*MAP.w, Y=(e.clientY-r.top)/r.height*MAP.h; return {X,Y,cx:e.clientX-r.left,cy:e.clientY-r.top,rw:r.width}; };
+  const inside = q => q.X>=MAP.l && q.X<=MAP.w-MAP.r && q.Y>=MAP.t && q.Y<=MAP.h-MAP.b;
+  const set = q => { const p=ix(q.X), h=Math.max(1,iy(q.Y)); $('#i-pco2').value = UNIT==='kPa'? r2(p/K) : r1(p); $('#i-hco3').value=r1(h); $('#i-ph').value=r2(phOf(p,h)); $('#i-be').value=''; analyse(); };
+  svg.addEventListener('pointerdown',e=>{const q=pt(e); if(!inside(q))return; dragging=true; svg.setPointerCapture(e.pointerId); set(q);});
+  svg.addEventListener('pointerup',()=>dragging=false);
+  svg.addEventListener('pointerleave',()=>{tip.style.display='none';});
+  svg.addEventListener('pointermove',e=>{
+    const q=pt(e); if(!inside(q)){tip.style.display='none';return;}
+    if(dragging) set(q);
+    const p=ix(q.X), h=Math.max(1,iy(q.Y)); const ph=phOf(p,h); const bands=inBand(p,h);
+    tip.innerHTML=`pCO₂ <b>${fmtP(p)}</b> · HCO₃⁻ <b>${r1(h)}</b><br>pH <b>${r2(ph)}</b><br><span style="color:var(--muted)">${bands.length?bands.join('<br>'):'Outside all bands → mixed disorder'}</span><br><span style="color:var(--muted);font-size:11px">Click / drag to load</span>`;
+    tip.style.display='block';
+    const left = q.cx + 14 + 240 > q.rw ? q.cx-250 : q.cx+14;
+    tip.style.left=Math.max(0,left)+'px'; tip.style.top=(q.cy+12)+'px';
+  });
+})();
+
+/* =====================================================================
+   COMPENSATION CALCULATORS
+   ===================================================================== */
+function calcMet(){
+  const h=num('c-hco3'), pm = has(num('c-pco2m'))?toMM(num('c-pco2m')):NaN; const o=$('#cc-met');
+  if(!has(h)){o.innerHTML='';return;}
+  const w=1.5*h+8, a=40+0.7*(h-24), a2=0.7*h+21;
+  let v='';
+  if(has(pm)){
+    if(h<24){ v = pm>w+2?'<span class="pill bad">Above Winter\'s → + respiratory acidosis</span>': pm<w-2?'<span class="pill bad">Below Winter\'s → + respiratory alkalosis</span>':'<span class="pill ok">Within Winter\'s range</span>'; }
+    else { v = pm>a+5?'<span class="pill bad">Above expected → + respiratory acidosis</span>': pm<a-5?'<span class="pill bad">Below expected → + respiratory alkalosis</span>':'<span class="pill ok">Within expected range</span>'; }
+  }
+  o.innerHTML = `<div>Winter's (acidosis)<b>${fmtP(w-2)} – ${fmtP(w+2)}</b><span class="note">1.5 × ${h} + 8 ± 2</span></div>
+  <div>Quick rule (acidosis)<b>≈ ${fmtP(h+15)}</b><span class="note">HCO₃⁻ + 15 (mmHg)</span></div>
+  <div>Met. alkalosis (0.7 rule)<b>${fmtP(a-5)} – ${fmtP(a+5)}</b><span class="note">40 + 0.7 × (${h} − 24) ± 5</span></div>
+  <div>Met. alkalosis (alt.)<b>${fmtP(a2-2)} – ${fmtP(a2+2)}</b><span class="note">0.7 × ${h} + 21 ± 2</span></div>
+  ${v?`<div style="grid-column:1/-1">Measured ${fmtP(pm)} → ${v}</div>`:''}`;
+}
+function calcResp(){
+  const p = has(num('c-pco2'))?toMM(num('c-pco2')):NaN, hm=num('c-hco3m'); const o=$('#cc-resp');
+  if(!has(p)){o.innerHTML='<div>Enter a pCO₂.</div>';return;}
+  const d=(p-40)/10;
+  let rows;
+  if(d>=0){
+    const a=24+d, c=24+3.5*d;
+    rows=`<div>Acute resp. acidosis<b>HCO₃⁻ ≈ ${r1(a)}</b><span class="note">pH ≈ ${r2(7.4-0.08*d)}</span></div><div>Chronic resp. acidosis<b>HCO₃⁻ ≈ ${r1(c)}</b><span class="note">range ${r1(24+3*d)}–${r1(24+4*d)} · pH ≈ ${r2(7.4-0.03*d)}</span></div>`;
+    if(has(hm)) rows+=`<div style="grid-column:1/-1">Measured HCO₃⁻ ${hm} → ${compensation('respAcid',p,hm).verdict}</div>`;
+  } else {
+    const a=24+2*d, c=Math.max(24+5*d,12);
+    rows=`<div>Acute resp. alkalosis<b>HCO₃⁻ ≈ ${r1(a)}</b><span class="note">pH ≈ ${r2(7.4-0.08*d)}</span></div><div>Chronic resp. alkalosis<b>HCO₃⁻ ≈ ${r1(c)}</b><span class="note">range ${r1(Math.max(24+4*d,12))}–${r1(c)} · pH ≈ ${r2(7.4-0.03*d)}</span></div>`;
+    if(has(hm)) rows+=`<div style="grid-column:1/-1">Measured HCO₃⁻ ${hm} → ${compensation('respAlk',p,hm).verdict}</div>`;
+  }
+  o.innerHTML = `<div>ΔpCO₂ from normal<b>${d>=0?'+':''}${fmtP(p-40)}</b><span class="note">${r1(d)} × 10 mmHg steps</span></div>`+rows;
+}
+function calcGap(){
+  const na=num('g-na'),cl=num('g-cl'),h=num('g-hco3'),alb=num('g-alb'),glu=num('g-glu'),urea=num('g-urea'),osm=num('g-osm'),una=num('g-una'),uk=num('g-uk'),ucl=num('g-ucl');
+  let s='';
+  if(has(na)&&has(cl)&&has(h)){
+    const ag=na-cl-h, agc=has(alb)?ag+0.25*(40-alb):ag;
+    s+=`<div>Anion gap<b>${r1(ag)}</b><span class="note">normal 8–12 (lab dependent)</span></div><div>Albumin-corrected AG<b>${r1(agc)}</b><span class="note">AG + 0.25 × (40 − albumin)</span></div>`;
+    if(h<24) s+=`<div>Delta ratio<b>${r2((agc-12)/(24-h))}</b><span class="note">&lt;0.4 NAGMA · 0.4–0.8 mixed · 0.8–2 HAGMA · &gt;2 + met. alk</span></div>`;
+    s+=`<div>Delta gap (ΔAG − ΔHCO₃⁻)<b>${r1((agc-12)-(24-h))}</b><span class="note">&gt; +6 met. alk · &lt; −6 NAGMA</span></div>`;
+  }
+  if(has(na)&&has(glu)&&has(urea)){
+    const c=2*na+glu+urea; s+=`<div>Calculated osmolality<b>${r1(c)}</b><span class="note">2Na⁺ + glucose + urea</span></div>`;
+    if(has(osm)) s+=`<div>Osmolar gap<b>${r1(osm-c)}</b><span class="note">${osm-c>10?'raised: toxic alcohols?':'normal &lt; 10'}</span></div>`;
+    s+=`<div>Corrected Na⁺ (glucose)<b>${r1(na+0.3*(glu-5.5))}</b><span class="note">Na⁺ + 0.3 × (glucose − 5.5)</span></div>`;
+  }
+  if(has(una)&&has(uk)&&has(ucl)){ const u=una+uk-ucl; s+=`<div>Urine anion gap<b>${u}</b><span class="note">${u<0?'negative → GI loss':'positive → renal (RTA)'}</span></div>`; }
+  $('#cc-gap').innerHTML=s;
+}
+function calcOxy(){
+  const po2=has(num('o-po2'))?toMM(num('o-po2')):NaN, p=has(num('o-pco2'))?toMM(num('o-pco2')):NaN, f=(num('o-fio2')||21)/100, age=num('o-age'), wt=num('o-wt'), h=num('o-hco3');
+  let s='';
+  if(has(p)){ const PA=f*713-p/0.8; s+=`<div>Alveolar PAO₂<b>${fmtP(PA)}</b><span class="note">FiO₂ × 713 − PaCO₂/0.8</span></div>`;
+    if(has(po2)){ s+=`<div>A–a gradient<b>${fmtP(PA-po2)}</b><span class="note">${has(age)?'expected ≤ '+fmtP(age/4+4):''}</span></div>`; } }
+  if(has(po2)) s+=`<div>P/F ratio<b>${UNIT==='kPa'?r1(po2/K/f)+' kPa':Math.round(po2/f)+' mmHg'}</b><span class="note">ARDS: ≤40 / 26.7 / 13.3 kPa (300/200/100 mmHg)</span></div>`;
+  if(has(wt)&&has(h)) s+=`<div>HCO₃⁻ deficit (to 24)<b>${Math.round(0.5*wt*Math.max(0,24-h))} mmol</b><span class="note">0.5 × weight × (24 − HCO₃⁻); give ≤ half, reassess</span></div>`;
+  $('#cc-oxy').innerHTML=s||'<div>Enter values.</div>';
+}
+['c-hco3','c-pco2m'].forEach(id=>document.getElementById(id).addEventListener('input',calcMet));
+['c-pco2','c-hco3m'].forEach(id=>document.getElementById(id).addEventListener('input',calcResp));
+['g-na','g-cl','g-hco3','g-alb','g-glu','g-urea','g-osm','g-una','g-uk','g-ucl'].forEach(id=>document.getElementById(id).addEventListener('input',calcGap));
+['o-po2','o-pco2','o-fio2','o-age','o-wt','o-hco3'].forEach(id=>document.getElementById(id).addEventListener('input',calcOxy));
+
+/* =====================================================================
+   PATHWAYS
+   ===================================================================== */
+const PATHS=[
+ {title:'Metabolic acidosis', col:'--s-ma', root:{id:'ma',t:'Low HCO₃⁻ (&lt;22) / base deficit with pH ↓ (or normal)',c:[
+   {id:'ma-comp',t:"Check compensation — Winter's: expected pCO₂ = 1.5 × HCO₃⁻ + 8 ± 2 mmHg",d:'Higher → added respiratory acidosis (tiring, sedated, CNS). Lower → added respiratory alkalosis (salicylates, sepsis).'},
+   {id:'ma-ag',t:'Calculate anion gap = Na⁺ − (Cl⁻ + HCO₃⁻), correct for albumin',c:[
+     {id:'ma-hagma',t:'High AG → HAGMA',d:'GOLDMARK: glycols, oxoproline, L-lactate, D-lactate, methanol, aspirin, renal failure, ketoacidosis',c:[
+       {id:'ma-hagma-tests',t:'Lactate, ketones, glucose, urea/creatinine, salicylate & paracetamol levels, CK'},
+       {id:'ma-lactate',t:'Lactate raised → type A (hypoperfusion: shock, sepsis, ischaemia) vs type B (metformin, liver failure, seizures, salbutamol)'},
+       {id:'ma-og',t:'Osmolar gap = measured − (2Na⁺ + glucose + urea)',c:[
+         {id:'ma-og-high',t:'&gt; 10 → methanol, ethylene glycol (± ethanol): fomepizole, dialysis, toxicology advice'},
+         {id:'ma-og-normal',t:'Normal → lactate, ketones, uraemia, salicylate, pyroglutamate'}]},
+       {id:'ma-delta',t:'Delta ratio = ΔAG ÷ ΔHCO₃⁻',c:[
+         {id:'ma-delta-low',t:'&lt; 0.4 → hyperchloraemic NAGMA'},
+         {id:'ma-delta-mixed',t:'0.4–0.8 → HAGMA + NAGMA'},
+         {id:'ma-delta-pure',t:'0.8–2 → pure HAGMA'},
+         {id:'ma-delta-high',t:'&gt; 2 → HAGMA + metabolic alkalosis (e.g. DKA with vomiting) or chronic resp. acidosis'}]}]},
+     {id:'ma-nagma',t:'Normal AG → NAGMA (hyperchloraemic)',d:'Diarrhoea, fistula, saline, RTA, acetazolamide, Addison\'s, ureteric diversion',c:[
+       {id:'ma-uag',t:'Urine anion gap = uNa⁺ + uK⁺ − uCl⁻',c:[
+         {id:'ma-uag-neg',t:'Negative → appropriate NH₄⁺ excretion → GI HCO₃⁻ loss, saline load'},
+         {id:'ma-uag-pos',t:'Positive → impaired renal acid excretion',c:[
+           {id:'ma-rta',t:'K⁺ low + urine pH &gt; 5.5 → type 1 (distal) RTA · K⁺ low, Fanconi features → type 2 (proximal) · K⁺ high → type 4 (hypoaldosteronism) · or CKD'}]}]}]},
+     {id:'ma-lowag',t:'Low AG → hypoalbuminaemia (uncorrected), myeloma, lithium, lab error'}]}]}},
+ {title:'Metabolic alkalosis', col:'--s-malk', root:{id:'malk',t:'High HCO₃⁻ (&gt;26) / base excess with pH ↑',c:[
+   {id:'malk-comp',t:'Check compensation: expected pCO₂ = 40 + 0.7 × (HCO₃⁻ − 24) ± 5 mmHg',d:'Rarely exceeds 7.3–8 kPa (55–60 mmHg); higher → added respiratory acidosis'},
+   {id:'malk-ucl',t:'Urine chloride (assess volume status, K⁺, Mg²⁺)',c:[
+     {id:'malk-clresp',t:'Urine Cl⁻ &lt; 20 → chloride (saline)-responsive',d:'Vomiting / NG suction, remote diuretics, post-hypercapnia, villous adenoma, CF → 0.9% saline + KCl'},
+     {id:'malk-clres',t:'Urine Cl⁻ ≥ 20 → chloride-resistant',c:[
+       {id:'malk-htn',t:'Hypertensive → mineralocorticoid excess: Conn\'s, Cushing\'s, renal artery stenosis, liquorice, Liddle\'s → renin & aldosterone'},
+       {id:'malk-normo',t:'Normo/hypotensive → current diuretics, Bartter, Gitelman, severe hypoK / hypoMg'}]}]},
+   {id:'malk-alkali',t:'Also consider alkali load: bicarbonate, antacids (milk–alkali), citrate (massive transfusion)'}]}},
+ {title:'Respiratory acidosis', col:'--s-ra', root:{id:'ra',t:'High pCO₂ (&gt;6.0 kPa / 45 mmHg) with pH ↓ — alveolar hypoventilation',c:[
+   {id:'ra-time',t:'Acute or chronic? Expected HCO₃⁻ ↑ 1 (acute) or ↑ 3.5 (chronic) per 1.33 kPa (10 mmHg)',c:[
+     {id:'ra-acute',t:'Acute: HCO₃⁻ near normal, pH falls 0.08 per 10 mmHg — opioids, sedatives, stroke, acute asthma, airway obstruction'},
+     {id:'ra-aoc',t:'Acute-on-chronic: HCO₃⁻ between — COPD exacerbation, OHS with infection'},
+     {id:'ra-chronic',t:'Chronic: HCO₃⁻ raised, pH near normal — COPD, OHS, kyphoscoliosis, neuromuscular disease'}]},
+   {id:'ra-aa',t:'A–a gradient (on ABG)',c:[
+     {id:'ra-aa-normal',t:'Normal → pure hypoventilation: CNS depression, spinal cord, neuromuscular (GBS, myasthenia), chest wall'},
+     {id:'ra-aa-high',t:'Raised → lung/airway disease: COPD, asthma, pneumonia, pulmonary oedema, ARDS'}]},
+   {id:'ra-tx',t:'Act: reverse sedation (naloxone), controlled O₂ (SpO₂ 88–92% in CO₂ retainers), NIV if pH &lt; 7.35 & pCO₂ &gt; 6.5 kPa, intubate if failing'}]}},
+ {title:'Respiratory alkalosis', col:'--s-rl', root:{id:'rl',t:'Low pCO₂ (&lt;4.7 kPa / 35 mmHg) with pH ↑ — alveolar hyperventilation',c:[
+   {id:'rl-time',t:'Acute or chronic? Expected HCO₃⁻ ↓ 2 (acute) or ↓ 5 (chronic) per 1.33 kPa (10 mmHg)',c:[
+     {id:'rl-acute',t:'Acute: pain, anxiety/panic, PE, early asthma, sepsis, salicylates'},
+     {id:'rl-aoc',t:'Partially compensated: evolving over 1–3 days'},
+     {id:'rl-chronic',t:'Chronic: pregnancy, high altitude, liver cirrhosis, chronic lung disease, CNS lesions'}]},
+   {id:'rl-aa',t:'Hypoxaemia / A–a gradient',c:[
+     {id:'rl-aa-high',t:'Raised → PE, pneumonia, pulmonary oedema, ILD → CXR, D-dimer/CTPA'},
+     {id:'rl-aa-normal',t:'Normal → sepsis, salicylate, pregnancy, liver failure, CNS, hyperthyroidism, anxiety (exclusion), iatrogenic ventilation'}]}]}}
+];
+function renderPaths(){
+  const act = LAST? LAST.nodes : new Set();
+  const node = n => `<li><div class="node${act.has(n.id)?' act':''}">${n.t}${n.d?`<div class="d">${n.d}</div>`:''}</div>${n.c?'<ul>'+n.c.map(node).join('')+'</ul>':''}</li>`;
+  $('#pathView').innerHTML = PATHS.map(P=>`<div class="card" style="border-top:4px solid var(${P.col})"><h2>${P.title}</h2><ul class="tree">${node(P.root)}</ul></div>`).join('');
+}
+
+/* =====================================================================
+   CASES  (all gases in mmHg; pH derived by Henderson–Hasselbalch)
+   ===================================================================== */
+const Q1=['Respiratory acidosis','Respiratory alkalosis','Metabolic acidosis','Metabolic alkalosis'];
+const CASES=[
+ {id:1,cat:'Resp acidosis – acute',title:'Found unresponsive',v:'A 24-year-old is found unresponsive at a party. RR 6/min, pinpoint pupils, SpO₂ 86% on room air.',
+  g:{p:72,h:27,po2:55,fio2:21,age:24,na:140,cl:104,k:4.1,alb:42,lac:1.4,glu:6},
+  qs:[{q:'Primary disorder?',o:Q1,a:0},
+      {q:'Acute or chronic?',o:['Acute — HCO₃⁻ rose ~1 per 10 mmHg','Chronic — HCO₃⁻ rose ~3.5 per 10 mmHg','Mixed with metabolic alkalosis'],a:0,w:'ΔpCO₂ ≈ 32 mmHg → acute expected HCO₃⁻ ≈ 27; chronic would be ≈ 35.'},
+      {q:'A–a gradient is normal. Most likely cause and next step?',o:['Opioid toxicity — give naloxone, support ventilation','Pulmonary embolism — CTPA','Pneumonia — antibiotics'],a:0,w:'Normal A–a gradient = pure hypoventilation (central). Pinpoint pupils + low RR = opioid toxidrome.'}]},
+ {id:2,cat:'Resp acidosis – acute',title:'Ascending weakness',v:'A 38-year-old with 5 days of ascending limb weakness after gastroenteritis now has a weak cough and paradoxical breathing. FVC 14 mL/kg.',
+  g:{p:60,h:26,po2:68,fio2:21,age:38,na:139,cl:103,k:4.0,alb:40},
+  qs:[{q:'Primary disorder?',o:Q1,a:0},
+      {q:'Interpretation of compensation?',o:['Acute respiratory acidosis','Chronic respiratory acidosis','Metabolic alkalosis with compensation'],a:0,w:'ΔpCO₂ 20 → expected acute HCO₃⁻ ≈ 26.'},
+      {q:'Most important next step?',o:['Serial FVC/NIF and early ICU referral for intubation (likely Guillain–Barré)','High-flow O₂ and discharge','Start NIV and observe on the ward'],a:0,w:'Neuromuscular failure: FVC < 20 mL/kg, rising pCO₂ → intubation. NIV is a poor choice with bulbar weakness.'}]},
+ {id:3,cat:'Resp acidosis – chronic',title:'Stable COPD clinic visit',v:'A 68-year-old with severe COPD (FEV₁ 30%) attends clinic feeling at baseline. Ankle oedema; on long-term home oxygen assessment.',
+  g:{p:60,h:31,po2:56,fio2:21,age:68,na:138,cl:96,k:4.3,alb:38},
+  qs:[{q:'Primary disorder?',o:Q1,a:0},
+      {q:'Compensation?',o:['Chronic (renally compensated) respiratory acidosis','Acute respiratory acidosis','Metabolic alkalosis with respiratory compensation'],a:0,w:'ΔpCO₂ 20 → chronic expected HCO₃⁻ ≈ 31; pH near normal. Low Cl⁻ reflects renal Cl⁻ loss for HCO₃⁻ retention.'},
+      {q:'Why not call it primary metabolic alkalosis?',o:['pH is on the acid side of 7.40 — the CO₂ change explains it','Because HCO₃⁻ is normal','Because pO₂ is low'],a:0,w:'With pH < 7.40, the acidifying process (high pCO₂) is primary.'}]},
+ {id:4,cat:'Resp acidosis – chronic',title:'Daytime sleepiness',v:'A 52-year-old, BMI 48, has morning headaches, snoring and daytime somnolence. Lungs clear, spirometry near normal.',
+  g:{p:55,h:29,po2:64,fio2:21,age:52,na:140,cl:100,k:4.2,alb:41},
+  qs:[{q:'Primary disorder?',o:Q1,a:0},
+      {q:'Compensation?',o:['Chronic respiratory acidosis','Acute respiratory acidosis','Mixed respiratory + metabolic acidosis'],a:0,w:'Δ15 → chronic expected ≈ 29.'},
+      {q:'Likely diagnosis?',o:['Obesity hypoventilation syndrome — sleep study, NIV/CPAP','Asthma','Pulmonary embolism'],a:0,w:'Daytime hypercapnia + obesity + sleep-disordered breathing, with normal spirometry.'}]},
+ {id:5,cat:'Resp acidosis – acute-on-chronic',title:'COPD exacerbation',v:'A 71-year-old with COPD (home O₂) has 3 days of purulent sputum, now drowsy. Ambulance gave 15 L O₂ via non-rebreather.',
+  g:{p:80,h:32,po2:88,fio2:60,age:71,na:137,cl:94,k:4.6,alb:36,lac:1.6},
+  qs:[{q:'Primary disorder?',o:Q1,a:0},
+      {q:'Compensation?',o:['Acute-on-chronic respiratory acidosis','Pure chronic respiratory acidosis','Acute respiratory acidosis + metabolic alkalosis'],a:0,w:'Δ40 → acute ≈ 28, chronic ≈ 38; measured 32 lies between.'},
+      {q:'Best immediate management?',o:['Titrate O₂ to SpO₂ 88–92% and start NIV','Increase O₂ to 100%','IV sodium bicarbonate'],a:0,w:'Uncontrolled O₂ worsens hypercapnia (V/Q mismatch, Haldane). pH < 7.35 + pCO₂ > 6.5 kPa → NIV.'}]},
+ {id:6,cat:'Resp alkalosis – acute',title:'Tingling fingers',v:'A 22-year-old student after an argument: breathless, perioral tingling, carpopedal spasm. SpO₂ 100%, chest clear, ECG sinus tachycardia.',
+  g:{p:25,h:21,po2:120,fio2:21,age:22,na:140,cl:106,k:3.8,alb:44},
+  qs:[{q:'Primary disorder?',o:Q1,a:1},
+      {q:'Compensation?',o:['Acute respiratory alkalosis','Chronic respiratory alkalosis','Metabolic acidosis with compensation'],a:0,w:'Δ15 below normal → acute expected HCO₃⁻ = 24 − 3 = 21.'},
+      {q:'Why the tingling?',o:['Alkalaemia increases albumin binding of Ca²⁺ → low ionised calcium','Hyperkalaemia','Hypoxaemia'],a:0,w:'Anxiety-related hyperventilation is a diagnosis of exclusion — check A–a gradient (normal here).'}]},
+ {id:7,cat:'Resp alkalosis – acute',title:'Breathless after surgery',v:'A 60-year-old, day 5 after hip replacement, suddenly breathless with pleuritic chest pain. HR 118, SpO₂ 90% on air.',
+  g:{p:28,h:22,po2:58,fio2:21,age:60,na:139,cl:106,k:4.0,alb:35,lac:1.8},
+  qs:[{q:'Primary disorder?',o:Q1,a:1},
+      {q:'What does the A–a gradient show?',o:['Raised — V/Q mismatch','Normal — hypoventilation','Cannot be calculated'],a:0,w:'PAO₂ ≈ 0.21×713 − 28/0.8 ≈ 115 mmHg; A–a ≈ 57 mmHg (expected ≈ 19).'},
+      {q:'Next step?',o:['CTPA (high pre-test probability of PE)','Reassure — anxiety','Paper-bag rebreathing'],a:0,w:'Hypoxaemic respiratory alkalosis with raised A–a gradient in a post-op patient = PE until proven otherwise.'}]},
+ {id:8,cat:'Resp alkalosis – chronic',title:'Antenatal check',v:'A healthy 29-year-old at 32 weeks\' gestation has a gas taken during a routine check (sampled for a research protocol).',
+  g:{p:30,h:19,po2:104,fio2:21,age:29,na:136,cl:107,k:4.0,alb:30},
+  qs:[{q:'Primary disorder?',o:Q1,a:1},
+      {q:'Compensation?',o:['Chronic (fully compensated) respiratory alkalosis','Metabolic acidosis with respiratory compensation','Acute respiratory alkalosis'],a:0,w:'Δ10 → chronic expected HCO₃⁻ ≈ 19; pH 7.42. Chronic respiratory alkalosis is the one disorder that can normalise pH.'},
+      {q:'Mechanism?',o:['Progesterone stimulates the respiratory centre','Lactic acid from the fetus','Vomiting'],a:0,w:'Normal pregnancy: pCO₂ ~4.0 kPa (30 mmHg), HCO₃⁻ ~18–21.'}]},
+ {id:9,cat:'Resp alkalosis – chronic',title:'Jaundice and confusion',v:'A 55-year-old with alcohol-related cirrhosis, ascites and mild asterixis. Not breathless; SpO₂ 95%.',
+  g:{p:26,h:17,po2:78,fio2:21,age:55,na:131,cl:100,k:3.4,alb:24,lac:2.1,urea:3},
+  qs:[{q:'Primary disorder?',o:Q1,a:1},
+      {q:'Compensation?',o:['Chronic respiratory alkalosis','Acute respiratory alkalosis','Metabolic acidosis'],a:0,w:'Δ14 → chronic expected HCO₃⁻ ≈ 17; pH ≈ 7.44.'},
+      {q:'Learning point on the anion gap here?',o:['Correct it for albumin — the raw AG underestimates unmeasured anions','Albumin has no effect on AG','Use urine anion gap instead'],a:0,w:'AG = 14; albumin-corrected = 14 + 0.25 × 16 = 18 → a mild HAGMA (lactate) may be hidden.'}]},
+ {id:10,cat:'Metabolic acidosis',title:'Polyuria and vomiting',v:'A 19-year-old with type 1 diabetes: 2 days of vomiting, abdominal pain, deep sighing respirations. Capillary ketones 5.8.',
+  g:{p:20,h:8,po2:110,fio2:21,age:19,na:134,cl:98,k:5.6,alb:44,glu:28,urea:9,ket:5.8,lac:2.0},
+  qs:[{q:'Primary disorder?',o:Q1,a:2},
+      {q:"Winter's formula — compensation?",o:['Appropriate (expected 18–22 mmHg)','Inadequate — added respiratory acidosis','Excessive — added respiratory alkalosis'],a:0,w:'1.5 × 8 + 8 = 20 ± 2. Kussmaul breathing is the compensation.'},
+      {q:'Anion gap and delta ratio?',o:['AG 28, delta ≈ 1.0 → pure HAGMA (DKA)','AG 12 → NAGMA','AG 28, delta 3 → plus metabolic alkalosis'],a:0,w:'134 − (98 + 8) = 28; (28 − 12)/(24 − 8) = 1.0.'}]},
+ {id:11,cat:'Metabolic acidosis',title:'Home-brew drinker',v:'A 45-year-old drank illicit spirits 18 h ago. Now blurred "snowstorm" vision, headache, vomiting. Ethanol level negative.',
+  g:{p:23,h:10,po2:100,fio2:21,age:45,na:140,cl:102,k:4.4,alb:42,glu:5,urea:5,osm:340,lac:2.4},
+  qs:[{q:'Primary disorder?',o:Q1,a:2},
+      {q:'Osmolar gap?',o:['≈ 50 → toxic alcohol','Normal','Cannot be calculated'],a:0,w:'Calculated = 2 × 140 + 5 + 5 = 290; gap = 340 − 290 = 50.'},
+      {q:'Management?',o:['Fomepizole (or ethanol), folate, urgent haemodialysis, toxicology advice','Insulin infusion','Reassure and discharge'],a:0,w:'HAGMA + raised osmolar gap + visual symptoms = methanol poisoning.'}]},
+ {id:12,cat:'Metabolic acidosis',title:'Profuse diarrhoea',v:'A 33-year-old returned from travel with 4 days of watery diarrhoea (10×/day). Dry mucosa, HR 112, BP 96/60.',
+  g:{p:29,h:14,po2:98,fio2:21,age:33,na:138,cl:114,k:3.1,alb:42,urea:12,una:30,uk:25,ucl:85,lac:1.5},
+  qs:[{q:'Primary disorder?',o:Q1,a:2},
+      {q:'Anion gap?',o:['Normal (10) → NAGMA','High → HAGMA','Low'],a:0,w:'138 − (114 + 14) = 10.'},
+      {q:'Urine anion gap = 30 + 25 − 85 = −30. Meaning?',o:['Negative → kidneys excreting NH₄⁺ → GI HCO₃⁻ loss','Positive → RTA','Uninterpretable'],a:0,w:'"neGUTive" — the gut is the source of bicarbonate loss.'}]},
+ {id:13,cat:'Metabolic acidosis',title:'Recurrent kidney stones',v:'A 30-year-old woman with Sjögren\'s syndrome has recurrent calcium phosphate stones and proximal muscle weakness.',
+  g:{p:30,h:15,po2:96,fio2:21,age:30,na:139,cl:113,k:2.9,alb:40,una:45,uk:30,ucl:55},
+  qs:[{q:'Primary disorder?',o:Q1,a:2},
+      {q:'Urine anion gap = +20. Interpretation?',o:['Positive → impaired distal acidification','Negative → GI loss','High anion gap acidosis'],a:0,w:'45 + 30 − 55 = +20: kidneys fail to excrete NH₄⁺.'},
+      {q:'Most likely diagnosis?',o:['Type 1 (distal) RTA — urine pH > 5.5, hypokalaemia, stones','Type 4 RTA','DKA'],a:0,w:'Sjögren\'s is a classic cause of distal RTA; hypokalaemia and nephrocalcinosis are typical.'}]},
+ {id:14,cat:'Metabolic alkalosis',title:'Projectile vomiting',v:'A 58-year-old with a history of peptic ulcer disease has 1 week of vomiting undigested food. Succussion splash present; dry, postural hypotension.',
+  g:{p:50,h:38,po2:82,fio2:21,age:58,na:134,cl:84,k:2.8,alb:40,urea:14,una:35,uk:40,ucl:8},
+  qs:[{q:'Primary disorder?',o:Q1,a:3},
+      {q:'Compensation (expected pCO₂ = 40 + 0.7 × 14 ± 5)?',o:['Appropriate — 45–55 mmHg','Inadequate','Indicates metabolic acidosis'],a:0,w:'Expected ≈ 50 mmHg (6.6 kPa).'},
+      {q:'Urine Cl⁻ 8 mmol/L. Treatment?',o:['Chloride-responsive → IV 0.9% saline with KCl; treat gastric outlet obstruction','Spironolactone','Sodium bicarbonate'],a:0,w:'Note urine Na⁺ is 35 (bicarbonaturia) — misleading; urine Cl⁻ reflects true volume depletion.'}]},
+ {id:15,cat:'Metabolic alkalosis',title:'Resistant hypertension',v:'A 46-year-old on 3 antihypertensives (BP 172/104) has cramps and nocturia. Not on diuretics. No vomiting.',
+  g:{p:46,h:32,po2:92,fio2:21,age:46,na:144,cl:101,k:2.9,alb:42,una:90,uk:60,ucl:45,bp:'high'},
+  qs:[{q:'Primary disorder?',o:Q1,a:3},
+      {q:'Urine Cl⁻ 45 with hypertension → category?',o:['Chloride-resistant with mineralocorticoid excess','Chloride-responsive','Not interpretable'],a:0,w:'Urine Cl⁻ ≥ 20 + hypertension → excess mineralocorticoid activity.'},
+      {q:'Next test?',o:['Aldosterone : renin ratio (primary hyperaldosteronism / Conn\'s)','Serum salicylate','Urine anion gap'],a:0,w:'Hypertension + hypokalaemia + metabolic alkalosis = Conn\'s until proven otherwise.'}]},
+ {id:16,cat:'Mixed',title:'Septic shock, tiring',v:'A 74-year-old with pneumonia: BP 78/40, confused, RR 10 and shallow after IV morphine for pleuritic pain.',
+  g:{p:40,h:14,po2:62,fio2:40,age:74,na:138,cl:100,k:4.9,alb:30,lac:7.2,urea:16,glu:9},
+  qs:[{q:'Primary disorder?',o:Q1,a:2},
+      {q:"Winter's: expected pCO₂ = 1.5 × 14 + 8 = 29 ± 2. Measured 40 mmHg means?",o:['Concomitant respiratory acidosis — inadequate compensation','Appropriate compensation','Respiratory alkalosis'],a:0,w:'A "normal" pCO₂ in a severe metabolic acidosis is dangerously high — impending respiratory failure.'},
+      {q:'Overall?',o:['Lactic HAGMA + respiratory acidosis; needs urgent airway/ventilatory support, fluids, antibiotics','Simple metabolic acidosis','Chronic respiratory acidosis'],a:0,w:'Albumin-corrected AG = 24 + 2.5 = 26.5; lactate 7.2.'}]},
+ {id:17,cat:'Mixed',title:'Tinnitus and vomiting',v:'A 42-year-old took "a whole bottle" of aspirin 6 h ago. Tinnitus, vomiting, sweating, RR 32.',
+  g:{p:22,h:14,po2:104,fio2:21,age:42,na:141,cl:103,k:3.5,alb:42,lac:2.6,glu:6,urea:5},
+  qs:[{q:'Is the pH abnormal?',o:['No — pH 7.43 is normal, yet there are two disorders','Yes — acidaemia','Yes — alkalaemia'],a:0,w:'Normal pH with abnormal pCO₂ and HCO₃⁻ is a red flag for a mixed disorder.'},
+      {q:"Winter's expected pCO₂ = 29 ± 2; measured 22 means?",o:['Additional primary respiratory alkalosis','Appropriate compensation','Additional respiratory acidosis'],a:0,w:'Salicylates directly stimulate the respiratory centre.'},
+      {q:'Diagnosis?',o:['Salicylate toxicity: HAGMA + respiratory alkalosis','Anxiety','Diarrhoea'],a:0,w:'AG = 24. Treat with IV sodium bicarbonate (urinary alkalinisation), consider haemodialysis if severe. Avoid letting pCO₂ rise (care with intubation).'}]},
+ {id:18,cat:'Mixed',title:'DKA with persistent vomiting',v:'A 26-year-old with type 1 diabetes has vomited for 4 days. Glucose 32, ketones 4.5. Surprisingly, HCO₃⁻ is only mildly reduced.',
+  g:{p:34,h:18,po2:100,fio2:21,age:26,na:136,cl:88,k:3.3,alb:44,glu:32,urea:11,ket:4.5,ucl:12},
+  qs:[{q:'Anion gap?',o:['30 — high','12 — normal','6 — low'],a:0,w:'136 − (88 + 18) = 30.'},
+      {q:'Delta ratio = (30 − 12) / (24 − 18) = 3. Meaning?',o:['HAGMA + concomitant metabolic alkalosis','Pure HAGMA','HAGMA + NAGMA'],a:0,w:'The AG rose far more than HCO₃⁻ fell — vomiting has added HCO₃⁻.'},
+      {q:'Lesson?',o:['A near-normal HCO₃⁻ can hide severe ketoacidosis — always calculate the AG','HCO₃⁻ excludes DKA','The urine anion gap diagnoses DKA'],a:0,w:'Low Cl⁻ and urine Cl⁻ 12 reflect the vomiting component.'}]},
+ {id:19,cat:'VBG',title:'VBG in the ED',v:'A 66-year-old smoker, breathless and wheezy. A venous gas is taken with the cannula. SpO₂ 89% on air.',
+  sample:'VBG',g:{p:66,h:32,na:138,cl:95,k:4.4,alb:38,lac:1.2},
+  qs:[{q:'Can this VBG exclude hypercapnia?',o:['No — venous pCO₂ is high (> 6.1 kPa / 46 mmHg); an ABG is needed for precise pCO₂','Yes — VBGs cannot show CO₂','Yes — SpO₂ is adequate'],a:0,w:'A normal venous pCO₂ excludes arterial hypercapnia; a raised one needs an ABG to quantify it.'},
+      {q:'Estimated arterial values (pH +0.03, pCO₂ −5 mmHg) suggest?',o:['Chronic respiratory acidosis (COPD)','Metabolic alkalosis','Acute respiratory alkalosis'],a:0,w:'Est. arterial pCO₂ ≈ 61 mmHg, HCO₃⁻ ≈ 31 → chronic compensation (expected ≈ 31).'},
+      {q:'What can the venous pO₂ tell you?',o:['Nothing about lung oxygenation — use SpO₂/ABG','Severity of hypoxaemia','The A–a gradient'],a:0,w:'Venous pO₂ reflects tissue extraction.'}]}
+];
+CASES.forEach(c=>{ c.ph = r2(phOf(c.g.p,c.g.h)); });
+const CAT_ORDER=['All','Resp acidosis – acute','Resp acidosis – chronic','Resp acidosis – acute-on-chronic','Resp alkalosis – acute','Resp alkalosis – chronic','Metabolic acidosis','Metabolic alkalosis','Mixed','VBG'];
+let caseFilter='All', openCase=null; const answers={};
+function renderFilters(){
+  $('#caseFilters').innerHTML = CAT_ORDER.map(c=>`<button class="chip${c===caseFilter?' on':''}" data-f="${c}">${c}${c!=='All'?` (${CASES.filter(x=>x.cat===c).length})`:''}</button>`).join('');
+  $$('#caseFilters .chip').forEach(b=>b.onclick=()=>{caseFilter=b.dataset.f; openCase=null; renderFilters(); renderCases();});
+}
+function caseVals(c){
+  const g=c.g; const v=[];
+  v.push(`pH <b>${c.ph}</b>`, `pCO₂ <b>${fmtP(g.p)}</b>`, `HCO₃⁻ <b>${g.h}</b>`);
+  if(g.po2) v.push(`pO₂ <b>${fmtP(g.po2)}</b>`); if(g.fio2) v.push(`FiO₂ <b>${g.fio2}%</b>`);
+  [['na','Na⁺'],['k','K⁺'],['cl','Cl⁻'],['alb','Albumin'],['lac','Lactate'],['glu','Glucose'],['urea','Urea'],['osm','Osm'],['ket','Ketones'],['una','uNa⁺'],['uk','uK⁺'],['ucl','uCl⁻']].forEach(([k,l])=>{ if(g[k]!==undefined) v.push(`${l} <b>${g[k]}</b>`); });
+  return '<div class="vals">'+v.map(x=>`<span>${x}</span>`).join('')+'</div>';
+}
+function renderCases(){
+  const view=$('#caseView');
+  if(openCase){
+    const c=CASES.find(x=>x.id===openCase);
+    view.innerHTML = `<div class="card"><button class="btn" id="backCases">← All cases</button>
+      <div class="cat note" style="margin-top:10px;text-transform:uppercase;font-weight:700;letter-spacing:.05em">${c.cat} · Case ${c.id}</div><h2 style="margin:4px 0">${c.title}</h2>
+      <p>${c.v}</p><div class="note">${c.sample==='VBG'?'<b>Venous</b> blood gas':'Arterial blood gas'}:</div>${caseVals(c)}
+      ${c.qs.map((q,i)=>{const k=c.id+'-'+i, ans=answers[k];
+        return `<div class="q${ans!==undefined?' answered':''}" data-k="${k}"><b>Q${i+1}. ${q.q}</b><div class="opts">${q.o.map((o,j)=>`<button data-j="${j}" ${ans!==undefined?'disabled':''} class="${ans!==undefined?(j===q.a?'right':(j===ans?'wrong':'')):''}">${o}</button>`).join('')}</div><div class="why">${ans===q.a?'✔ Correct. ':'✘ '+'Answer: '+q.o[q.a]+'. '}${q.w||''}</div></div>`;}).join('')}
+      <div class="row" style="margin-top:14px"><button class="btn primary" id="loadCase">Load into analyser for worked steps →</button></div></div>`;
+    // shuffle-free; attach
+    $('#backCases').onclick=()=>{openCase=null;renderCases();};
+    $('#loadCase').onclick=()=>loadCase(c);
+    $$('#caseView .q').forEach(qd=>{ qd.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const [cid,qi]=qd.dataset.k.split('-'); answers[qd.dataset.k]=+b.dataset.j; updateScore(); renderCases(); }); });
+    return;
+  }
+  const list = CASES.filter(c=>caseFilter==='All'||c.cat===caseFilter);
+  view.innerHTML = '<div class="caselist">'+list.map(c=>{const n=c.qs.filter((q,i)=>answers[c.id+'-'+i]!==undefined).length;
+    return `<button class="card ccard" data-id="${c.id}"><span class="done">${n===c.qs.length?'<span class="pill ok">done</span>':n?`<span class="pill n">${n}/${c.qs.length}</span>`:''}</span><div class="cat">${c.cat}</div><h3>${c.id}. ${c.title}</h3><div class="note">${c.v.slice(0,110)}…</div><div class="note" style="margin-top:6px">${c.sample==='VBG'?'VBG':'ABG'} · pH ${c.ph} · pCO₂ ${fmtP(c.g.p)} · HCO₃⁻ ${c.g.h}</div></button>`;}).join('')+'</div>';
+  $$('.ccard').forEach(b=>b.onclick=()=>{openCase=+b.dataset.id; renderCases(); window.scrollTo({top:0});});
+}
+function updateScore(){
+  let t=0,r=0; CASES.forEach(c=>c.qs.forEach((q,i)=>{const a=answers[c.id+'-'+i]; if(a!==undefined){t++; if(a===q.a) r++;}}));
+  $('#score').textContent=`Score: ${r} / ${t}`;
+}
+const FIELD_MAP={po2:'i-po2',fio2:'i-fio2',age:'i-age',na:'i-na',k:'i-k',cl:'i-cl',alb:'i-alb',lac:'i-lac',glu:'i-glu',urea:'i-urea',osm:'i-osm',ket:'i-ket',una:'i-una',uk:'i-uk',ucl:'i-ucl'};
+function clearInputs(){ $$('#tab-analyser input[type=number]').forEach(i=>{ if(i.id!=='i-agref') i.value=''; }); $('#i-bp').value=''; }
+function loadCase(c, stay){
+  clearInputs();
+  $('#i-ph').value=c.ph; $('#i-pco2').value= UNIT==='kPa'? r2(c.g.p/K) : c.g.p; $('#i-hco3').value=c.g.h;
+  Object.entries(FIELD_MAP).forEach(([k,id])=>{ if(c.g[k]!==undefined){ document.getElementById(id).value = (k==='po2' && UNIT==='kPa') ? r2(c.g[k]/K) : c.g[k]; } });
+  $('#i-bp').value = c.g.bp||'';
+  setSample(c.sample||'ABG');
+  if(!stay) showTab('analyser');
+}
+$('#btnExample').onclick=()=>loadCase(CASES[Math.floor(Math.random()*CASES.length)], true);
+$('#btnClear').onclick=()=>{clearInputs(); analyse();};
+$$('#tab-analyser input, #tab-analyser select').forEach(el=>el.addEventListener('input', analyse));
+
+/* =====================================================================
+   PHYSIOLOGY DIAGRAM
+   ===================================================================== */
+const SCEN={
+ normal:{stages:[{p:40,h:24}], labels:['Steady state'], shift:[0],
+   text:['<b>Steady state.</b> Tissues continuously produce CO₂ (~15 000 mmol/day) and fixed acids (~70 mmol/day). In red cells, carbonic anhydrase converts CO₂ + H₂O → H₂CO₃ → H⁺ + HCO₃⁻; H⁺ is buffered by haemoglobin and HCO₃⁻ moves into plasma (chloride shift). In the lungs the reaction reverses and CO₂ is exhaled. The kidneys reabsorb filtered HCO₃⁻ (proximal tubule) and excrete the daily fixed-acid load as NH₄⁺ and titratable acid (H₂PO₄⁻), generating one new HCO₃⁻ for every H⁺ excreted.'],
+   act:[{vent:1,kH:1,kB:1,tissH:1}]},
+ metAcid:{stages:[{p:40,h:12},{p:26,h:12},{p:29,h:14}], labels:['① Acid load (e.g. ketones, lactate)','② Respiratory compensation (minutes–hours)','③ Renal response (days)'], shift:[-1,-1,-1],
+   text:['<b>Acid load.</b> Excess H⁺ (ketoacids, lactate, toxins) enters the blood. Bicarbonate buffers it: H⁺ + HCO₃⁻ → H₂CO₃ → CO₂ + H₂O, so HCO₃⁻ falls and [H⁺] rises — pH drops sharply because ventilation has not yet responded.',
+         '<b>Respiratory compensation.</b> Central and peripheral chemoreceptors sense the high [H⁺] → deep, rapid (Kussmaul) breathing blows off CO₂. pCO₂ falls to 1.5 × HCO₃⁻ + 8 (Winter\'s), pulling the equilibrium further left and bringing pH back toward normal — but not fully.',
+         '<b>Renal response.</b> Over days the kidneys upregulate H⁺ secretion and ammoniagenesis (NH₄⁺ excretion), generating new HCO₃⁻. HCO₃⁻ slowly recovers — provided kidney function is intact and the acid source is treated.'],
+   act:[{vent:1,kH:1,kB:1,tissH:3},{vent:1.6,kH:1.3,kB:1.2,tissH:3},{vent:1.4,kH:2.4,kB:2.2,tissH:2}]},
+ metAlk:{stages:[{p:40,h:36},{p:48,h:36},{p:45,h:32}], labels:['① H⁺ loss (e.g. vomiting)','② Respiratory compensation (hypoventilation)','③ Renal correction (if Cl⁻ & volume replaced)'], shift:[1,1,1],
+   text:['<b>H⁺ lost from the stomach.</b> Each H⁺ secreted into vomited gastric juice leaves an HCO₃⁻ behind in the blood (the "alkaline tide"), so HCO₃⁻ rises and [H⁺] falls.',
+         '<b>Respiratory compensation.</b> Low [H⁺] reduces chemoreceptor drive → hypoventilation; pCO₂ rises ~0.7 mmHg per 1 mmol/L HCO₃⁻. Limited by hypoxaemia, so pCO₂ rarely exceeds ~7.3–8 kPa (55–60 mmHg).',
+         '<b>Renal correction.</b> Healthy kidneys normally excrete excess HCO₃⁻ rapidly — but volume depletion, Cl⁻ depletion and hypokalaemia drive avid Na⁺ and HCO₃⁻ reabsorption (and H⁺ secretion: paradoxical aciduria). Giving 0.9% saline + KCl lets the kidney dump HCO₃⁻.'],
+   act:[{vent:1,kH:1,kB:1,tissH:1,gutH:2},{vent:.75,kH:.9,kB:1,tissH:1,gutH:2},{vent:.85,kH:.5,kB:.3,tissH:1,gutH:.2,kBout:2}]},
+ respAcid:{stages:[{p:70,h:24},{p:70,h:27},{p:70,h:34.5}], labels:['① Hypoventilation (CO₂ retained)','② Acute: cell & haemoglobin buffering','③ Chronic: renal HCO₃⁻ retention (3–5 days)'], shift:[1,1,1],
+   text:['<b>Hypoventilation.</b> The lungs fail to clear CO₂ (opioids, COPD, neuromuscular weakness). CO₂ accumulates and drives CO₂ + H₂O → H⁺ + HCO₃⁻ to the right, so [H⁺] rises and pH falls.',
+         '<b>Acute buffering.</b> Within minutes, H⁺ is buffered by haemoglobin and intracellular proteins, raising plasma HCO₃⁻ only ~1 mmol/L per 10 mmHg (1.33 kPa) rise in pCO₂. pH falls ~0.08 per 10 mmHg — this is an acute respiratory acidosis.',
+         '<b>Chronic renal compensation.</b> Over 3–5 days, the high pCO₂ stimulates renal H⁺ secretion and NH₄⁺ excretion; new HCO₃⁻ is reabsorbed (Cl⁻ is lost — hypochloraemia). HCO₃⁻ rises ~3.5 per 10 mmHg and pH approaches normal (falls only ~0.03 per 10 mmHg).'],
+   act:[{vent:.55,kH:1,kB:1,tissH:1},{vent:.55,kH:1.1,kB:1.1,tissH:1},{vent:.55,kH:2.2,kB:2.4,tissH:1}]},
+ respAlk:{stages:[{p:25,h:24},{p:25,h:21},{p:25,h:16.5}], labels:['① Hyperventilation (CO₂ blown off)','② Acute: cellular buffering','③ Chronic: renal HCO₃⁻ excretion (2–3 days)'], shift:[-1,-1,-1],
+   text:['<b>Hyperventilation.</b> Anxiety, hypoxia, PE, sepsis, salicylates or pregnancy increase ventilation. CO₂ is blown off and the equilibrium shifts left, consuming H⁺ — pH rises.',
+         '<b>Acute buffering.</b> Cells release H⁺ (from proteins, phosphates, lactate) which combines with HCO₃⁻ → HCO₃⁻ falls ~2 per 10 mmHg drop in pCO₂.',
+         '<b>Chronic renal compensation.</b> Over 2–3 days the kidneys reduce H⁺ secretion and NH₄⁺ excretion and let filtered HCO₃⁻ escape into urine. HCO₃⁻ falls ~5 per 10 mmHg; pH can return to near normal (e.g. pregnancy, high altitude).'],
+   act:[{vent:1.6,kH:1,kB:1,tissH:1},{vent:1.6,kH:.9,kB:.9,tissH:1},{vent:1.6,kH:.4,kB:.4,tissH:1,kBout:2}]}
+};
+let scen='normal', stage=0, physRunning=false, paused=false, rafId=null;
+const PH = {svg:null, path:null, L:0, parts:[], ghosts:[], pos:{}, t0:0};
+function physSVG(){
+  const s=`
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker>
+    <linearGradient id="loopgrad" x1="0" x2="1"><stop offset="0" stop-color="#c0392b" stop-opacity=".35"/><stop offset="1" stop-color="#2c5d9e" stop-opacity=".35"/></linearGradient>
+  </defs>
+  <!-- circulation loop -->
+  <path id="loop" d="M450,150 L740,150 Q790,150 790,200 L790,400 Q790,450 740,450 L160,450 Q110,450 110,400 L110,200 Q110,150 160,150 Z" fill="none" stroke="var(--line)" stroke-width="34" stroke-linejoin="round"/>
+  <path d="M450,150 L740,150 Q790,150 790,200 L790,400 Q790,450 740,450 L160,450 Q110,450 110,400 L110,200 Q110,150 160,150 Z" fill="none" stroke="var(--panel)" stroke-width="2" stroke-dasharray="2 10" opacity=".8"/>
+  <text x="450" y="350" text-anchor="middle" font-size="13" fill="var(--muted)">Blood flow →  (circulation)</text>
+  <!-- direction arrows -->
+  <path d="M600,150 l10,0" stroke="var(--muted)" stroke-width="2" marker-end="url(#arr)"/>
+  <path d="M790,320 l0,10" stroke="var(--muted)" stroke-width="2" marker-end="url(#arr)"/>
+  <path d="M300,450 l-10,0" stroke="var(--muted)" stroke-width="2" marker-end="url(#arr)"/>
+  <path d="M110,260 l0,-10" stroke="var(--muted)" stroke-width="2" marker-end="url(#arr)"/>
+  <!-- lungs -->
+  <g id="lungs" transform="translate(450 82)">
+    <g id="lungScale">
+      <path d="M-8,-42 L-8,-10 M8,-42 L8,-10 M-8,-10 Q-20,0 -30,6 M8,-10 Q20,0 30,6" stroke="var(--muted)" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M-18,-30 C-55,-34 -78,0 -76,30 C-74,52 -50,58 -24,50 C-14,46 -12,20 -18,-30 Z" fill="#f2a7b0" stroke="#c96b78" stroke-width="2"/>
+      <path d="M18,-30 C55,-34 78,0 76,30 C74,52 50,58 24,50 C14,46 12,20 18,-30 Z" fill="#f2a7b0" stroke="#c96b78" stroke-width="2"/>
+    </g>
+  </g>
+  <text x="560" y="58" font-size="14" font-weight="700" fill="var(--ink)">Lungs</text>
+  <text x="560" y="76" font-size="12" fill="var(--muted)" id="ventTxt">Ventilation: normal</text>
+  <path d="M450,26 l0,-14" stroke="var(--co2)" stroke-width="3" marker-end="url(#arr)"/>
+  <text x="380" y="20" font-size="11.5" fill="var(--muted)" text-anchor="end">CO₂ exhaled</text>
+  <!-- kidney -->
+  <g transform="translate(860 300)">
+    <path d="M-10,-50 C-40,-55 -52,-20 -40,10 C-30,40 -10,52 8,40 C18,32 6,18 -2,8 C-10,-6 6,-16 6,-30 C6,-42 0,-48 -10,-50 Z" fill="#b5634b" stroke="#7c3b2a" stroke-width="2" id="kidneyShape"/>
+    <circle id="kGlow" cx="-18" cy="0" r="58" fill="var(--accent)" opacity="0"/>
+  </g>
+  <path d="M790,300 L820,300" stroke="var(--line)" stroke-width="10"/>
+  <text x="842" y="232" font-size="14" font-weight="700" fill="var(--ink)" text-anchor="middle">Kidneys</text>
+  <path d="M850,352 l0,40" stroke="#c9a227" stroke-width="3" marker-end="url(#arr)"/>
+  <text x="892" y="412" font-size="11.5" fill="var(--muted)" text-anchor="end">urine</text>
+  <text x="892" y="426" font-size="11" fill="var(--muted)" text-anchor="end" id="kidTxt">H⁺ as NH₄⁺ / H₂PO₄⁻</text>
+  <!-- tissues -->
+  <g transform="translate(450 500)">
+    <rect x="-110" y="-14" width="220" height="44" rx="10" fill="var(--panel2)" stroke="var(--line)"/>
+    <g fill="#e8b58e" stroke="#b07a52">${[-80,-45,-10,25,60].map(x=>`<ellipse cx="${x+10}" cy="8" rx="15" ry="11"/>`).join('')}</g>
+  </g>
+  <text x="450" y="550" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)" id="tissTxt">Tissues: metabolism → CO₂ + fixed acids</text>
+  <!-- stomach / GI -->
+  <g transform="translate(40 300)" id="gut">
+    <path d="M10,-40 C40,-45 48,-10 36,15 C26,38 -4,40 -14,22 C-20,8 -4,0 2,-14 C6,-24 0,-36 10,-40 Z" fill="#e8c27a" stroke="#a47d2c" stroke-width="2"/>
+  </g>
+  <text x="44" y="238" font-size="13" font-weight="700" fill="var(--ink)" text-anchor="middle">Stomach</text>
+  <text x="44" y="370" font-size="11" fill="var(--muted)" text-anchor="middle" id="gutTxt">HCl secretion</text>
+  <!-- equation -->
+  <g transform="translate(450 236)">
+    <rect x="-250" y="-26" width="500" height="44" rx="10" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="0" y="3" text-anchor="middle" font-size="16" fill="var(--ink)"><tspan fill="var(--co2)" font-weight="700">CO₂</tspan> + H₂O  ⇌  H₂CO₃  ⇌  <tspan fill="var(--hplus)" font-weight="700">H⁺</tspan> + <tspan fill="var(--hco3)" font-weight="700">HCO₃⁻</tspan></text>
+    <text x="0" y="-32" text-anchor="middle" font-size="11" fill="var(--muted)">carbonic anhydrase (red cells, kidney tubule)</text>
+    <g id="shiftArrow"></g>
+  </g>
+  <g id="partLayer"></g><g id="ghostLayer"></g>`;
+  return s;
+}
+function initPhys(){
+  const svg=$('#phys'); svg.innerHTML=physSVG(); PH.svg=svg; PH.path=svg.querySelector('#loop'); PH.L=PH.path.getTotalLength();
+  const near=(x,y)=>{let best=0,bd=1e9; for(let s=0;s<PH.L;s+=4){const q=PH.path.getPointAtLength(s); const d=(q.x-x)**2+(q.y-y)**2; if(d<bd){bd=d;best=s;}} return best;};
+  PH.pos={lungs:near(450,150), kidney:near(790,300), tissue:near(450,450), gut:near(110,300)};
+  PH.parts=[]; PH.ghosts=[];
+  renderStageBar(); setPhysState();
+}
+function targets(){ const st=SCEN[scen].stages[stage]; const ph=phOf(st.p,st.h); return {H:Math.round(hOf(ph)*0.35), B:Math.round(st.h*0.6), C:Math.round(st.p*0.3), ph, st}; }
+function setPhysState(){
+  const T=targets(), A=SCEN[scen].act[stage];
+  const adj=(type,n)=>{ const cur=PH.parts.filter(p=>p.type===type); if(cur.length<n){ for(let i=cur.length;i<n;i++) PH.parts.push({type, s:Math.random()*PH.L, off:(Math.random()-0.5)*22, v:0.9+Math.random()*0.3, el:null, cd:0}); } else if(cur.length>n){ cur.slice(n).forEach(p=>{p.dead=true;}); } };
+  adj('H',T.H); adj('B',T.B); adj('C',T.C);
+  PH.parts=PH.parts.filter(p=>{ if(p.dead){ if(p.el) p.el.remove(); return false;} return true; });
+  const layer=PH.svg.querySelector('#partLayer');
+  PH.parts.forEach(p=>{ if(!p.el){ p.el=document.createElementNS('http://www.w3.org/2000/svg','circle'); p.el.setAttribute('r', p.type==='B'?5.5:4.8); p.el.setAttribute('fill', p.type==='H'?'var(--hplus)':p.type==='B'?'var(--hco3)':'var(--co2)'); p.el.setAttribute('stroke','var(--panel)'); p.el.setAttribute('stroke-width','1'); layer.appendChild(p.el);} });
+  // readout
+  const st=T.st;
+  $('#readout').innerHTML=`<div>pH<b>${r2(T.ph)}</b></div><div>pCO₂<b>${fmtPn(st.p)}</b>${UNIT}</div><div>HCO₃⁻<b>${r1(st.h)}</b>mmol/L</div><div>[H⁺]<b>${Math.round(hOf(T.ph))}</b>nmol/L</div>`;
+  $('#physExplain').innerHTML=SCEN[scen].text[stage];
+  const v=A.vent; PH.vent=v;
+  $('#ventTxt').textContent = 'Ventilation: '+(v>1.3?'↑↑ deep & rapid (blowing off CO₂)':v>1.05?'↑ increased':v<0.7?'↓↓ hypoventilation (CO₂ retained)':v<0.95?'↓ reduced':'normal')+` · RR ≈ ${Math.round(14*v)}/min`;
+  $('#kidTxt').textContent = (A.kBout? 'HCO₃⁻ excreted (alkaline urine)' : A.kH>1.5? 'H⁺ ↑↑ excreted, new HCO₃⁻ made' : A.kH<0.7? 'H⁺ excretion ↓' : 'H⁺ as NH₄⁺ / H₂PO₄⁻');
+  $('#tissTxt').textContent = A.tissH>1.5? 'Tissues: excess acid production (ketones / lactate)' : 'Tissues: metabolism → CO₂ + fixed acids';
+  $('#gutTxt').textContent = A.gutH>1? 'Vomiting: H⁺ (HCl) lost' : 'HCl secretion';
+  PH.svg.querySelector('#kGlow').setAttribute('opacity', Math.min(.35, Math.max(0,(Math.max(A.kH,A.kBout||0)-1)*.25)));
+  const sh=SCEN[scen].shift[stage], g=PH.svg.querySelector('#shiftArrow');
+  g.innerHTML = sh===0?'':`<path d="M${sh>0?-120:120},28 L${sh>0?120:-120},28" stroke="var(--warn)" stroke-width="3" marker-end="url(#arr)"/><text x="0" y="46" text-anchor="middle" font-size="11.5" fill="var(--warn)" font-weight="700">${sh>0?'equilibrium shifts right → more H⁺':'equilibrium shifts left → H⁺ consumed, CO₂ produced'}</text>`;
+}
+function renderStageBar(){
+  const S=SCEN[scen];
+  $('#stageBar').innerHTML = S.labels.map((l,i)=>`<button class="btn${i===stage?' on':''}" data-st="${i}">${l}</button>`).join('');
+  $$('#stageBar button').forEach(b=>b.onclick=()=>{stage=+b.dataset.st; renderStageBar(); setPhysState();});
+}
+$$('#scenSeg button').forEach(b=>b.onclick=()=>{ scen=b.dataset.scen; stage=0; $$('#scenSeg button').forEach(x=>x.classList.toggle('on',x===b)); renderStageBar(); setPhysState(); });
+$('#playBtn').onclick=()=>{ paused=!paused; $('#playBtn').textContent=paused?'▶ Play':'❚❚ Pause'; if(!paused) startPhys(); };
+function ghost(x,y,dx,dy,type,label){
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.innerHTML=`<circle r="5" fill="${type==='H'?'var(--hplus)':type==='B'?'var(--hco3)':'var(--co2)'}"/><text x="8" y="4" font-size="10.5" fill="var(--ink)">${label}</text>`;
+  PH.svg.querySelector('#ghostLayer').appendChild(g);
+  PH.ghosts.push({g,x,y,dx,dy,life:0});
+}
+let lastT=0;
+function startPhys(){ if(rafId) return; lastT=performance.now(); rafId=requestAnimationFrame(tick); }
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function tick(now){
+  rafId=null;
+  if(!physRunning || paused) return;
+  const dt=Math.min(50, now-lastT); lastT=now;
+  const A=SCEN[scen].act[stage]; const speed=reduced?0.25:1;
+  // breathing
+  const f=0.23*PH.vent; const sc=1+0.07*Math.sin(now/1000*2*Math.PI*f);
+  PH.svg.querySelector('#lungScale').setAttribute('transform',`scale(${sc})`);
+  const pos=PH.pos, L=PH.L;
+  const passed=(a,b,mark)=> (a<=mark && b>mark) || (b<a && (mark>=a || mark<b));
+  PH.parts.forEach(p=>{
+    const s0=p.s; p.s=(p.s + p.v*dt*0.09*speed)%L; const s1=p.s;
+    if(p.type==='C' && passed(s0,s1,pos.lungs) && Math.random()<0.35*PH.vent){ const q=PH.path.getPointAtLength(pos.lungs); ghost(q.x,q.y-10,0,-0.06,'C','CO₂'); p.s=(pos.tissue+Math.random()*20)%L; }
+    if(p.type==='H' && passed(s0,s1,pos.kidney) && Math.random()<0.18*A.kH){ ghost(800,300,0.05,0.03,'H','H⁺'); p.s=(pos.tissue+Math.random()*20)%L; }
+    if(p.type==='H' && A.gutH>1 && passed(s0,s1,pos.gut) && Math.random()<0.35){ ghost(105,300,-0.06,0,'H','H⁺'); p.s=(pos.tissue+Math.random()*20)%L; }
+    if(p.type==='B' && passed(s0,s1,pos.kidney)){ if(A.kBout && Math.random()<0.25){ ghost(800,300,0.05,0.03,'B','HCO₃⁻'); } else if(Math.random()<0.08*A.kB){ ghost(830,280,-0.05,0,'B','new HCO₃⁻'); } }
+    const q=PH.path.getPointAtLength(p.s); const q2=PH.path.getPointAtLength((p.s+1)%L);
+    const nx=-(q2.y-q.y), ny=(q2.x-q.x); const nl=Math.hypot(nx,ny)||1;
+    p.el.setAttribute('cx', (q.x+nx/nl*p.off).toFixed(1)); p.el.setAttribute('cy',(q.y+ny/nl*p.off).toFixed(1));
+  });
+  // tissue acid production ghosts
+  if(Math.random()<0.004*dt*A.tissH){ ghost(450+(Math.random()-0.5)*120,492,0,-0.05,'H','H⁺'); }
+  PH.ghosts=PH.ghosts.filter(gh=>{ gh.life+=dt; gh.x+=gh.dx*dt; gh.y+=gh.dy*dt; const o=Math.max(0,1-gh.life/1100); gh.g.setAttribute('transform',`translate(${gh.x.toFixed(1)} ${gh.y.toFixed(1)})`); gh.g.setAttribute('opacity',o.toFixed(2)); if(o<=0){gh.g.remove(); return false;} return true; });
+  rafId=requestAnimationFrame(tick);
+}
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden && physRunning) startPhys(); });
+
+/* ---------- init ---------- */
+function refreshAll(){ analyse(); calcMet(); calcResp(); calcGap(); calcOxy(); if(openCase!==null||true) renderCases(); if(PH.svg) setPhysState(); }
+renderFilters();
+initPhys();
+// default demo: case 10 (DKA)
+setUnit(UNIT,false);
+loadCase(CASES[9], true);
+$('#c-pco2').value = UNIT==='kPa'? 9.3 : 70;
+calcResp(); calcOxy(); updateScore();
+})();
+</script>
+</body>
+</html>
