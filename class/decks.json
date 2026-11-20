@@ -1,0 +1,64 @@
+{
+ "decks": [
+  {
+   "title": "FAST Scan Simulator",
+   "category": "Trauma",
+   "href": "decks/Trauma/FAST-Scan-Simulator/index.html"
+  },
+  {
+   "title": "ABG & VBG Interpretation Simulator",
+   "category": "Respiratory & Acid–Base",
+   "href": "decks/Respiratory/ABG-VBG-Interpretation-Simulator.html"
+  },
+  {
+   "title": "WETFLAG & Paediatric Resuscitation CalculatorResuscitation bay with crash trolley, patient and IV drip stand",
+   "category": "Paediatrics",
+   "href": "decks/Paediatrics/WETFLAG-Calculator.html"
+  },
+  {
+   "title": "Sharp Safety Awareness",
+   "category": "Safety",
+   "href": "decks/Safety/Sharp-Safety-Awareness.html"
+  },
+  {
+   "title": "Paracetamol Poisoning",
+   "category": "Toxicology",
+   "href": "decks/Toxicology/Paracetamol Poisoning.html"
+  },
+  {
+   "title": "Introduction to Toxinology",
+   "category": "Toxicology",
+   "href": "decks/Toxicology/Introduction to Toxinology.html"
+  },
+  {
+   "title": "Paediatric Resuscitation Essentials",
+   "category": "Paediatrics",
+   "href": "decks/Paediatrics/Paediatric-Resuscitation-Essentials.html"
+  },
+  {
+   "title": "Rapid Sequence Intubation Masterclass",
+   "category": "Airway",
+   "href": "decks/Airway/Rapid-Sequence-Intubation-Masterclass.html"
+  },
+  {
+   "title": "Sepsis Early Recognition",
+   "category": "Resuscitation",
+   "href": "decks/Resuscitation/Sepsis-Early-Recognition.html"
+  },
+  {
+   "title": "Malaysian Triage Category in Practice",
+   "category": "Triage",
+   "href": "decks/Triage/Malaysian-Triage-Category-in-Practice.html"
+  },
+  {
+   "title": "ECG: STEMI and Its Mimics",
+   "category": "Cardiology",
+   "href": "decks/Cardiology/ECG-STEMI-and-Its-Mimics.html"
+  },
+  {
+   "title": "Primary Survey & Haemorrhage Control",
+   "category": "Trauma",
+   "href": "decks/Trauma/Primary-Survey-and-Haemorrhage-Control.html"
+  }
+ ]
+}
