@@ -491,7 +491,7 @@
         <tr><th>Class</th><th>Code</th><th>Sign-ups</th><th>Members</th><th>Modules</th><th></th></tr>
         ${classes.map((c) => `<tr>
           <td><b>${esc(c.name)}</b><div class="muted small">created ${fmtDate(c.created_at)}</div></td>
-          <td><code class="k">${esc(c.code)}</code><div><button class="btn ghost sm" data-copy="${esc(c.code)}" style="margin-top:6px;padding:0;border:0;height:auto">Copy join link</button></div></td>
+          <td><code class="k">${esc(c.code)}</code><div><button class="btn quiet sm" data-copy="${esc(c.code)}" style="margin-top:6px">Share / join link</button></div></td>
           <td><button class="btn sm ${c.active ? 'quiet' : 'danger'}" data-toggle="${c.id}" data-active="${c.active}">${c.active ? 'Open' : 'Closed'}</button></td>
           <td>${c.enrollments?.[0]?.count ?? 0}</td>
           <td>${c.class_modules.length} <button class="btn ghost sm" data-mods="${c.id}">Edit</button></td>
@@ -506,9 +506,9 @@
           const { error } = await sb.from('classes').insert({ name: e.target.name.value.trim() });
           if (error) return toast(errText(error)); toast('Class created'); route();
         });
-        el.querySelectorAll('[data-copy]').forEach((b) => b.onclick = async () => {
-          const link = baseUrl() + '#/register/' + b.dataset.copy;
-          try { await navigator.clipboard.writeText(link); toast('Join link copied'); } catch { prompt('Copy this link:', link); }
+        el.querySelectorAll('[data-copy]').forEach((b) => b.onclick = () => {
+          const c = classes.find((x) => x.code === b.dataset.copy);
+          shareDialog(c);
         });
         el.querySelectorAll('[data-toggle]').forEach((b) => b.onclick = async () => {
           const { error } = await sb.from('classes').update({ active: b.dataset.active !== 'true' }).eq('id', b.dataset.toggle);
@@ -543,6 +543,44 @@
           };
         });
       },
+    };
+  }
+
+  // Share a class: big code, join link with a copy button, and a QR code to show on screen
+  function shareDialog(c) {
+    const link = baseUrl() + '#/register/' + c.code;
+    const body = openDlg(`
+      <div class="spread"><h2 style="margin:0">Join “${esc(c.name)}”</h2><button class="btn quiet sm" id="x">Close</button></div>
+      ${c.active ? '' : '<div class="msg err">Sign-ups for this class are <b>closed</b>. Open it first or the code will not work.</div>'}
+      <div class="center" id="sharebox" style="margin:18px 0 6px">
+        <div class="muted small">Class code</div>
+        <div style="font:700 clamp(30px,6vw,46px) ui-monospace,Menlo,monospace;letter-spacing:.08em;margin:4px 0 14px">${esc(c.code)}</div>
+        <div id="joinqr" style="display:inline-block;background:#fff;padding:12px;border-radius:10px"></div>
+        <div class="muted small" style="margin-top:6px">Students scan this to open the sign-up page with the code filled in.</div>
+      </div>
+      <label class="f" style="margin-top:16px">Join link
+        <div class="row" style="flex-wrap:nowrap;margin-top:6px">
+          <input type="text" id="lnk" readonly value="${esc(link)}" style="margin:0;flex:1">
+          <button class="btn" id="cp" type="button">Copy</button>
+        </div></label>
+      <div class="row"><a class="btn quiet sm" target="_blank" rel="noopener"
+        href="https://wa.me/?text=${encodeURIComponent('Join ' + c.name + ' on the class portal: ' + link + ' (class code ' + c.code + ')')}">Share on WhatsApp</a>
+      <button class="btn quiet sm" id="full" type="button">Show full screen for class</button></div>`);
+    body.querySelector('#x').onclick = closeDlg;
+    if (window.QRCode) new QRCode(body.querySelector('#joinqr'), { text: link, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M });
+    const inp = body.querySelector('#lnk');
+    inp.onclick = () => inp.select();
+    body.querySelector('#cp').onclick = async () => {
+      let ok = false;
+      try { await navigator.clipboard.writeText(link); ok = true; } catch (e) {}
+      if (!ok) { inp.focus(); inp.select(); inp.setSelectionRange(0, link.length); try { ok = document.execCommand('copy'); } catch (e) {} }
+      toast(ok ? 'Join link copied' : 'Press ⌘C (or Ctrl+C) to copy the selected link');
+      if (!ok) { inp.focus(); inp.select(); }
+    };
+    body.querySelector('#full').onclick = () => {
+      const qr = body.querySelector('#sharebox');
+      if (qr.requestFullscreen) qr.requestFullscreen().catch(() => {});
+      else if (qr.webkitRequestFullscreen) qr.webkitRequestFullscreen();
     };
   }
 
