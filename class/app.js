@@ -84,7 +84,8 @@
   sb.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') { me = null; authed = false; } });
 
   function renderNav() {
-    const hub = '<a href="../">Teaching hub</a>';
+    // Only lecturers see the link to the full teaching hub; students reach decks through their modules
+    const hub = me && me.is_admin ? '<a href="../">Teaching hub</a>' : '';
     if (me) {
       $nav.innerHTML = hub + '<a href="#/">My classes</a>' + (me.is_admin ? '<a href="#/admin">Admin</a>' : '') +
         '<button type="button" id="logout">Log out</button>';
