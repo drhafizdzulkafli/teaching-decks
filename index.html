@@ -146,6 +146,7 @@
     .search kbd { display: none; }
   }
 </style>
+<!-- STATS:START --><script data-goatcounter="https://drhafizdzulkafli.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><!-- STATS:END -->
 </head>
 <body>
 
@@ -191,12 +192,12 @@
 <!-- DECKS:START — this block is rewritten by build_index.py; edit decks, not this JSON -->
 <script id="deck-data" type="application/json">
 {
- "generated": "20 Nov 2026, 10:50",
+ "generated": "20 Nov 2026, 14:13",
  "decks": [
   {
    "title": "FAST Scan Simulator",
    "category": "Trauma",
-   "audience": "Year 4 medical students (ED posting)",
+   "audience": "Undergraduate (Year 4)",
    "date": "2026-11-20",
    "summary": "Interactive FAST (Focused Assessment with Sonography in Trauma) simulator: drag the probe onto a supine patient, see probe position, sono-anatomy and normal vs free-fluid clips for RUQ, LUQ, suprapubic and subxiphoid windows, then test yourself with trauma cases and a spot-the-fluid quiz.",
    "tags": [
@@ -515,6 +516,21 @@
   if (DATA.generated) {
     $('footer').innerHTML = `Index last built ${esc(DATA.generated)} · Add a deck to <code>decks/</code> and run <code>python3 build_index.py</code>`;
   }
+
+  // Statistics: record which deck/tool was opened from the hub (works for PDF/PPTX too)
+  grid.addEventListener('click', (e) => {
+    const a = e.target.closest('.card'); if (!a || !window.goatcounter || !goatcounter.count) return;
+    const d = decks.find(x => x.href === a.getAttribute('href'));
+    goatcounter.count({ path: 'open: ' + (d ? d.file : a.getAttribute('href')), title: d ? d.title : '', event: true });
+  });
+  let searchTimer;
+  q.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      const term = q.value.trim().toLowerCase();
+      if (term.length > 2 && window.goatcounter && goatcounter.count) goatcounter.count({ path: 'search: ' + term, event: true });
+    }, 1500);
+  });
 
   renderChips();
   render();

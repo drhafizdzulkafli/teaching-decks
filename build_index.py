@@ -48,6 +48,45 @@ INDEX = ROOT / "index.html"
 DECK_EXTS = {".html", ".htm", ".pdf", ".pptx", ".ppt", ".key", ".odp"}
 START = "<!-- DECKS:START"
 END = "<!-- DECKS:END -->"
+CONFIG = ROOT / "site_config.json"
+STATS_RE = re.compile(r"[ \t]*<!-- STATS:START -->.*?<!-- STATS:END -->\n?", re.S)
+
+
+# ---------- visitor statistics (GoatCounter) ----------
+
+def stats_snippet() -> str:
+    """Tracking tag built from site_config.json {"goatcounter": "<your code>"}; empty if not set."""
+    try:
+        code = json.loads(CONFIG.read_text(encoding="utf-8")).get("goatcounter", "").strip()
+    except Exception:
+        code = ""
+    if not re.fullmatch(r"[a-z0-9-]+", code):
+        return ""
+    return (
+        "<!-- STATS:START -->"
+        f'<script data-goatcounter="https://{code}.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>'
+        "<!-- STATS:END -->\n"
+    )
+
+
+def apply_stats(page: str, snippet: str) -> str:
+    """Remove any old tracking tag, then add the current one just before </head>."""
+    page = STATS_RE.sub("", page)
+    if snippet:
+        m = re.search(r"</head>", page, re.I)
+        if m:
+            page = page[:m.start()] + snippet + page[m.start():]
+    return page
+
+
+def tag_html_decks(snippet: str):
+    for _, target, _ in find_decks():
+        if target.suffix.lower() not in {".html", ".htm"}:
+            continue
+        old = target.read_text(encoding="utf-8", errors="ignore")
+        new = apply_stats(old, snippet)
+        if new != old:
+            target.write_text(new, encoding="utf-8")
 
 
 # ---------- metadata readers ----------
@@ -223,8 +262,10 @@ def build() -> int:
         "<!-- DECKS:START — this block is rewritten by build_index.py; edit decks, not this JSON -->\n"
         f'<script id="deck-data" type="application/json">\n{data}\n</script>\n'
     )
-    INDEX.write_text(page[:s] + block + page[e:], encoding="utf-8")
-    print(f"✓ index.html updated with {len(decks)} deck(s)")
+    snippet = stats_snippet()
+    INDEX.write_text(apply_stats(page[:s] + block + page[e:], snippet), encoding="utf-8")
+    tag_html_decks(snippet)
+    print(f"✓ index.html updated with {len(decks)} deck(s)" + (" · statistics on" if snippet else ""))
     return len(decks)
 
 
