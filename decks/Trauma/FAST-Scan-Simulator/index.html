@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAST Scan Simulator</title>
+<meta name="description" content="Interactive FAST (Focused Assessment with Sonography in Trauma) simulator: drag the probe onto a supine patient, see probe position, sono-anatomy and normal vs free-fluid clips for RUQ, LUQ, suprapubic and subxiphoid windows, then test yourself with trauma cases and a spot-the-fluid quiz.">
+<meta name="deck:category" content="Trauma">
+<meta name="deck:audience" content="Year 4 medical students (ED posting)">
+<meta name="deck:date" content="2026-11-20">
+<meta name="deck:tags" content="FAST, ultrasound, POCUS, trauma, ATLS, primary survey, free fluid, Morison's pouch, simulator">
+<style>
+:root{
+  --bg:#eef2f5; --panel:#ffffff; --panel2:#f6f8fa; --ink:#14212b; --muted:#5a6a77; --line:#d8e0e6;
+  --accent:#0f766e; --accent-ink:#ffffff; --ok:#15803d; --warn:#b45309; --bad:#b91c1c;
+  --okbg:#e8f5ec; --warnbg:#fdf3e2; --badbg:#fdecec;
+  --bed:#d9e1e7; --bed2:#eef3f6; --bedline:#b5c2cc; --pillow:#ffffff; --skin:#e7bf9c; --skin2:#d6a682; --shorts:#5b7d99; --collar:#f2a541;
+  --lm:#7b4b2a; --zone:#0f766e;
+  --shadow:0 1px 2px rgba(15,30,45,.06),0 6px 18px rgba(15,30,45,.06);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e161d; --panel:#16212a; --panel2:#1b2832; --ink:#e6edf2; --muted:#93a4b1; --line:#2a3a46;
+    --accent:#2dd4bf; --accent-ink:#06231f; --ok:#4ade80; --warn:#fbbf24; --bad:#f87171;
+    --okbg:#11281b; --warnbg:#2b2210; --badbg:#2e1515;
+    --bed:#25333e; --bed2:#2d3d4a; --bedline:#3d5161; --pillow:#3a4c5a; --skin:#d9ae8a; --skin2:#c39573; --shorts:#46627a; --collar:#d98f2f;
+    --lm:#5a3218; --zone:#2dd4bf;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e161d; --panel:#16212a; --panel2:#1b2832; --ink:#e6edf2; --muted:#93a4b1; --line:#2a3a46;
+  --accent:#2dd4bf; --accent-ink:#06231f; --ok:#4ade80; --warn:#fbbf24; --bad:#f87171;
+  --okbg:#11281b; --warnbg:#2b2210; --badbg:#2e1515;
+  --bed:#25333e; --bed2:#2d3d4a; --bedline:#3d5161; --pillow:#3a4c5a; --skin:#d9ae8a; --skin2:#c39573; --shorts:#46627a; --collar:#d98f2f;
+  --lm:#5a3218; --zone:#2dd4bf;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%}
+.wrap{max-width:1280px;margin:0 auto;padding:0 16px}
+header.top{padding:18px 0 8px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{margin:0;font-size:clamp(20px,3.2vw,28px);letter-spacing:-.01em}
+h1 span{color:var(--accent)}
+.sub{color:var(--muted);font-size:13px;margin-top:2px}
+h2{font-size:18px;margin:0}
+h3{font-size:15px;margin:0 0 6px}
+.kicker{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:transparent;color:var(--ink);padding:7px 12px;font:600 13px/1 inherit;font-family:inherit;cursor:pointer}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.seg button:disabled{opacity:.45;cursor:not-allowed}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:7px 12px;font:600 13px/1.2 inherit;font-family:inherit;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn.on{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+nav.tabs{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);margin-bottom:16px}
+nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.tabs button{border:0;background:transparent;color:var(--muted);padding:12px 14px;font:600 14px inherit;font-family:inherit;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+nav.tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+section.tab{display:none;padding-bottom:40px}
+section.tab.on{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+.note{font-size:12.5px;color:var(--muted)}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid currentColor;line-height:1.6;white-space:nowrap}
+.pill.ok{color:var(--ok);background:var(--okbg)} .pill.bad{color:var(--bad);background:var(--badbg)} .pill.warn{color:var(--warn);background:var(--warnbg)} .pill.n{color:var(--muted)}
+
+/* simulator layout */
+.sim{display:grid;grid-template-columns:minmax(0,430px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:980px){.sim{grid-template-columns:minmax(0,1fr)}}
+.modebar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.bedwrap{max-width:430px;margin:0 auto}
+#bed{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+#bed text{font-family:inherit}
+.zone{cursor:pointer}
+.zone .ring{fill:color-mix(in srgb,var(--zone) 18%,transparent);stroke:var(--zone);stroke-width:2;stroke-dasharray:5 4}
+.zone .pulse{fill:none;stroke:var(--zone);stroke-width:2;opacity:.0;transform-box:fill-box;transform-origin:center;animation:pulse 2.2s ease-out infinite}
+.zone.visited .ring{stroke-dasharray:none}
+.zone.active .ring{fill:color-mix(in srgb,var(--zone) 32%,transparent);stroke-width:3}
+.zone.active .pulse{animation:none}
+.zone .num{font:700 12px system-ui,sans-serif;fill:var(--ink)}
+@keyframes pulse{0%{opacity:.8;transform:scale(.8)}100%{opacity:0;transform:scale(1.7)}}
+@media (prefers-reduced-motion:reduce){.zone .pulse{animation:none}}
+#probeG{cursor:grab;transform-box:view-box;transform-origin:0 0;transition:transform .45s cubic-bezier(.3,.8,.3,1)}
+#probeG.drag{cursor:grabbing;transition:none}
+.lm text{fill:var(--muted);font-size:10.5px}
+.lm .l{stroke:var(--lm);stroke-width:1.6;fill:none;opacity:.75}
+.cue text{fill:var(--accent);font-size:11px;font-weight:700}
+.cue path,.cue line{stroke:var(--accent);fill:none;stroke-width:2}
+.winlist{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:10px}
+.winlist button{border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:9px;padding:7px 4px;font:600 12.5px/1.25 inherit;font-family:inherit;cursor:pointer;text-align:center}
+.winlist button small{display:block;font-weight:500;color:var(--muted);font-size:11px}
+.winlist button.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.winlist button .ck{color:var(--ok)}
+.hint{margin-top:10px;font-size:13.5px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+.hint b{color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:50;max-width:min(92vw,520px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* monitor */
+.monhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.screens{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.screens.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:600px){.screens.two{grid-template-columns:minmax(0,1fr)}}
+.screen{position:relative;margin:0;background:#000;border-radius:10px;overflow:hidden;border:6px solid #1d2329;box-shadow:inset 0 0 0 1px #000;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center}
+.screen video{width:100%;height:100%;object-fit:contain;display:block}
+.screen .tag{position:absolute;top:8px;right:8px;font:700 11.5px/1 system-ui,sans-serif;letter-spacing:.05em;padding:5px 8px;border-radius:6px;background:rgba(0,0,0,.65);border:1px solid}
+.screen .tag.n{color:#4ade80;border-color:#4ade80}
+.screen .tag.p{color:#ff7070;border-color:#ff7070}
+.screen .tag.q{color:#ffd166;border-color:#ffd166}
+.screen .lbl{position:absolute;left:8px;bottom:8px;font:600 12px/1.2 system-ui,sans-serif;color:#d9e2e8;background:rgba(0,0,0,.6);padding:4px 7px;border-radius:5px}
+.screen .empty{color:#8fa1ad;text-align:center;padding:20px;font-size:14px}
+.screen .empty b{color:#e6edf2;display:block;font-size:17px;margin-bottom:4px}
+.ctlrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:5px 11px;font:600 12.5px inherit;font-family:inherit;cursor:pointer}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.cap{font-size:14px;margin:6px 0 0;background:var(--panel2);border-left:4px solid var(--accent);padding:8px 11px;border-radius:6px}
+.cap.p{border-left-color:var(--bad)}
+
+/* info tabs */
+.itabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:16px 0 12px;overflow-x:auto}
+.itabs button{border:0;background:transparent;color:var(--muted);padding:9px 12px;font:600 13.5px inherit;font-family:inherit;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+.itabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+.ipane{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:760px){.ipane{grid-template-columns:minmax(0,1fr)}}
+.ipane ol,.ipane ul{margin:4px 0 0;padding-left:20px}
+.ipane li{margin:4px 0;font-size:14px}
+figure.pic{margin:0}
+figure.pic img{width:100%;height:auto;display:block;border-radius:9px;border:1px solid var(--line);background:#000}
+figure.pic figcaption{font-size:12px;color:var(--muted);margin-top:4px}
+.pics{display:grid;gap:10px}
+.pics.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.schem{background:#0b0d0f;border-radius:10px;padding:6px;border:1px solid var(--line);max-width:640px;margin:0 auto}
+.schem svg{width:100%;height:auto;display:block}
+.schem text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.box{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel2)}
+.box.n{border-left:5px solid var(--ok)}
+.box.p{border-left:5px solid var(--bad)}
+.box.w{border-left:5px solid var(--warn)}
+.box h4{margin:0 0 4px;font-size:14px}
+.stack{display:flex;flex-direction:column;gap:10px}
+.kv{font-size:13.5px;margin:6px 0 0}
+.kv b{color:var(--accent)}
+
+/* case */
+.casecard{margin-bottom:16px}
+.vitals{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.vitals span{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:4px 9px;font-size:13.5px}
+.vitals span.alarm{border-color:var(--bad);color:var(--bad);background:var(--badbg)}
+.sheet{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+.sheet td,.sheet th{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertical-align:middle}
+.sheet th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.yn{display:inline-flex;gap:4px}
+.yn button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:7px;padding:5px 10px;font:600 12.5px inherit;font-family:inherit;cursor:pointer}
+.yn button.on.p{background:var(--bad);border-color:var(--bad);color:#fff}
+.yn button.on.n{background:var(--ok);border-color:var(--ok);color:#fff}
+.yn button:disabled{opacity:.4;cursor:not-allowed}
+.opts{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.opts button{text-align:left;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:8px;padding:8px 10px;font:14px inherit;font-family:inherit;cursor:pointer}
+.opts button:hover:not(:disabled){border-color:var(--accent)}
+.opts button.sel{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.opts button.right{background:var(--okbg);border-color:var(--ok);color:var(--ok);font-weight:600}
+.opts button.wrong{background:var(--badbg);border-color:var(--bad);color:var(--bad)}
+.fb{margin-top:12px;border-radius:10px;padding:12px 14px;background:var(--panel2);border:1px solid var(--line);font-size:14px}
+.fb h4{margin:0 0 6px}
+.fb ul{margin:4px 0;padding-left:20px}
+
+/* quiz */
+.quiz{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.quiz{grid-template-columns:minmax(0,1fr)}}
+.qgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:6px}
+.qgrid button{border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:8px;padding:9px 8px;font:600 13.5px inherit;font-family:inherit;cursor:pointer}
+.qgrid button:hover:not(:disabled){border-color:var(--accent)}
+.qgrid button.right{background:var(--okbg);border-color:var(--ok);color:var(--ok)}
+.qgrid button.wrong{background:var(--badbg);border-color:var(--bad);color:var(--bad)}
+.score{font-size:22px;font-weight:750}
+
+/* algorithm */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
+.flow{display:grid;gap:10px;text-align:center;font-size:13.5px}
+.flow .n{border:1px solid var(--line);background:var(--panel2);border-radius:9px;padding:8px 10px;font-weight:600}
+.flow .n.root{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.flow .n.red{border-color:var(--bad);color:var(--bad);background:var(--badbg)}
+.flow .n.amb{border-color:var(--warn);color:var(--warn);background:var(--warnbg)}
+.flow .n.grn{border-color:var(--ok);color:var(--ok);background:var(--okbg)}
+.flow .cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.flow .arrow{color:var(--muted);font-size:16px;line-height:1}
+.flow small{display:block;font-weight:500;font-size:12px;margin-top:2px}
+@media (max-width:640px){.flow .cols.top{grid-template-columns:minmax(0,1fr)}}
+table.t{border-collapse:collapse;width:100%;font-size:13.5px}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+table.t th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+.tscroll{overflow-x:auto}
+ul.clean{margin:6px 0 0;padding-left:20px}
+ul.clean li{margin:5px 0;font-size:14px}
+.abcde{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.abcde span{border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px;background:var(--panel2)}
+.abcde span.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--panel));font-weight:700}
+footer{color:var(--muted);font-size:12px;padding:20px 0 30px;border-top:1px solid var(--line)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>FAST Scan <span>Simulator</span></h1>
+      <div class="sub">Focused Assessment with Sonography in Trauma · an adjunct to the primary survey (C – circulation) · Year 4 ED posting</div>
+    </div>
+    <div class="row"><button class="btn" id="themeBtn" title="Toggle light/dark">◐ Theme</button></div>
+  </header>
+</div>
+<nav class="tabs"><div class="wrap">
+  <button class="on" data-tab="sim">Scan the patient</button>
+  <button data-tab="quiz">Spot the fluid</button>
+  <button data-tab="algo">Algorithm &amp; pitfalls</button>
+</div></nav>
+
+<div class="wrap">
+<!-- ================= SIMULATOR ================= -->
+<section class="tab on" id="tab-sim">
+  <div class="modebar">
+    <div class="row">
+      <span class="kicker">Mode</span>
+      <div class="seg" id="modeSeg"><button data-v="teach" class="on">Teaching</button><button data-v="case">Case challenge</button></div>
+    </div>
+    <div class="row">
+      <span class="kicker">Patient</span>
+      <div class="seg" id="sexSeg"><button data-v="m" class="on">Male</button><button data-v="f">Female</button></div>
+    </div>
+  </div>
+
+  <div class="card casecard" id="casePanel" hidden></div>
+
+  <div class="sim">
+    <!-- bedside -->
+    <div class="card">
+      <div class="row between" style="margin-bottom:6px">
+        <div><div class="kicker">Bedside · ceiling view</div><h2>Patient supine on trolley</h2></div>
+        <label class="note"><input type="checkbox" id="lmChk" checked> Landmarks</label>
+      </div>
+      <div class="bedwrap">
+        <svg id="bed" viewBox="0 0 460 800" role="img" aria-label="Top-down view of a supine trauma patient on a trolley with four FAST probe windows">
+          <defs>
+            <linearGradient id="probeGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbfdfe"/><stop offset="1" stop-color="#cdd6dd"/></linearGradient>
+          </defs>
+          <!-- trolley -->
+          <rect x="40" y="200" width="7" height="420" rx="3" fill="var(--bedline)"/>
+          <rect x="353" y="200" width="7" height="420" rx="3" fill="var(--bedline)"/>
+          <rect x="48" y="16" width="304" height="772" rx="28" fill="var(--bed)" stroke="var(--bedline)" stroke-width="2"/>
+          <rect x="58" y="26" width="284" height="752" rx="22" fill="var(--bed2)"/>
+          <ellipse cx="200" cy="80" rx="80" ry="42" fill="var(--pillow)" stroke="var(--bedline)"/>
+          <text x="200" y="12" text-anchor="middle" font-size="11" font-weight="700" fill="var(--muted)" letter-spacing="1.5">HEAD</text>
+          <text x="200" y="799" text-anchor="middle" font-size="11" font-weight="700" fill="var(--muted)" letter-spacing="1.5">FEET</text>
+          <text transform="translate(30 420) rotate(-90)" text-anchor="middle" font-size="11" font-weight="700" fill="var(--muted)" letter-spacing="1">PATIENT'S RIGHT</text>
+          <text transform="translate(372 420) rotate(90)" text-anchor="middle" font-size="11" font-weight="700" fill="var(--muted)" letter-spacing="1">PATIENT'S LEFT</text>
+          <!-- body -->
+          <g id="body">
+            <path d="M160,470 C158,560 160,650 164,735" stroke="var(--skin)" stroke-width="56" stroke-linecap="round" fill="none"/>
+            <path d="M240,470 C242,560 240,650 236,735" stroke="var(--skin)" stroke-width="56" stroke-linecap="round" fill="none"/>
+            <ellipse cx="160" cy="760" rx="19" ry="24" fill="var(--skin2)"/>
+            <ellipse cx="240" cy="760" rx="19" ry="24" fill="var(--skin2)"/>
+            <path d="M112,178 C92,240 76,330 64,425" stroke="var(--skin)" stroke-width="30" stroke-linecap="round" fill="none"/>
+            <path d="M288,178 C308,240 324,330 336,425" stroke="var(--skin)" stroke-width="30" stroke-linecap="round" fill="none"/>
+            <circle cx="62" cy="444" r="16" fill="var(--skin2)"/>
+            <circle cx="338" cy="444" r="16" fill="var(--skin2)"/>
+            <path d="M140,158 C112,160 102,176 104,200 L112,300 C116,340 128,370 130,390 C124,420 118,450 120,482 L280,482 C282,450 276,420 270,390 C272,370 284,340 288,300 L296,200 C298,176 288,160 260,158 Z" fill="var(--skin)"/>
+            <path d="M120,470 L280,470 L285,545 L212,550 L200,522 L188,550 L115,545 Z" fill="var(--shorts)"/>
+            <rect x="180" y="124" width="40" height="38" rx="8" fill="var(--skin)"/>
+            <ellipse cx="200" cy="94" rx="37" ry="45" fill="var(--skin)"/>
+            <path d="M164,82 C166,52 234,52 236,82 C226,64 174,64 164,82Z" fill="#4a3a2e"/>
+            <ellipse cx="186" cy="94" rx="4" ry="2.5" fill="#3d2b20"/><ellipse cx="214" cy="94" rx="4" ry="2.5" fill="#3d2b20"/>
+            <path d="M200,98 L197,110 L203,110" stroke="var(--skin2)" stroke-width="2" fill="none"/>
+            <path d="M190,121 Q200,125 210,121" stroke="#a86b55" stroke-width="2" fill="none"/>
+            <rect x="174" y="132" width="52" height="26" rx="7" fill="var(--collar)" opacity=".92"/>
+            <text x="200" y="149" text-anchor="middle" font-size="8.5" font-weight="700" fill="#5a3600">C-COLLAR</text>
+          </g>
+          <!-- landmarks -->
+          <g class="lm" id="lm">
+            <circle cx="155" cy="215" r="3.5" fill="var(--skin2)"/><circle cx="245" cy="215" r="3.5" fill="var(--skin2)"/>
+            <path class="l" d="M200,170 L200,262"/>
+            <path d="M195,262 L205,262 L200,274 Z" fill="var(--lm)" opacity=".8"/>
+            <path class="l" d="M200,274 Q160,300 112,318"/>
+            <path class="l" d="M200,274 Q240,300 288,318"/>
+            <ellipse cx="200" cy="372" rx="4" ry="5" fill="var(--skin2)"/>
+            <path class="l" d="M184,463 Q200,455 216,463"/>
+            <circle cx="140" cy="438" r="3" fill="var(--lm)" opacity=".7"/><circle cx="260" cy="438" r="3" fill="var(--lm)" opacity=".7"/>
+            <path class="l" d="M106,188 L106,350" stroke-dasharray="5 4"/>
+            <path class="l" d="M304,182 L306,330" stroke-dasharray="5 4"/>
+            <text x="212" y="270">xiphoid</text>
+            <text x="230" y="334">costal margin</text>
+            <text x="209" y="376">umbilicus</text>
+            <text x="222" y="459">pubic symphysis</text>
+            <text transform="translate(98 300) rotate(-90)" text-anchor="middle">R mid-axillary line</text>
+            <text transform="translate(316 255) rotate(90)" text-anchor="middle">L posterior axillary line</text>
+          </g>
+          <g class="cue" id="cue"></g>
+          <!-- zones -->
+          <g id="zones"></g>
+          <!-- probe holder -->
+          <rect x="376" y="40" width="72" height="140" rx="12" fill="var(--panel2)" stroke="var(--line)"/>
+          <text x="412" y="58" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--muted)" letter-spacing="1">PROBE</text>
+          <text x="412" y="172" text-anchor="middle" font-size="9.5" fill="var(--muted)">drag me</text>
+          <g id="probeG" tabindex="0" role="button" aria-label="Ultrasound probe. Drag onto a FAST window.">
+            <path d="M0,12 C0,40 -14,58 -30,76" stroke="#55626c" stroke-width="5" fill="none" stroke-linecap="round" id="cable"/>
+            <rect x="-34" y="-13" width="68" height="26" rx="12" fill="url(#probeGrad)" stroke="#7d8c97" stroke-width="1.5"/>
+            <rect x="-30" y="-4" width="60" height="8" rx="4" fill="#93a3ae" opacity=".55"/>
+            <circle cx="-25" cy="0" r="5" fill="#16a34a" stroke="#fff" stroke-width="1.5"/>
+          </g>
+        </svg>
+      </div>
+      <div class="winlist" id="winlist"></div>
+      <div class="hint" id="probeHint"><b>Drag the probe</b> onto one of the four dashed windows, or tap a window. The <span style="color:#16a34a;font-weight:700">green dot</span> is the probe indicator (orientation marker).</div>
+    </div>
+
+    <!-- monitor + info -->
+    <div class="card">
+      <div class="monhead">
+        <div><div class="kicker">Ultrasound monitor</div><h2 id="monTitle">No probe on the patient</h2></div>
+        <div class="row" id="findCtl">
+          <div class="seg" id="findSeg"><button data-v="n" class="on">Normal</button><button data-v="p">Free fluid</button></div>
+          <button class="btn" id="cmpBtn" title="Normal and positive side by side">⇆ Compare</button>
+        </div>
+      </div>
+      <div class="screens" id="screens"></div>
+      <div class="ctlrow">
+        <div class="seg" id="planeSeg" hidden><button data-v="long" class="on">Longitudinal</button><button data-v="trans">Transverse</button></div>
+        <div class="chips" id="clipChips"></div>
+        <span style="flex:1"></span>
+        <button class="btn" id="playBtn">❚❚ Pause</button>
+        <div class="seg" id="spdSeg"><button data-v="0.5">½×</button><button data-v="1" class="on">1×</button></div>
+      </div>
+      <p class="cap" id="cap">Place the probe on a window to start scanning. Each window shows a looping clip — switch between <b>Normal</b> and <b>Free fluid</b> to see the difference.</p>
+
+      <div class="itabs" id="itabs">
+        <button data-v="probe" class="on">① Probe position</button>
+        <button data-v="anat">② Sono-anatomy</button>
+        <button data-v="look">③ What to look for</button>
+      </div>
+      <div id="ipane"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= QUIZ ================= -->
+<section class="tab" id="tab-quiz">
+  <div class="quiz">
+    <div class="card">
+      <div class="row between" style="margin-bottom:10px">
+        <div><div class="kicker">Spot the fluid</div><h2>Which window — and is it positive?</h2></div>
+        <div class="row"><span class="note">Score</span><span class="score" id="qScore">0 / 0</span></div>
+      </div>
+      <div class="screens" id="qScreen"></div>
+      <div class="ctlrow"><span class="note">Clips play on a loop. Use ½× to slow down.</span><span style="flex:1"></span><div class="seg" id="qSpd"><button data-v="0.5">½×</button><button data-v="1" class="on">1×</button></div></div>
+    </div>
+    <div class="card">
+      <h3>1 · Which FAST window is this?</h3>
+      <div class="qgrid" id="qWin"></div>
+      <h3 style="margin-top:14px">2 · Your interpretation</h3>
+      <div class="qgrid" id="qFind"></div>
+      <div class="fb" id="qFb" hidden></div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" id="qNext">Next clip →</button><button class="btn" id="qReset">Reset score</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ALGORITHM ================= -->
+<section class="tab" id="tab-algo">
+  <div class="grid2">
+    <div class="card">
+      <h2 style="margin-bottom:6px">Where FAST fits</h2>
+      <p class="note" style="margin:0">FAST is performed during the <b>primary survey</b>, as an adjunct to <b>C – Circulation with haemorrhage control</b>. It answers one question: <i>is there free fluid (presumed blood) in the peritoneum or pericardium?</i></p>
+      <div class="abcde"><span>A · Airway + C-spine</span><span>B · Breathing</span><span class="on">C · Circulation → FAST</span><span>D · Disability</span><span>E · Exposure</span></div>
+      <h3 style="margin-top:14px">FAST in the trauma algorithm</h3>
+      <div class="flow">
+        <div class="n root">Trauma patient — primary survey + FAST</div>
+        <div class="cols top">
+          <div class="flow">
+            <div class="n red">Haemodynamically UNSTABLE</div>
+            <div class="cols">
+              <div class="flow"><div class="arrow">↓ FAST +</div><div class="n red">Operating theatre<small>(laparotomy / haemorrhage control)</small></div></div>
+              <div class="flow"><div class="arrow">↓ FAST −</div><div class="n amb">Look for another source<small>chest, pelvis, long bones, external, retroperitoneum · repeat FAST</small></div></div>
+            </div>
+          </div>
+          <div class="flow">
+            <div class="n grn">Haemodynamically STABLE</div>
+            <div class="cols">
+              <div class="flow"><div class="arrow">↓ FAST +</div><div class="n amb">CT scan<small>to grade organ injury</small></div></div>
+              <div class="flow"><div class="arrow">↓ FAST −</div><div class="n grn">Serial FAST, CT or observation<small>correlate clinically</small></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="n red" style="margin-top:4px">Pericardial fluid in trauma + shock → suspect tamponade → urgent pericardial decompression / cardiothoracic surgery</div>
+        <div class="note">Adapted from POCUS 101 (after Radiology 2017;283:1).</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom:8px">Where does fluid collect first?</h2>
+      <div class="tscroll"><table class="t">
+        <tr><th>Window</th><th>Most dependent space to check</th><th>Tip</th></tr>
+        <tr><td><b>RUQ</b></td><td>Hepatorenal space (Morison's pouch) &amp; <b>caudal tip of the liver</b></td><td>Most frequently positive view. Always sweep down to the liver tip and lower pole of the kidney.</td></tr>
+        <tr><td><b>LUQ</b></td><td><b>Subphrenic space</b> (between diaphragm and spleen), then splenorenal recess</td><td>Phrenicocolic ligament directs blood above the spleen first — look high.</td></tr>
+        <tr><td><b>Suprapubic</b></td><td>♂ Rectovesical pouch · ♀ Rectouterine pouch (pouch of Douglas)</td><td>Most dependent part of the peritoneum in a supine patient. Scan before the urinary catheter.</td></tr>
+        <tr><td><b>Subxiphoid</b></td><td>Pericardial space — between the bright pericardium and the heart</td><td>Any pericardial fluid after trauma is significant.</td></tr>
+      </table></div>
+      <h3 style="margin-top:14px">Key numbers</h3>
+      <ul class="clean">
+        <li>Sensitivity for free intraperitoneal fluid about <b>71–74%</b>; specificity <b>95–98%</b> (AIUM).</li>
+        <li>Roughly <b>200 mL or more</b> of intraperitoneal fluid is usually needed before it is visible; a negative FAST does not exclude small bleeds.</li>
+        <li>Probe: <b>curvilinear (2–5 MHz)</b>; a phased-array (cardiac) probe also works.</li>
+        <li>No absolute contraindications — but <b>FAST must never delay resuscitation</b> or transfer to theatre.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom:8px">What FAST cannot tell you</h2>
+      <ul class="clean">
+        <li><b>Retroperitoneal bleeding</b> (pelvic fracture, renal, aortic) — FAST can be negative in a shocked patient.</li>
+        <li>Solid-organ injury <b>without</b> haemoperitoneum, hollow-viscus or diaphragm injury.</li>
+        <li>The <b>type</b> of fluid — ascites, urine, peritoneal dialysis fluid and physiological pelvic fluid all look black.</li>
+        <li>A <b>single</b> snapshot — bleeding evolves. Repeat FAST whenever the patient's condition changes.</li>
+      </ul>
+      <h3 style="margin-top:14px">Common pitfalls</h3>
+      <ul class="clean">
+        <li>Over-reliance on ultrasound; delaying the transfer to theatre.</li>
+        <li>Not scanning the <b>inferior pole of the kidney / caudal liver tip</b>.</li>
+        <li>Missing <b>clotted blood</b> — it is grey (isoechoic), not black.</li>
+        <li>Empty bladder (catheter already in) — no acoustic window for the pelvis.</li>
+        <li>Mimics: perinephric fat, gallbladder, IVC, stomach/bowel fluid, seminal vesicles, ovarian cyst, epicardial fat pad.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom:8px">Fluid or not? A quick rule</h2>
+      <div class="stack">
+        <div class="box p"><h4>Free fluid (blood)</h4>Anechoic (black), <b>sharp angular edges</b> that fill the gaps between organs, sits in the <b>dependent</b> spaces, no wall of its own. Fresh blood is black; clot is grey and lumpy.</div>
+        <div class="box n"><h4>Normal structures that are also black</h4>Bladder, gallbladder, IVC/vessels, heart chambers — all have a <b>smooth wall</b>, a predictable shape and position, and are contained.</div>
+        <div class="box w"><h4>Grey but not fluid</h4>Perinephric fat (echogenic, often bilateral), epicardial fat pad (anterior only, moves with the heart), bowel (peristalsis, gas shadows).</div>
+      </div>
+      <h3 style="margin-top:14px">Make the scan easier</h3>
+      <ul class="clean">
+        <li>Rib shadows? Rotate the probe slightly oblique to lie between the ribs, or ask for a deep breath.</li>
+        <li>Slight <b>Trendelenburg</b> increases fluid in the RUQ/LUQ; reverse Trendelenburg increases it in the pelvis.</li>
+        <li>Turn the depth up for the heart (16–20 cm); lower the gain behind the bladder (posterior enhancement).</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  FAST Scan Simulator for teaching only — not for clinical decision-making. Ultrasound clips and figures: POCUS 101 (pocus101.com) and other open educational sources (focus4peds, Alberta Sono, EM teaching libraries), as used in the ED FAST lecture. Schematic drawings are simplified for learning.
+</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const M='media/';
+
+/* ---------- theme ---------- */
+const saved=store.get('fast-theme'); if(saved) document.documentElement.setAttribute('data-theme',saved);
+$('#themeBtn').addEventListener('click',()=>{
+  const cur=document.documentElement.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+  const nx=cur==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',nx); store.set('fast-theme',nx);
+});
+
+/* ---------- tabs ---------- */
+$$('nav.tabs button').forEach(b=>b.addEventListener('click',()=>{
+  $$('nav.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  $$('section.tab').forEach(s=>s.classList.toggle('on',s.id==='tab-'+b.dataset.tab));
+  $$('video').forEach(v=>{ if(v.closest('section.tab.on')) v.play().catch(()=>{}); else v.pause(); });
+  if(b.dataset.tab==='quiz' && !Q.cur) quizNext();
+}));
+
+/* ---------- windows ---------- */
+const ORDER=['ruq','luq','pel','sx'];
+const WIN={
+ ruq:{short:'RUQ',name:'Right upper quadrant',sub:"Hepatorenal · Morison's pouch",zone:{x:106,y:272,rot:90},
+  hint:"<b>RUQ:</b> right <b>mid-axillary line</b> at the level of the <b>xiphoid</b>. Indicator → patient's <b>head</b> (coronal plane). Fan forwards and backwards, then slide down to the liver tip.",
+  probe:{steps:["Curvilinear probe, indicator pointing to the patient's <b>head</b> (coronal plane).","Anchor the probe in the right <b>mid-axillary line</b> at the level of the <b>xiphoid process</b> (roughly 8th–11th rib space).","<b>Fan</b> forwards and backwards through the whole hepatorenal interface.","<b>Slide caudally</b> to see the inferior pole of the kidney and the <b>caudal tip of the liver</b> — the most sensitive spot.","Rib shadows? Rotate slightly oblique to lie between the ribs, or ask for a deep breath in."],
+   orient:"Screen left = patient's head. Screen right = feet.",
+   pics:[["ruq_probe.jpg","Probe in the right mid-axillary line with the beam cutting through lung, diaphragm, liver and kidney."]]},
+  anat:{lecture:[["ruq_schema.jpg","Fluid collects in the hepatorenal space and tracks to the caudal tip of the liver."]],
+   list:["<b>Diaphragm</b> — bright curved line at the screen-left edge.","<b>Liver</b> — large, homogeneous grey organ.","<b>Right kidney</b> — oval with a bright central sinus.","<b>Morison's pouch</b> — the potential space between liver and kidney.","<b>Caudal liver tip</b> — the most dependent edge of the liver."]},
+  look:{n:"Liver and kidney touch: a <b>single thin bright line</b> separates them. The liver tip is sharp and nothing black wraps around it.",
+   p:"An <b>anechoic (black) stripe</b> between liver and kidney, or a black wedge at the <b>caudal liver tip</b>. Clotted blood can be grey and heterogeneous.",
+   pit:["Perinephric fat — echogenic and grey, not black.","Gallbladder, IVC and duodenum can look like black fluid — follow them and check their shape.","Stopping above the liver tip misses early, small-volume bleeds."]}},
+ luq:{short:'LUQ',name:'Left upper quadrant',sub:'Perisplenic · splenorenal',zone:{x:302,y:236,rot:90},
+  hint:"<b>LUQ:</b> left <b>posterior axillary line</b>, around the <b>8th intercostal space</b> — more <b>posterior and superior</b> than the RUQ (knuckles on the bed). Indicator → <b>head</b>.",
+  probe:{steps:["Indicator pointing to the patient's <b>head</b> (coronal plane).","Anchor the probe in the left <b>posterior axillary line</b>, around the <b>8th intercostal space</b>.","The spleen is small and posterior: go <b>more posterior and more superior</b> than for the RUQ — your knuckles should touch the bed.","<b>Fan</b> forwards and backwards; slide up to show the diaphragm, down to the spleen tip and kidney.","Too anterior or too low → stomach and bowel gas block the view."],
+   orient:"Screen left = patient's head. Screen right = feet.",
+   pics:[["luq_probe.jpg","Probe in the left posterior axillary line: beam passes through lung, diaphragm, spleen and kidney."]]},
+  anat:{lecture:[["luq_schema.jpg","Fluid preferentially collects above the spleen (subphrenic space)."]],
+   list:["<b>Diaphragm</b> — bright curved line, screen left.","<b>Spleen</b> — homogeneous grey, smaller than the liver.","<b>Left kidney</b> — deep and caudal to the spleen.","<b>Subphrenic space</b> — between diaphragm and spleen: look here first.","<b>Splenorenal recess</b> — between spleen and kidney."]},
+  look:{n:"Spleen sits directly against the diaphragm and the kidney, with no black gap. The spleen tip is clean.",
+   p:"A black crescent <b>between the diaphragm and the spleen</b> (subphrenic) is the earliest sign; then fluid in the splenorenal recess and around the spleen tip.",
+   pit:["Looking only at the spleen–kidney interface misses subphrenic blood.","Stomach contents can look like fluid — scan more posteriorly.","Black above the diaphragm is pleural (that is eFAST, not covered here)."]}},
+ pel:{short:'Suprapubic',name:'Suprapubic (pelvic) view',sub:'Retrovesical · pouch of Douglas',zone:{x:200,y:445,rot:90},
+  hint:"<b>Suprapubic:</b> midline just above the <b>pubic symphysis</b>, angled down into the pelvis. Longitudinal: indicator → <b>head</b>. Transverse: rotate 90° anticlockwise, indicator → patient's <b>right</b>.",
+  probe:{steps:["Place the probe in the <b>midline</b>, just above the <b>pubic symphysis</b>, tilted caudally into the pelvis.","<b>Longitudinal</b>: indicator to the patient's <b>head</b>. Fan side to side through the whole bladder.","Centre the bladder, then rotate <b>90° anticlockwise</b> for the <b>transverse</b> view — indicator to the patient's <b>right</b>. Fan up and down.","Use the full bladder as the window: <b>scan before inserting the urinary catheter</b>.","Lower the far-field gain — the bladder causes posterior acoustic enhancement."],
+   orient:"Longitudinal: screen left = head. Transverse: screen left = patient's right.",
+   pics:[["pel_probe_long.jpg","Longitudinal: indicator towards the head."],["pel_probe_trans.jpg","Transverse: indicator towards the patient's right."]]},
+  anat:{lectureM:[["pel_m_anat.jpg","Male: rectovesical pouch behind the bladder."],["pel_m_label.jpg","Longitudinal male pelvis: bladder, prostate, retrovesicular space."]],
+   lectureF:[["pel_f_anat.jpg","Female: rectouterine pouch (pouch of Douglas) behind the uterus."],["pel_f_label.jpg","Longitudinal female pelvis: bladder, uterus, rectum."]],
+   list:["<b>Bladder</b> — black, but contained by a smooth bright wall.","♂ <b>Prostate / seminal vesicles</b> deep and caudal to the bladder.","♀ <b>Uterus</b> posterior to the bladder.","<b>Rectum</b> — deepest structure.","♂ Rectovesical pouch / ♀ pouch of Douglas — the most dependent peritoneal space."]},
+  look:{n:"A smooth, rounded bladder with nothing black outside its wall. The tissues behind are grey (and look brighter because of posterior enhancement).",
+   p:"Black fluid <b>outside the bladder wall</b> with <b>sharp corners</b>: behind or above the bladder (♂ rectovesical) or behind the uterus (♀ pouch of Douglas). Bowel loops may float in it.",
+   pit:["Empty bladder → no window. Clamp the catheter or scan first.","Seminal vesicles (paired, symmetric) and ovarian cysts mimic fluid.","A trace of fluid in the pouch of Douglas can be physiological in women of reproductive age — interpret with the clinical picture."]}},
+ sx:{short:'Subxiphoid',name:'Subxiphoid (subcostal) view',sub:'Pericardium',zone:{x:200,y:298,rot:0},
+  hint:"<b>Subxiphoid:</b> just below the <b>xiphoid</b>. Indicator → patient's <b>right</b>. Hold the probe from above, press it almost flat (tail to the feet) and aim at the patient's <b>left shoulder</b>.",
+  probe:{steps:["Place the probe just below the <b>xiphoid process</b>, indicator to the patient's <b>right</b>.","Hold the probe from above (overhand grip) and push it into the abdomen while <b>flattening</b> it — tail towards the feet.","Aim the beam towards the patient's <b>left shoulder</b>, using the <b>liver as the acoustic window</b>.","Increase depth (16–20 cm) so the whole heart and the posterior pericardium are on screen.","Poor view? Slide a little to the patient's right to use more liver; ask for a deep breath if possible."],
+   orient:"Screen left = patient's right. The liver is in the near field (top).",
+   pics:[["sx_probe.jpg","Probe flattened under the xiphoid, aimed at the left shoulder."],["sx_anat.jpg","The beam passes through the liver to the heart."]]},
+  anat:{lecture:[["sx_label.jpg","Normal subxiphoid view: liver, RV, RA, LV, LA, tricuspid and mitral valves."]],
+   list:["<b>Liver</b> — near field (top of screen): your acoustic window.","<b>Right ventricle</b> — the chamber closest to the liver.","<b>Left ventricle</b> — deeper, thicker wall.","<b>Right / left atria</b> — screen left and deep.","<b>Pericardium</b> — bright line hugging the heart."]},
+  look:{n:"The bright <b>pericardium hugs the heart</b>; no black stripe between the pericardium and the myocardium, front or back.",
+   p:"An <b>anechoic stripe</b> between pericardium and heart (haemopericardium). In shock, look for RV collapse in diastole — <b>tamponade</b>.",
+   pit:["Epicardial fat pad — grey, anterior only, moves with the heart.","A pleural effusion or ascites can sit next to the heart but outside the pericardium.","Penetrating wounds can decompress pericardial blood into the chest → false-negative."]}}
+};
+
+/* ---------- clip library ---------- */
+// w: window, f: n=normal p=positive, sx: m/f (pelvis), pl: long/trans/null, spoil: burned-in label reveals the answer
+const CLIPS=[
+ {id:'ruq_normal',w:'ruq',f:'n',spoil:1,cap:"Normal RUQ: liver and kidney meet at a single bright line — no black stripe in Morison's pouch."},
+ {id:'ruq_normal_swing',w:'ruq',f:'n',cap:"Normal RUQ, sweeping caudally to follow the liver to its tip. Nothing black wraps the liver tip."},
+ {id:'ruq_pos1',w:'ruq',f:'p',spoil:1,cap:"Positive: a black stripe separates liver from kidney — free fluid in Morison's pouch."},
+ {id:'ruq_pos2',w:'ruq',f:'p',cap:"Positive: anechoic fluid in the hepatorenal space between liver and kidney."},
+ {id:'ruq_pos3',w:'ruq',f:'p',cap:"Positive: fluid at the caudal tip of the liver and in Morison's pouch — sweep to the tip every time."},
+ {id:'ruq_pos4',w:'ruq',f:'p',cap:"Positive: a thin black wedge of fluid along the liver edge at the caudal tip — an early, small-volume finding."},
+ {id:'luq_normal',w:'luq',f:'n',cap:"Normal LUQ: spleen against the diaphragm and kidney with no black gap."},
+ {id:'luq_pos1',w:'luq',f:'p',spoil:1,cap:"Positive: free fluid above the spleen, between spleen and diaphragm."},
+ {id:'luq_pos2',w:'luq',f:'p',spoil:1,cap:"Positive: fluid around the spleen and in the splenorenal space."},
+ {id:'luq_pos3',w:'luq',f:'p',spoil:1,cap:"Positive: subphrenic fluid outlining the spleen — the first place blood collects in the LUQ."},
+ {id:'luq_pos4',w:'luq',f:'p',cap:"Positive: perisplenic and splenorenal free fluid."},
+ {id:'pel_m_normal_sa',w:'pel',f:'n',sx:'m',pl:'trans',cap:"Normal male pelvis, transverse (short axis): a smooth, full bladder with nothing black outside its wall."},
+ {id:'pel_m_normal_tr',w:'pel',f:'n',sx:'m',pl:'long',cap:"Normal male pelvis, longitudinal: bladder with prostate deep and caudal; no fluid behind the bladder."},
+ {id:'pel_m_pos1',w:'pel',f:'p',sx:'m',pl:'trans',cap:"Positive male pelvis, transverse: black fluid with sharp corners outside the bladder wall."},
+ {id:'pel_m_pos2',w:'pel',f:'p',sx:'m',pl:'long',cap:"Positive male pelvis, longitudinal: fluid in the rectovesical pouch, behind and above the bladder."},
+ {id:'pel_m_pos3',w:'pel',f:'p',sx:'m',pl:'long',spoil:1,cap:"Positive male pelvis, longitudinal: free fluid with floating bowel loops behind the bladder."},
+ {id:'pel_f_normal_la',w:'pel',f:'n',sx:'f',pl:'long',cap:"Normal female pelvis, longitudinal: bladder anterior, uterus behind it, no fluid in the pouch of Douglas."},
+ {id:'pel_f_pos1',w:'pel',f:'p',sx:'f',pl:'trans',spoil:1,cap:"Positive female pelvis, transverse: fluid surrounds the uterus, in front and behind."},
+ {id:'pel_f_pos2',w:'pel',f:'p',sx:'f',pl:'long',cap:"Positive female pelvis, longitudinal: black fluid outlining the uterus in the pouch of Douglas."},
+ {id:'pel_f_pos3',w:'pel',f:'p',sx:'f',pl:null,cap:"Positive female pelvis: free fluid behind the bladder and around the uterus."},
+ {id:'sx_normal',w:'sx',f:'n',cap:"Normal subxiphoid: liver in the near field, the bright pericardium hugs the beating heart."},
+ {id:'sx_pos1',w:'sx',f:'p',cap:"Positive: an anechoic stripe between the pericardium and the heart — haemopericardium."}
+];
+const clipById=id=>CLIPS.find(c=>c.id===id);
+function clipsFor(w,f,sex,plane,noSpoil){
+  let c=CLIPS.filter(x=>x.w===w&&x.f===f&&(w!=='pel'||x.sx===sex)&&(!noSpoil||!x.spoil));
+  if(w==='pel'&&plane){const m=c.filter(x=>x.pl===plane||x.pl===null); if(m.length) return {list:m,fallback:false}; return {list:c,fallback:true};}
+  return {list:c,fallback:false};
+}
+
+/* ---------- state ---------- */
+const S={mode:'teach',sex:'m',win:null,f:'n',clip:0,plane:'long',cmp:false,itab:'probe',fluid:false,labels:true,paused:false,speed:1,visited:new Set()};
+
+/* ---------- bedside ---------- */
+const svg=$('#bed'), probe=$('#probeG'), PARK={x:412,y:118,rot:90};
+function setProbe(p,anim=true){
+  probe.classList.toggle('drag',!anim);
+  probe.style.transform=`translate(${p.x}px,${p.y}px) rotate(${p.rot}deg)`;
+}
+function drawZones(){
+  const g=$('#zones'); g.innerHTML='';
+  ORDER.forEach((k,i)=>{
+    const z=WIN[k].zone, el=document.createElementNS('http://www.w3.org/2000/svg','g');
+    el.setAttribute('class','zone'+(S.visited.has(k)?' visited':'')+(S.win===k?' active':''));
+    el.setAttribute('data-w',k);
+    el.innerHTML=`<circle class="pulse" cx="${z.x}" cy="${z.y}" r="26"/><circle class="ring" cx="${z.x}" cy="${z.y}" r="26"/>`+
+      `<text class="num" x="${z.x+(k==='luq'?30:k==='ruq'?-30:30)}" y="${z.y-18}" text-anchor="middle">${S.visited.has(k)?'✓':i+1}</text><title>${WIN[k].name}</title>`;
+    el.addEventListener('click',()=>{ if(!dragMoved) placeAt(k); });
+    g.appendChild(el);
+  });
+  const wl=$('#winlist');
+  wl.innerHTML=ORDER.map((k,i)=>`<button data-w="${k}" class="${S.win===k?'on':''}">${S.visited.has(k)?'<span class="ck">✓</span> ':(i+1)+'. '}${WIN[k].short}<small>${WIN[k].sub.split('·')[0]}</small></button>`).join('');
+  $$('button',wl).forEach(b=>b.addEventListener('click',()=>placeAt(b.dataset.w)));
+}
+function zonePose(k){const z=WIN[k].zone; return {x:z.x,y:z.y,rot:(k==='pel'&&S.plane==='trans')?0:z.rot};}
+function drawCue(){
+  const c=$('#cue'); let h='';
+  if(S.win==='ruq') h=`<path d="M70,240 Q60,272 70,304" marker-end=""/><path d="M64,248 l6,-9 l5,10 M64,296 l6,9 l5,-10"/><text x="18" y="232">fan ↕</text><path d="M134,272 L170,272" stroke-dasharray="4 3"/><text x="140" y="262">beam ⟶</text>`;
+  if(S.win==='luq') h=`<path d="M266,236 L232,236" stroke-dasharray="4 3"/><text x="222" y="226" text-anchor="end">⟵ beam</text><text x="300" y="196" text-anchor="middle">knuckles to bed</text>`;
+  if(S.win==='sx') h=`<path d="M214,286 Q245,230 262,196" stroke-dasharray="5 4"/><path d="M256,198 l8,-6 l0,10"/><text x="268" y="190">aim → L shoulder</text><path d="M200,312 L200,346"/><path d="M194,340 l6,8 l6,-8"/><text x="208" y="346">tail to feet</text>`;
+  if(S.win==='pel') h=`<path d="M200,468 L200,500" stroke-dasharray="4 3"/><path d="M194,494 l6,8 l6,-8"/><text x="236" y="420" text-anchor="middle">${S.plane==='long'?'longitudinal · indicator ↑ head':'transverse · indicator ← pt right'}</text><text x="208" y="500">tilt caudally</text>`;
+  c.innerHTML=h;
+}
+let dragMoved=false;
+(function initDrag(){
+  let dragging=false, start=null;
+  const pt=e=>{const p=svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse());};
+  probe.addEventListener('pointerdown',e=>{dragging=true; dragMoved=false; start=pt(e); probe.setPointerCapture(e.pointerId); e.preventDefault();});
+  probe.addEventListener('pointermove',e=>{ if(!dragging) return; const p=pt(e); if(Math.hypot(p.x-start.x,p.y-start.y)>4) dragMoved=true;
+    if(dragMoved) setProbe({x:p.x,y:p.y,rot:S.win?zonePose(S.win).rot:90},false);
+    // highlight nearest zone
+    $$('#zones .zone').forEach(z=>{const w=WIN[z.dataset.w].zone; z.classList.toggle('active',Math.hypot(p.x-w.x,p.y-w.y)<48||z.dataset.w===S.win&&!dragMoved);});
+  });
+  const end=e=>{ if(!dragging) return; dragging=false;
+    if(!dragMoved){ setTimeout(()=>dragMoved=false,0); if(!S.win) toast('Drag the probe onto a window (dashed circle), or tap a window.'); return; }
+    const p=pt(e); let best=null,bd=1e9; ORDER.forEach(k=>{const z=WIN[k].zone,d=Math.hypot(p.x-z.x,p.y-z.y); if(d<bd){bd=d;best=k;}});
+    if(bd<52) placeAt(best);
+    else { toast(offTarget(p)); setProbe(S.win?zonePose(S.win):PARK); drawZones(); }
+    setTimeout(()=>dragMoved=false,0);
+  };
+  probe.addEventListener('pointerup',end); probe.addEventListener('pointercancel',end);
+  probe.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); const i=S.win?(ORDER.indexOf(S.win)+1)%4:0; placeAt(ORDER[i]); }});
+})();
+function offTarget(p){
+  if(p.x>360||p.x<48||p.y<20||p.y>790) return 'That is off the patient — try one of the four dashed windows.';
+  if(p.y<170) return 'Too high — the FAST windows are on the trunk.';
+  if(p.y>500) return 'Too low — the pelvic window is just above the pubic symphysis.';
+  if(p.x>150&&p.x<250&&p.y>310&&p.y<420) return 'Mid-abdomen: bowel gas scatters the beam — no useful FAST window here.';
+  return 'No good window here. Hint: RUQ = right mid-axillary line; LUQ = left posterior axillary line; then suprapubic and subxiphoid.';
+}
+function placeAt(k){
+  if(S.win!==k){ S.clip=0; }
+  S.win=k; S.visited.add(k);
+  if(S.mode==='case') C.visited.add(k);
+  setProbe(zonePose(k)); drawZones(); drawCue();
+  $('#probeHint').innerHTML=WIN[k].hint;
+  renderMonitor(); renderInfo(); if(S.mode==='case') renderCase();
+}
+
+/* ---------- monitor ---------- */
+function screenHTML(clip,tag,label){
+  const t=tag==='n'?'<span class="tag n">NORMAL</span>':tag==='p'?'<span class="tag p">FREE FLUID</span>':tag==='q'?'<span class="tag q">INTERPRET</span>':'';
+  return `<figure class="screen"><video src="${M+clip.id}.mp4" muted loop autoplay playsinline preload="auto"></video>${t}${label?`<span class="lbl">${label}</span>`:''}</figure>`;
+}
+function emptyScreen(){
+  return `<figure class="screen"><div class="empty"><b>No image</b>Drag the probe onto the patient to start scanning.<br>Suggested order: RUQ → LUQ → Suprapubic → Subxiphoid</div></figure>`;
+}
+function startVideos(root){
+  $$('video',root).forEach(v=>{v.muted=true; v.playbackRate=root.id==='qScreen'?Q.speed:S.speed; if(!(root.id==='screens'&&S.paused)) v.play().catch(()=>{}); });
+}
+function currentList(){
+  const r=clipsFor(S.win,S.f,S.sex,S.win==='pel'?S.plane:null,false); return r;
+}
+function renderMonitor(){
+  const scr=$('#screens'), chips=$('#clipChips'), cap=$('#cap');
+  const teach=S.mode==='teach';
+  $('#findCtl').style.visibility=(teach&&S.win)?'visible':'hidden';
+  $('#planeSeg').hidden=S.win!=='pel';
+  $$('#planeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.plane));
+  $$('#findSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.f));
+  $('#findSeg').style.display=S.cmp?'none':'';
+  $('#cmpBtn').classList.toggle('on',S.cmp);
+  if(!S.win){ $('#monTitle').textContent='No probe on the patient'; scr.className='screens'; scr.innerHTML=emptyScreen(); chips.innerHTML=''; cap.className='cap';
+    cap.innerHTML='Place the probe on a window to start scanning. Each window shows a looping clip — switch between <b>Normal</b> and <b>Free fluid</b> to see the difference.'; return; }
+  const W=WIN[S.win];
+  $('#monTitle').textContent=W.name+(S.win==='pel'?(S.plane==='long'?' — longitudinal':' — transverse'):'');
+  if(!teach){ // case mode
+    const id=C.case?C.clips[S.win]:null; const clip=clipById(id);
+    scr.className='screens'; scr.innerHTML=screenHTML(clip,'q',W.short+(S.win==='pel'?' · '+(clip.pl==='trans'?'transverse':'longitudinal'):''));
+    chips.innerHTML=''; cap.className='cap'; cap.innerHTML='Case mode: interpret the image yourself, then record <b>positive</b> or <b>negative</b> for this window on the answer sheet above.';
+    startVideos(scr); return;
+  }
+  const planeArg=S.win==='pel'?S.plane:null;
+  if(S.cmp){
+    const n=clipsFor(S.win,'n',S.sex,planeArg).list, p=clipsFor(S.win,'p',S.sex,planeArg).list;
+    const cp=p[Math.min(S.clip,p.length-1)];
+    scr.className='screens two'; scr.innerHTML=screenHTML(n[0],'n','Normal')+screenHTML(cp,'p','Free fluid');
+    chips.innerHTML=p.length>1?p.map((c,i)=>`<button class="chip ${i===Math.min(S.clip,p.length-1)?'on':''}" data-i="${i}">Positive ${i+1}</button>`).join(''):'';
+    cap.className='cap p'; cap.innerHTML='<b>Compare:</b> '+cp.cap;
+  } else {
+    const r=currentList(), L=r.list, i=Math.min(S.clip,L.length-1), clip=L[i];
+    scr.className='screens'; scr.innerHTML=screenHTML(clip,S.f,W.short+(clip.pl?' · '+(clip.pl==='trans'?'transverse':'longitudinal'):''));
+    chips.innerHTML=L.length>1?L.map((c,j)=>`<button class="chip ${j===i?'on':''}" data-i="${j}">Example ${j+1}</button>`).join(''):'';
+    cap.className='cap'+(S.f==='p'?' p':''); cap.innerHTML=(r.fallback?'<i>(No '+(S.plane==='trans'?'transverse':'longitudinal')+' example of this in the library — showing the other plane.)</i> ':'')+clip.cap;
+  }
+  $$('.chip',chips).forEach(b=>b.addEventListener('click',()=>{S.clip=+b.dataset.i; renderMonitor();}));
+  startVideos(scr);
+}
+$$('#findSeg button').forEach(b=>b.addEventListener('click',()=>{S.f=b.dataset.v; S.clip=0; S.fluid=S.f==='p'; renderMonitor(); renderInfo();}));
+$('#cmpBtn').addEventListener('click',()=>{S.cmp=!S.cmp; S.clip=0; renderMonitor();});
+$$('#planeSeg button').forEach(b=>b.addEventListener('click',()=>{S.plane=b.dataset.v; S.clip=0; setProbe(zonePose('pel')); drawCue(); renderMonitor(); renderInfo();}));
+$('#playBtn').addEventListener('click',()=>{S.paused=!S.paused; $('#playBtn').textContent=S.paused?'▶ Play':'❚❚ Pause'; $$('#screens video').forEach(v=>S.paused?v.pause():v.play().catch(()=>{}));});
+$$('#spdSeg button').forEach(b=>b.addEventListener('click',()=>{S.speed=+b.dataset.v; $$('#spdSeg button').forEach(x=>x.classList.toggle('on',x===b)); $$('#screens video').forEach(v=>v.playbackRate=S.speed);}));
+$$('#sexSeg button').forEach(b=>b.addEventListener('click',()=>{ if(S.mode==='case') return; S.sex=b.dataset.v; $$('#sexSeg button').forEach(x=>x.classList.toggle('on',x===b)); S.clip=0; renderMonitor(); renderInfo();}));
+$('#lmChk').addEventListener('change',e=>{$('#lm').style.display=e.target.checked?'':'none';});
+
+/* ---------- schematics ---------- */
+const FAN=(()=>{const a=38*Math.PI/180,R=270,ax=200,ay=14,x1=(ax-R*Math.sin(a)).toFixed(1),x2=(ax+R*Math.sin(a)).toFixed(1),y=(ay+R*Math.cos(a)).toFixed(1);return `M${ax},${ay} L${x1},${y} A${R},${R} 0 0 0 ${x2},${y} Z`;})();
+let schemId=0;
+function L(x,y,tx,ty,t,anchor='start',col='#ffe27a'){ // leader line + label
+  return `<line x1="${x}" y1="${y}" x2="${tx}" y2="${ty}" stroke="${col}" stroke-width="1.2"/><circle cx="${x}" cy="${y}" r="2.4" fill="${col}"/>`+
+    `<text x="${tx+(anchor==='end'?-3:anchor==='start'?3:0)}" y="${ty+4}" text-anchor="${anchor}" font-size="12.5" font-weight="600" fill="${col}" stroke="#000" stroke-width="3" paint-order="stroke">${t}</text>`;
+}
+const FL='fill="#000" stroke="#ff5d5d" stroke-width="1.6" stroke-dasharray="4 3"';
+function schematic(w,fluid,labels,sex,plane){
+  const id='fc'+(++schemId); let inner='',lab='',orient=['Head','Feet'];
+  if(w==='ruq'||w==='luq'){
+    const isR=w==='ruq';
+    inner+=`<rect width="400" height="300" fill="#474747"/>`+
+      `<path d="M0,0 L152,0 Q100,130 96,300 L0,300Z" fill="#5b5b5b"/>`+
+      `<path d="M40,150 Q70,190 60,260 M60,120 Q86,170 78,250" stroke="#6a6a6a" stroke-width="3" fill="none"/>`;
+    if(isR){
+      const edge='M168,236 Q188,190 240,182 Q290,184 330,226';
+      inner+=`<path d="M152,0 L420,0 L420,150 L330,226 Q290,184 240,182 Q188,190 168,236 Q160,268 158,300 L96,300 Q100,130 152,0Z" fill="#7d7d7d"/>`+
+        `<g transform="rotate(-14 246 226)"><ellipse cx="246" cy="226" rx="70" ry="38" fill="#5e5e5e" stroke="#a5a5a5" stroke-width="2.5"/><ellipse cx="246" cy="226" rx="38" ry="13" fill="#bdbdbd"/></g>`;
+      inner+= fluid?`<path d="${edge} L338,246 Q292,198 240,196 Q200,204 180,246 Z" ${FL}/>`:`<path d="${edge}" stroke="#e0e0e0" stroke-width="2.5" fill="none"/>`;
+      if(labels){
+        lab+=L(118,150,30,110,'Diaphragm','end')+L(270,110,330,60,'Liver','start')+L(246,232,330,292,'Right kidney','start')+L(70,236,10,276,'Lung (mirror)','end');
+        lab+= fluid?L(206,198,120,292,"Fluid in Morison's pouch",'end','#ff7a7a')+L(332,236,400,230,'fluid at liver tip','start','#ff7a7a')
+                   :L(206,190,120,292,"Morison's pouch",'end')+L(330,226,400,230,'Caudal liver tip','start');
+      }
+    } else {
+      const edge='M168,246 Q180,204 216,190 Q250,176 292,184';
+      inner+=`<rect y="0" width="400" height="44" fill="#686868"/>`+
+        `<path d="M156,44 Q250,40 300,110 Q312,160 292,184 Q250,176 216,190 Q180,204 168,246 Q162,276 160,300 L96,300 Q100,140 156,44Z" fill="#838383"/>`+
+        `<g transform="rotate(-14 262 230)"><ellipse cx="262" cy="230" rx="64" ry="34" fill="#5e5e5e" stroke="#a5a5a5" stroke-width="2.5"/><ellipse cx="262" cy="230" rx="34" ry="12" fill="#bdbdbd"/></g>`;
+      inner+= fluid?`<path d="M150,30 Q110,110 104,210 L118,210 Q122,120 164,40 Z" ${FL}/><path d="${edge} L300,196 Q254,190 222,204 Q190,220 180,252 Z" ${FL}/>`
+                   :`<path d="${edge}" stroke="#e0e0e0" stroke-width="2.5" fill="none"/>`;
+      inner+=`<path d="M152,0 Q100,130 96,300" stroke="#f0f0f0" stroke-width="5" fill="none"/>`;
+      if(labels){
+        lab+=L(120,150,30,110,'Diaphragm','end')+L(230,120,330,60,'Spleen','start')+L(262,236,330,292,'Left kidney','start')+L(70,236,10,276,'Lung (mirror)','end');
+        lab+= fluid?L(114,120,30,170,'Subphrenic fluid','end','#ff7a7a')+L(206,200,120,292,'Splenorenal fluid','end','#ff7a7a')
+                   :L(124,120,30,170,'Subphrenic space','end')+L(206,194,120,292,'Splenorenal recess','end');
+      }
+    }
+    if(isR) inner+=`<path d="M152,0 Q100,130 96,300" stroke="#f0f0f0" stroke-width="5" fill="none"/>`;
+  } else if(w==='pel'){
+    const lg=plane!=='trans'; orient=lg?['Head','Feet']:["Pt's right","Pt's left"];
+    inner+=`<rect width="400" height="300" fill="#4c4c4c"/><rect y="0" width="400" height="56" fill="#6c6c6c"/><path d="M60,210 L340,210 L360,300 L40,300Z" fill="#5d5d5d"/>`;
+    if(sex==='m'){
+      if(lg){
+        inner+=`<ellipse cx="300" cy="196" rx="40" ry="30" fill="#757575"/><ellipse cx="230" cy="258" rx="85" ry="22" fill="#545454" stroke="#8f8f8f" stroke-width="2"/>`;
+        if(fluid) inner+=`<path d="M110,150 Q140,192 214,204 Q250,206 262,196 Q248,226 200,230 Q140,228 106,196 Q98,172 110,150Z" ${FL}/>`;
+        inner+=`<path d="M140,72 Q225,52 300,82 Q314,132 272,170 Q232,198 190,182 Q140,152 140,72Z" fill="#050505" stroke="#a9a9a9" stroke-width="3"/>`;
+        if(labels){lab+=L(220,120,330,60,'Bladder','start')+L(306,198,350,240,'Prostate','start')+L(240,262,300,290,'Rectum','start');
+          lab+=fluid?L(130,200,40,250,'Rectovesical fluid','start','#ff7a7a'):L(150,186,40,250,'Rectovesical pouch','start');}
+      } else {
+        inner+=`<ellipse cx="200" cy="214" rx="64" ry="20" fill="#727272"/><ellipse cx="200" cy="260" rx="62" ry="20" fill="#545454" stroke="#8f8f8f" stroke-width="2"/>`;
+        if(fluid) inner+=`<path d="M100,150 Q110,196 160,206 Q120,224 92,200 Q84,176 100,150Z" ${FL}/><path d="M300,150 Q290,196 240,206 Q280,224 308,200 Q316,176 300,150Z" ${FL}/>`;
+        inner+=`<path d="M122,70 Q200,58 278,70 Q300,130 280,186 Q200,198 120,186 Q100,130 122,70Z" fill="#050505" stroke="#a9a9a9" stroke-width="3"/>`;
+        if(labels){lab+=L(200,120,320,58,'Bladder','start')+L(200,216,320,236,'Prostate / seminal vesicles','start')+L(200,264,250,292,'Rectum','start');
+          lab+=fluid?L(110,190,30,250,'Fluid behind bladder','start','#ff7a7a'):'';}
+      }
+    } else {
+      if(lg){
+        inner+=`<g transform="rotate(-10 210 206)"><ellipse cx="210" cy="206" rx="96" ry="32" fill="#7a7a7a"/><path d="M130,206 L290,206" stroke="#a8a8a8" stroke-width="2"/></g><ellipse cx="226" cy="268" rx="80" ry="18" fill="#545454" stroke="#8f8f8f" stroke-width="2"/>`;
+        if(fluid) inner+=`<path d="M108,214 Q150,248 240,248 Q300,244 322,222 Q322,246 300,256 Q220,264 150,256 Q110,244 108,214Z" ${FL}/><path d="M136,160 Q160,176 200,174 Q170,186 140,180Z" ${FL}/>`;
+        inner+=`<path d="M150,70 Q225,56 290,80 Q300,120 270,152 Q230,170 196,160 Q152,140 150,70Z" fill="#050505" stroke="#a9a9a9" stroke-width="3"/>`;
+        if(labels){lab+=L(220,110,330,56,'Bladder','start')+L(250,200,340,180,'Uterus','start')+L(240,270,300,294,'Rectum','start');
+          lab+=fluid?L(200,252,40,280,'Fluid: pouch of Douglas','start','#ff7a7a'):L(200,240,40,280,'Pouch of Douglas','start');}
+      } else {
+        inner+=`<ellipse cx="200" cy="218" rx="62" ry="36" fill="#7a7a7a"/><ellipse cx="200" cy="218" rx="20" ry="6" fill="#a8a8a8"/><ellipse cx="200" cy="276" rx="60" ry="16" fill="#545454" stroke="#8f8f8f" stroke-width="2"/>`;
+        if(fluid) inner+=`<path d="M120,226 Q150,268 200,268 Q250,268 280,226 Q296,258 260,280 Q200,292 140,280 Q104,258 120,226Z" ${FL}/>`;
+        inner+=`<path d="M124,70 Q200,58 276,70 Q296,120 278,170 Q200,182 122,170 Q104,120 124,70Z" fill="#050505" stroke="#a9a9a9" stroke-width="3"/>`;
+        if(labels){lab+=L(200,118,320,58,'Bladder','start')+L(230,214,320,212,'Uterus','start');
+          lab+=fluid?L(140,268,40,290,'Fluid behind uterus','start','#ff7a7a'):'';}
+      }
+    }
+  } else if(w==='sx'){
+    orient=["Pt's right","Pt's left"];
+    const prx=fluid?146:126, pry=fluid?84:66;
+    inner+=`<rect width="400" height="300" fill="#2e2e2e"/>`+
+      `<path d="M200,14 L60,200 Q110,120 200,104 Q280,94 340,140 Z" fill="#7a7a7a"/>`+
+      `<g transform="translate(215 190) scale(.8) translate(-215 -196) rotate(-12 215 196)">`+
+        (fluid?`<ellipse cx="215" cy="196" rx="${prx}" ry="${pry}" fill="#000" stroke="#ff5d5d" stroke-width="1.6" stroke-dasharray="4 3"/>`:'')+
+        `<ellipse cx="215" cy="196" rx="${prx}" ry="${pry}" fill="none" stroke="#f0f0f0" stroke-width="4"/>`+
+        `<ellipse cx="215" cy="196" rx="122" ry="62" fill="#686868"/>`+
+        `<ellipse cx="226" cy="156" rx="84" ry="15" fill="#0a0a0a"/>`+
+        `<ellipse cx="268" cy="206" rx="52" ry="28" fill="#0a0a0a"/>`+
+        `<ellipse cx="136" cy="200" rx="32" ry="27" fill="#0a0a0a"/>`+
+        `<ellipse cx="196" cy="236" rx="40" ry="15" fill="#0a0a0a"/>`+
+      `</g>`;
+    if(labels){
+      lab+=L(170,80,40,40,'Liver','end')+L(228,158,330,92,'RV','start')+L(262,198,360,220,'LV','start')+L(138,198,46,214,'RA','end')+L(194,226,200,292,'LA','middle');
+      lab+=fluid?L(116,152,10,150,'Pericardial fluid','end','#ff7a7a')+L(320,170,420,150,'Pericardium','start'):L(312,170,420,150,'Pericardium','start');
+    }
+  }
+  return `<svg viewBox="-100 0 620 300" role="img" aria-label="Schematic of the ${WIN[w].name}"><defs><clipPath id="${id}"><path d="${FAN}"/></clipPath></defs>`+
+    `<path d="${FAN}" fill="#111"/><g clip-path="url(#${id})">${inner}</g><path d="${FAN}" fill="none" stroke="#3a3a3a"/>`+
+    `<circle cx="178" cy="22" r="5" fill="#16a34a"/>`+
+    `<text x="-94" y="20" font-size="12" fill="#9fb1bd">◄ ${orient[0]}</text><text x="514" y="20" font-size="12" fill="#9fb1bd" text-anchor="end">${orient[1]} ►</text>${lab}</svg>`;
+}
+
+/* ---------- info pane ---------- */
+function pics(arr,two){return `<div class="pics ${two&&arr.length>1?'two':''}">`+arr.map(p=>`<figure class="pic"><img src="${M+p[0]}" alt="${p[1].replace(/"/g,'&quot;')}" loading="lazy"><figcaption>${p[1]}</figcaption></figure>`).join('')+`</div>`;}
+function renderInfo(){
+  $$('#itabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.itab));
+  const P=$('#ipane');
+  if(!S.win){
+    P.innerHTML=`<div class="ipane"><div><h3>The four FAST windows</h3><ol><li><b>RUQ</b> — hepatorenal (Morison's pouch)</li><li><b>LUQ</b> — perisplenic / splenorenal</li><li><b>Suprapubic</b> — retrovesical / pouch of Douglas</li><li><b>Subxiphoid</b> — pericardium</li></ol><p class="note">Free fluid collects in the most <b>dependent</b> spaces of a supine patient. Each window looks at one of those spaces.</p></div>${pics([['overview.jpg','Probe positions and the corresponding normal sono-anatomy for each window.']])}</div>`;
+    return;
+  }
+  const W=WIN[S.win];
+  if(S.itab==='probe'){
+    P.innerHTML=`<div class="ipane"><div><h3>${W.name}</h3><ol>${W.probe.steps.map(s=>`<li>${s}</li>`).join('')}</ol><p class="kv"><b>On screen:</b> ${W.probe.orient}</p></div>${pics(W.probe.pics)}</div>`;
+  } else if(S.itab==='anat'){
+    const lec=S.win==='pel'?(S.sex==='m'?W.anat.lectureM:W.anat.lectureF):W.anat.lecture;
+    P.innerHTML=`<div class="row between" style="margin-bottom:6px"><h3 style="margin:0">Schematic — what the probe "sees"${S.win==='pel'?(S.plane==='long'?' (longitudinal)':' (transverse)'):''}</h3>
+      <div class="row"><label class="note"><input type="checkbox" id="fluidChk" ${S.fluid?'checked':''}> Show free fluid</label><label class="note"><input type="checkbox" id="labChk" ${S.labels?'checked':''}> Labels</label></div></div>
+      <div class="schem">${schematic(S.win,S.fluid,S.labels,S.sex,S.plane)}</div>
+      <p class="note">Green dot = the indicator side of the screen. Black = fluid (blood, urine in the bladder, blood inside the heart). Red dashed outline = <b>free</b> fluid — tick “Show free fluid” to see where it collects.</p>
+      <div class="ipane" style="margin-top:12px"><div><h3>Structures to identify</h3><ul>${W.anat.list.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+      <div><h3>From the lecture</h3>${pics(lec,true)}</div></div>`;
+    $('#fluidChk').addEventListener('change',e=>{S.fluid=e.target.checked; renderInfo();});
+    $('#labChk').addEventListener('change',e=>{S.labels=e.target.checked; renderInfo();});
+  } else {
+    P.innerHTML=`<div class="ipane"><div class="stack"><div class="box n"><h4>Normal (negative)</h4>${W.look.n}</div><div class="box p"><h4>Free fluid (positive)</h4>${W.look.p}</div></div>
+      <div class="box w"><h4>Pitfalls &amp; mimics</h4><ul>${W.look.pit.map(s=>`<li>${s}</li>`).join('')}</ul></div></div>`;
+  }
+}
+$$('#itabs button').forEach(b=>b.addEventListener('click',()=>{S.itab=b.dataset.v; renderInfo();}));
+
+/* ---------- cases ---------- */
+const DEC={or:'Immediate transfer to the operating theatre (laparotomy)',ct:'CT abdomen/pelvis with contrast',serial:'Serial FAST, CT or observation — correlate clinically',peri:'Urgent pericardial decompression / cardiothoracic surgery',other:'Search for another source of shock (chest, pelvis, long bones, external) and repeat FAST'};
+const CASES=[
+ {t:'Motorcyclist, left-sided impact',sex:'m',story:'A 24-year-old man skidded off his motorcycle at high speed and hit the road barrier with his left side. He is pale and complaining of left lower chest and shoulder-tip pain. Airway patent, chest clear bilaterally.',v:{HR:'128',BP:'82/50',RR:'26',SpO2:'97%',GCS:'14'},unstable:1,find:{ruq:0,luq:1,pel:1,sx:0},dec:'or',
+  why:'Free fluid in the LUQ and pelvis in an <b>unstable</b> patient = haemoperitoneum, most likely from a splenic injury. FAST positive + unstable → theatre. Kehr\'s sign (left shoulder-tip pain) supports splenic injury.'},
+ {t:'Pedestrian struck by car',sex:'f',story:'A 35-year-old woman was hit by a car travelling at about 40 km/h. She has right upper quadrant tenderness and abrasions over the right flank. She is talking in full sentences.',v:{HR:'96',BP:'124/78',RR:'18',SpO2:'99%',GCS:'15'},unstable:0,find:{ruq:1,luq:0,pel:0,sx:0},dec:'ct',
+  why:"Fluid in Morison's pouch with <b>stable</b> haemodynamics. FAST positive + stable → CT to grade the (likely hepatic) injury. Many such injuries are managed non-operatively, but she needs close monitoring."},
+ {t:'Fall from scaffolding',sex:'m',story:'A 19-year-old construction worker fell about 3 metres and landed on his back. He has mild abdominal wall bruising and complains of back pain. Primary survey otherwise unremarkable.',v:{HR:'88',BP:'130/80',RR:'16',SpO2:'99%',GCS:'15'},unstable:0,find:{ruq:0,luq:0,pel:0,sx:0},dec:'serial',
+  why:'All four windows are negative and he is stable. A negative FAST does <b>not</b> exclude injury (small bleeds, retroperitoneum, hollow viscus) → serial examination/FAST, CT or observation guided by clinical findings.'},
+ {t:'Stab wound to the epigastrium',sex:'m',story:'A 42-year-old man was stabbed just below the xiphoid. He is agitated and sweaty with distended neck veins. Breath sounds are equal and the trachea is central.',v:{HR:'132',BP:'78/60',RR:'28',SpO2:'95%',GCS:'14'},unstable:1,find:{ruq:0,luq:0,pel:0,sx:1},dec:'peri',
+  why:"Pericardial fluid + shock + distended neck veins (Beck's triad features) after a penetrating wound in the cardiac box = <b>cardiac tamponade</b> until proven otherwise → urgent pericardial decompression and cardiothoracic surgery."},
+ {t:'Head-on car crash, unstable pelvis',sex:'m',story:'A 60-year-old driver was in a head-on collision. He is cold and clammy. Pelvic springing is <i>not</i> done, but there is perineal bruising and leg-length discrepancy; a pelvic binder has been applied. The chest X-ray is clear.',v:{HR:'122',BP:'85/55',RR:'24',SpO2:'96%',GCS:'14'},unstable:1,find:{ruq:0,luq:0,pel:0,sx:0},dec:'other',
+  why:'FAST is <b>negative</b> but he is <b>unstable</b>. FAST cannot see the <b>retroperitoneum</b>: a pelvic fracture can lose litres of blood there. Look for other sources (chest, pelvis, long bones, external), keep the binder on, activate massive transfusion, consider angio-embolisation, and repeat the FAST.'},
+ {t:'Lap-belt injury',sex:'f',story:'A 28-year-old woman, rear-seat passenger wearing a lap belt, has a "seat-belt sign" across the lower abdomen and diffuse tenderness. She is becoming drowsy.',v:{HR:'118',BP:'88/58',RR:'24',SpO2:'98%',GCS:'13'},unstable:1,find:{ruq:1,luq:0,pel:1,sx:0},dec:'or',
+  why:'Free fluid in the RUQ and the pouch of Douglas in an <b>unstable</b> patient → theatre. Seat-belt signs are associated with hollow-viscus and mesenteric injuries.'},
+ {t:'Fall downstairs, stable',sex:'f',story:'A 30-year-old woman fell down a flight of stairs. She has bruising over the left flank and mild suprapubic tenderness. Her last menstrual period was two weeks ago; urine pregnancy test is negative.',v:{HR:'84',BP:'118/74',RR:'16',SpO2:'99%',GCS:'15'},unstable:0,find:{ruq:0,luq:0,pel:1,sx:0},dec:'ct',
+  why:'Fluid in the pouch of Douglas in a <b>stable</b> patient → CT. A small amount of pelvic fluid can be physiological (e.g. mid-cycle) in women of reproductive age, but after trauma it must be treated as blood until proven otherwise.'}
+];
+const C={idx:-1,case:null,clips:{},ans:{},dec:null,done:false,visited:new Set()};
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function loadCase(i){
+  C.idx=i; C.case=CASES[i]; C.ans={}; C.dec=null; C.done=false; C.visited=new Set(); C.clips={};
+  ORDER.forEach(w=>{const f=C.case.find[w]?'p':'n'; const L=clipsFor(w,f,C.case.sex,null,true).list; C.clips[w]=pick(L).id;});
+  S.sex=C.case.sex; $$('#sexSeg button').forEach(x=>x.classList.toggle('on',x.dataset.v===S.sex));
+  S.win=null; S.visited=new Set(); setProbe(PARK); drawZones(); drawCue(); $('#probeHint').innerHTML='<b>Scan all four windows</b>, then fill in the answer sheet. Drag the probe or tap a window.';
+  renderCase(); renderMonitor(); renderInfo();
+}
+function renderCase(){
+  const P=$('#casePanel'), c=C.case; if(!c) return;
+  const vit=Object.entries(c.v).map(([k,v])=>{const alarm=(k==='HR'&&+v>=110)||(k==='BP'&&+v.split('/')[0]<90)||(k==='GCS'&&+v<14)||(k==='RR'&&+v>=24);return `<span class="${alarm?'alarm':''}"><b>${k}</b> ${v}</span>`;}).join('');
+  const rows=ORDER.map(w=>{const a=C.ans[w], vis=C.visited.has(w), truth=c.find[w]?'p':'n';
+    const res=C.done?(a===truth?'<span class="pill ok">✓ correct</span>':`<span class="pill bad">✗ ${truth==='p'?'positive':'negative'}</span>`):'';
+    return `<tr><td><b>${WIN[w].short}</b><div class="note">${WIN[w].sub}</div></td><td>${vis?'<span class="pill ok">scanned</span>':`<button class="btn" data-go="${w}">Scan</button>`}</td>
+      <td><span class="yn" data-w="${w}"><button class="p ${a==='p'?'on':''}" data-v="p" ${!vis||C.done?'disabled':''}>Positive</button><button class="n ${a==='n'?'on':''}" data-v="n" ${!vis||C.done?'disabled':''}>Negative</button></span></td><td>${res}</td></tr>`;}).join('');
+  const allAns=ORDER.every(w=>C.ans[w]);
+  const decHTML=allAns?`<h3 style="margin-top:14px">What next for this patient?</h3><div class="opts" id="decOpts">${Object.entries(DEC).map(([k,t])=>{let cl=C.dec===k?'sel':''; if(C.done){cl=k===c.dec?'right':(C.dec===k?'wrong':'');} return `<button data-k="${k}" class="${cl}" ${C.done?'disabled':''}>${t}</button>`;}).join('')}</div>`:'<p class="note" style="margin-top:10px">Record all four windows to unlock the management question.</p>';
+  let fb='';
+  if(C.done){const nCorrect=ORDER.filter(w=>C.ans[w]===(c.find[w]?'p':'n')).length; const pos=ORDER.some(w=>c.find[w]);
+    fb=`<div class="fb"><h4>${nCorrect}/4 windows correct · decision ${C.dec===c.dec?'<span class="pill ok">correct</span>':'<span class="pill bad">review</span>'}</h4>
+      <p style="margin:4px 0"><b>FAST ${pos?'POSITIVE':'NEGATIVE'}</b> in a haemodynamically <b>${c.unstable?'unstable':'stable'}</b> patient → <b>${DEC[c.dec]}</b>.</p><p style="margin:4px 0">${c.why}</p>
+      <p class="note" style="margin:6px 0 0">Switch to <b>Teaching</b> mode to review any window you missed.</p></div>`;}
+  P.innerHTML=`<div class="row between"><div><div class="kicker">Case ${C.idx+1} of ${CASES.length}</div><h2>${c.t}</h2></div>
+    <div class="row"><button class="btn" id="prevCase">← Prev</button><button class="btn" id="nextCase">Next case →</button></div></div>
+    <p style="margin:8px 0 0">${c.story}</p><div class="vitals">${vit}</div>
+    <div class="tscroll"><table class="sheet"><tr><th>Window</th><th>Scanned?</th><th>Your call</th><th></th></tr>${rows}</table></div>${decHTML}
+    <div class="row" style="margin-top:12px"><button class="btn primary" id="submitCase" ${!(allAns&&C.dec)||C.done?'disabled':''}>Check my answers</button></div>${fb}`;
+  $$('[data-go]',P).forEach(b=>b.addEventListener('click',()=>placeAt(b.dataset.go)));
+  $$('.yn',P).forEach(g=>$$('button',g).forEach(b=>b.addEventListener('click',()=>{C.ans[g.dataset.w]=b.dataset.v; renderCase();})));
+  $$('#decOpts button',P).forEach(b=>b.addEventListener('click',()=>{C.dec=b.dataset.k; renderCase();}));
+  $('#submitCase').addEventListener('click',()=>{C.done=true; renderCase();});
+  $('#prevCase').addEventListener('click',()=>loadCase((C.idx-1+CASES.length)%CASES.length));
+  $('#nextCase').addEventListener('click',()=>loadCase((C.idx+1)%CASES.length));
+}
+$$('#modeSeg button').forEach(b=>b.addEventListener('click',()=>{
+  const m=b.dataset.v; if(m===S.mode) return; S.mode=m; $$('#modeSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  $('#casePanel').hidden=m!=='case'; $$('#sexSeg button').forEach(x=>x.disabled=m==='case');
+  S.cmp=false;
+  if(m==='case'){ loadCase(C.idx<0?0:C.idx); $('#casePanel').scrollIntoView({behavior:'smooth',block:'start'}); }
+  else { S.win=null; S.visited=new Set(); setProbe(PARK); drawZones(); drawCue(); $('#probeHint').innerHTML='<b>Drag the probe</b> onto one of the four dashed windows, or tap a window. The <span style="color:#16a34a;font-weight:700">green dot</span> is the probe indicator (orientation marker).'; renderMonitor(); renderInfo(); }
+}));
+
+/* ---------- quiz ---------- */
+const POOL=CLIPS.filter(c=>!c.spoil);
+const Q={cur:null,win:null,find:null,score:0,n:0,speed:1,last:null};
+function quizNext(){
+  let c; do{c=pick(POOL);}while(POOL.length>1&&c===Q.last); Q.last=c; Q.cur=c; Q.win=null; Q.find=null;
+  $('#qScreen').innerHTML=screenHTML(c,'q','Clip '+(Q.n+1)); startVideos($('#qScreen'));
+  $('#qWin').innerHTML=ORDER.map(w=>`<button data-w="${w}">${WIN[w].short}</button>`).join('');
+  $('#qFind').innerHTML=`<button data-f="n">Negative (normal)</button><button data-f="p">Positive (free fluid)</button>`;
+  $$('#qWin button').forEach(b=>b.addEventListener('click',()=>{Q.win=b.dataset.w; quizCheck();}));
+  $$('#qFind button').forEach(b=>b.addEventListener('click',()=>{Q.find=b.dataset.f; quizCheck();}));
+  $('#qFb').hidden=true;
+}
+function quizCheck(){
+  const c=Q.cur;
+  if(Q.win){$$('#qWin button').forEach(b=>{b.disabled=true; if(b.dataset.w===c.w) b.classList.add('right'); else if(b.dataset.w===Q.win) b.classList.add('wrong');});}
+  if(Q.find){$$('#qFind button').forEach(b=>{b.disabled=true; if(b.dataset.f===c.f) b.classList.add('right'); else if(b.dataset.f===Q.find) b.classList.add('wrong');});}
+  if(Q.win&&Q.find){
+    const ok=Q.win===c.w&&Q.find===c.f; Q.n++; if(ok) Q.score++;
+    $('#qScore').textContent=`${Q.score} / ${Q.n}`;
+    const fb=$('#qFb'); fb.hidden=false;
+    fb.innerHTML=`<h4>${ok?'✓ Correct':'✗ Not quite'} — ${WIN[c.w].name}, ${c.f==='p'?'<span style="color:var(--bad)">positive</span>':'<span style="color:var(--ok)">negative</span>'}</h4>${c.cap}`;
+  }
+}
+$('#qNext').addEventListener('click',quizNext);
+$('#qReset').addEventListener('click',()=>{Q.score=0;Q.n=0;$('#qScore').textContent='0 / 0';quizNext();});
+$$('#qSpd button').forEach(b=>b.addEventListener('click',()=>{Q.speed=+b.dataset.v; $$('#qSpd button').forEach(x=>x.classList.toggle('on',x===b)); $$('#qScreen video').forEach(v=>v.playbackRate=Q.speed);}));
+
+/* ---------- toast ---------- */
+let tt; function toast(m){const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2600);}
+
+/* ---------- init ---------- */
+setProbe(PARK,false); drawZones(); renderMonitor(); renderInfo();
+})();
+</script>
+</body>
+</html>
