@@ -101,6 +101,11 @@
   .chip[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
   .chip .n { opacity: .6; margin-left: 4px; }
 
+  .portal { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-top: 24px; }
+  .portal-btn { display: inline-flex; align-items: center; height: 42px; padding: 0 18px; border-radius: 10px; background: var(--brand); color: var(--brand-ink); font-weight: 600; font-size: 14px; text-decoration: none; }
+  .portal-btn:hover { filter: brightness(1.08); }
+  .portal-link { color: var(--brand); font-size: 14px; font-weight: 500; }
+
   /* Grid */
   main { padding: 24px 0 64px; }
   .meta-line { display: flex; justify-content: space-between; align-items: center; color: var(--ink-3); font-size: 13px; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
@@ -158,6 +163,10 @@
   <h1>Teaching Deck Hub</h1>
   <p class="lede">Lectures, workshops and skills sessions for medical students, nurses, paramedics and postgraduate trainees, all in one place.</p>
   <div class="stats" id="stats"></div>
+  <div class="portal">
+    <a class="portal-btn" href="class/">Class portal: register, quizzes &amp; certificates →</a>
+    <a class="portal-link" href="class/#/verify">Verify a certificate</a>
+  </div>
 </header>
 
 <div class="toolbar">
@@ -519,9 +528,12 @@
 
   // Statistics: record which deck/tool was opened from the hub (works for PDF/PPTX too)
   grid.addEventListener('click', (e) => {
-    const a = e.target.closest('.card'); if (!a || !window.goatcounter || !goatcounter.count) return;
+    const a = e.target.closest('.card'); if (!a) return;
     const d = decks.find(x => x.href === a.getAttribute('href'));
-    goatcounter.count({ path: 'open: ' + (d ? d.file : a.getAttribute('href')), title: d ? d.title : '', event: true });
+    if (window.goatcounter && goatcounter.count)
+      goatcounter.count({ path: 'open: ' + (d ? d.file : a.getAttribute('href')), title: d ? d.title : '', event: true });
+    // Logged-in class portal participants: PDF/PowerPoint opens (HTML decks record themselves)
+    if (d && d.type !== 'WEB' && window.classTrack) window.classTrack(decodeURIComponent(d.href), d.title);
   });
   let searchTimer;
   q.addEventListener('input', () => {
