@@ -56,6 +56,13 @@
     a.download = filename; document.body.appendChild(a); a.click(); a.remove();
   }
   async function q(promise) { const { data, error } = await promise; if (error) throw error; return data; }
+  // Delete one row and report clearly if the database refused (RLS can make a delete silently affect 0 rows)
+  async function delRow(table, id) {
+    const { data, error } = await sb.from(table).delete().eq('id', id).select('id');
+    if (error) return { error };
+    if (!data || !data.length) return { error: new Error('Not deleted: the database did not allow it. Re-run class/schema.sql in Supabase, or check you are logged in as admin.') };
+    return {};
+  }
 
   // ---------- not configured yet ----------
   if (!C.url || !C.key || !window.supabase) {
@@ -516,7 +523,7 @@
         el.querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => {
           const c = classes.find((x) => x.id === b.dataset.del);
           if (!confirm(`Delete “${c.name}”?\n\nMembers keep their accounts and quiz results, but lose this class and any certificates issued for it. This cannot be undone.`)) return;
-          const { error } = await sb.from('classes').delete().eq('id', c.id);
+          const { error } = await delRow('classes', c.id);
           if (error) return toast(errText(error)); toast('Class deleted'); route();
         });
         el.querySelectorAll('[data-mods]').forEach((b) => b.onclick = () => {
@@ -567,7 +574,7 @@
         el.querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => {
           const m = mods.find((x) => x.id === b.dataset.del);
           if (!confirm(`Delete module “${m.title}”?\n\nIts question bank and ALL quiz attempts for it will be deleted. This cannot be undone.`)) return;
-          const { error } = await sb.from('modules').delete().eq('id', m.id);
+          const { error } = await delRow('modules', m.id);
           if (error) return toast(errText(error)); toast('Module deleted'); route();
         });
       },
@@ -712,7 +719,7 @@
         });
         el.querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => {
           if (!confirm('Delete this question? Tip: “Hidden” removes it from future quizzes but keeps it for reference.')) return;
-          const { error } = await sb.from('questions').delete().eq('id', b.dataset.del);
+          const { error } = await delRow('questions', b.dataset.del);
           if (error) return toast(errText(error)); route();
         });
       },
