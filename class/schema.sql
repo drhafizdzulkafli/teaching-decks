@@ -111,6 +111,12 @@ create table if not exists public.activity (
 );
 create index if not exists activity_user_idx on public.activity(user_id, at desc);
 
+-- ---------- Data API access (rows are still filtered by the policies below) ---
+grant usage on schema public to anon, authenticated;
+grant select, insert, update, delete on all tables in schema public to authenticated;
+grant usage, select on all sequences in schema public to authenticated;
+revoke all on all tables in schema public from anon;   -- visitors use only the two public functions
+
 -- ---------- helper: am I an admin? -------------------------------------------
 create or replace function public.is_admin() returns boolean
 language sql stable security definer set search_path = public as $$
